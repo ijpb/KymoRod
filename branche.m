@@ -1,6 +1,21 @@
 function [SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
+%BRANCHE Hierarchisation of the voronoi diagram
 %[SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
+%
+%Return SK : the skeleton
+%diam : diameter of the skeleton
+%ordre : ?
+%
+%
+%
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
 
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 persistent N SQ4 diam2 ordre2;
 
 hold on;

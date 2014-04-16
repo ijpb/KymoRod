@@ -1,10 +1,27 @@
 function [SK CT shift rad]=skelall(pic,thres,scale,dir,dirbegin)
-%[SK CT shift rad]=skelall(pic,thres,scale,dir)
+%SKELALL give the Skeleton of each pictures of the directory of pictures
+%[SK CT shift rad]=skelall(pic,thres,scale,dir,dirbegin)
+% pic : directory of pictures (give by openall())
+% thres : the tres, need to manually set
+% scale : the scale, define at the begin of parstart
+% dir : direction of the filters define at the begin of parstart
+% dirbegin : start of the filter (left,right,top or bottom) define at the begin of parstart
+
+
+
 %Gives the contour CT, the skeleton SK and the radius R of the plants 
 %on each image pic
-%A threshold thres must be defined so that only plants can be cut from the
-%background
+%A threshold thres must be defined so that only plants can be cut from the background
+%
+% ------
+%
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
 
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 
 CT=cell(length(pic),1);
 SK=cell(length(pic),1);

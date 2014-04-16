@@ -1,6 +1,22 @@
 function [SQ2 R2]=bigbranche(SQ,ordre,R)
-%[SQ2 R2]=bigbranche(SQ,ordre,R)
 
+%BIGBRANCHE find the biggest branch of the diagram
+%[SQ2 R2]=bigbranche(SQ,ordre,R)
+%
+% SQ : initial skeleton
+% ordre : ?
+% R : ?
+%
+% Return : SQ2 : the skeleton of the biggest branch of the diagram
+%R2 : ?
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
+
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 
 for k=1:length(SQ)
     if length(SQ{k})>10

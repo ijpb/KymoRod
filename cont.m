@@ -1,6 +1,18 @@
 function CT=cont(pic,thres)
+%CONT Compute the contour CT on an image pîc with the threshold defined by thres
 %CT=cont(pic,thres)
-%Compute the contour CT on an image pîc with the threshold defined by thres
+% pic : directory of pictures (give by openall())
+% thres : the tres, need to manually set
+
+% Return the an array of image with the biggest contour of the initial image
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
+
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 
 [s1 s2]=size(pic);
 Sm=max(size(pic));

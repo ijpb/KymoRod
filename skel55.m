@@ -1,6 +1,24 @@
 function [SK CT2 shift R error]=skel55(CT,dir,dir2)    
-%[SK CT2 shift rad error]=skel55(CT,dir)
-%Skeletonization SK of the contour CT by voronoisaition
+%SKELL55 Skeletonization SK of the contour CT by voronoisaition
+%[SK CT2 shift rad error]=skel55(CT,dir,dir2)
+%
+% CT2 : Contour of the figure
+% dir : direction of the filters define at the begin of parstart
+% dir2 : start of the filter (left,right,top or bottom) define at the begin of parstart
+%
+%Return : SK : the skeleton of the figure
+% CT2 : ?
+% shift : Coordinates of the origin of the skeleton, bottom left
+% R : ?
+% error : if there is error during skeletonization
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
+
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 
 %Low pass filter of the contour
 S_n=CTfilter(CT,200,dir);
