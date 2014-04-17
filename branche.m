@@ -2,6 +2,19 @@ function [SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 %BRANCHE Hierarchisation of the voronoi diagram
 %[SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 %
+%%V sommet de voronoi
+%C cellule de voronoi
+%S_n contour
+%in point � l'int�rieure du contour
+%F_d=sommet externe c�te � c�te dans une cellule de voronoi avec un sommet externe
+%v_F_d cardinal de F_d pour chaque sommet
+%F_i, v_F_i idem sommet inetrieurs
+%Fils_d_i=sommet interne c�te � c�te dans une cellule de voronoi avec un
+%sommet externe
+%F_d=sommet externe c�te � c�te dans une cellule de voronoi avec un
+%sommet interne
+%
+%
 %Return SK : the skeleton
 %diam : diameter of the skeleton
 %ordre : ?
@@ -16,6 +29,7 @@ function [SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file
+
 persistent N SQ4 diam2 ordre2;
 
 hold on;

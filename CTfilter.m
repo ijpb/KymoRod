@@ -1,5 +1,21 @@
 function CTf=CTfilter(CT,a,sym)
+%CTFILTER Smooth the contour
+%CTf=CTfilter(CT,a,sym)
+%
+% CT : contour
+%  a : lenght of smoothing
+% sym : direction (droit,boucle etc...)
+%
+%
+% Return CTf, the new contour who is smoothing
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
 
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 N=size(CT,1);
 N2=floor(N/2);
 if 2*N2==N

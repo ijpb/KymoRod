@@ -1,5 +1,4 @@
 function [SQ2 R2]=bigbranche(SQ,ordre,R)
-
 %BIGBRANCHE find the biggest branch of the diagram
 %[SQ2 R2]=bigbranche(SQ,ordre,R)
 %

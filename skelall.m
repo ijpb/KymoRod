@@ -23,6 +23,7 @@ function [SK CT shift rad]=skelall(pic,thres,scale,dir,dirbegin)
 %   HISTORY
 %   2014-04-16 : Add comments about the file
 
+
 CT=cell(length(pic),1);
 SK=cell(length(pic),1);
 shift=cell(length(pic),1);

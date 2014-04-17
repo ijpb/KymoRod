@@ -10,7 +10,8 @@ function col=openall(color)
 % Copyright 2010 INRA - Cepia Software Platform.
 
 %   HISTORY
-%   2013-04-16 : Add comments about the file
+%   2014-04-16 : Add comments about the file
+
 N=dir(strcat(color,'*'));
 col=cell(length(N),1);
 

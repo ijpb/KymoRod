@@ -1,6 +1,5 @@
 function [P]=hyproot(R,S,Smax)
 %[P]=hyproot(R,S,Smax)
-%P returns the transition point between the root and hypocotyl
 
 P=zeros(length(S),1);
 I=find(R{end}==max(R{end}(S{end}<Smax)));

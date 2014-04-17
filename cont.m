@@ -13,7 +13,6 @@ function CT=cont(pic,thres)
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file
-
 [s1 s2]=size(pic);
 Sm=max(size(pic));
 if thres<Sm

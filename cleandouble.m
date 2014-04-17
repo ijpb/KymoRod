@@ -12,6 +12,7 @@ function S_n=cleandouble(S)
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file
+
 d_S=abs(S-circshift(S,1));
 d_S=sum(d_S')'==0;
 d_S=d_S-circshift(d_S,1);
