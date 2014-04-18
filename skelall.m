@@ -1,7 +1,7 @@
 function [SK CT shift rad]=skelall(pic,thres,scale,dir,dirbegin)
 %SKELALL give the Skeleton of each pictures of the directory of pictures
 %[SK CT shift rad]=skelall(pic,thres,scale,dir,dirbegin)
-% pic : directory of pictures (give by openall())
+% pic : directory of pictures (gave by openall())
 % thres : the tres, need to manually set
 % scale : the scale, define at the begin of parstart
 % dir : direction of the filters define at the begin of parstart

@@ -1,7 +1,21 @@
 function [S dec]=aligncurv(S,A)
+%ALIGNCURV align the curves
 %[S dec]=aligncurv(S,A)
-%align the curves
+%
+% S : the curvilinear abscissa 
+% A : the radius
+%
+% Return the new curvilinear abscissa  S
+% dec : shift between the two curvilinear abscissa
+%
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
 
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 nx=2000;
 dec=zeros(length(S),1);
 

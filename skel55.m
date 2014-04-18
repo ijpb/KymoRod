@@ -6,10 +6,10 @@ function [SK CT2 shift R error]=skel55(CT,dir,dir2)
 % dir : direction of the filters define at the begin of parstart
 % dir2 : start of the filter (left,right,top or bottom) define at the begin of parstart
 %
-%Return : SK : the skeleton of the figure
-% CT2 : ?
+%Return : SK : the skeleton of the figure Nom the point at bottom left of skeleton is at bottom left of the image
+% CT2 : New contour with new coordinates. Nom the point at bottom left of contour is at bottom left of the image
 % shift : Coordinates of the origin of the skeleton, bottom left
-% R : ?
+% R : Radius
 % error : if there is error during skeletonization
 % ------
 % Author: Renaud Bastien
@@ -156,12 +156,12 @@ end
     [SK R]=bigbranche(SK2,ordre,R2);
     
     
-   
+   % coordinates at bottom left
     shift=SK(1,:);
-    
+   % For new contour, align at bottom left 
     CT2(:,1)=CT(:,1)-SK(1,1);
     CT2(:,2)=-(CT(:,2)-SK(1,2));   
-    
+   % for new Skeleton, align at bottom left 
     SK(:,1)=SK(:,1)-SK(1,1);
     SK(:,2)=-(SK(:,2)-SK(1,2));
     

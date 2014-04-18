@@ -3,11 +3,11 @@ function [SQ2 R2]=bigbranche(SQ,ordre,R)
 %[SQ2 R2]=bigbranche(SQ,ordre,R)
 %
 % SQ : initial skeleton
-% ordre : ?
-% R : ?
+% ordre : gave a path at each branch of the skeleton whith 1 or 2. For example a branch will become (1,2,2,1,1,1). gave by branche()
+% R : Radius of skeleton
 %
 % Return : SQ2 : the skeleton of the biggest branch of the diagram
-%R2 : ?
+% R2 : New radius of the biggest branch
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu

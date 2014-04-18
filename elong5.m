@@ -1,6 +1,28 @@
 function E=elong5(SQ1,SQ2,S1,S2,pic1,pic2,scale,shift1,shift2,ws,we)
-%E=elong5(SQ1,SQ2,S1,S2,pic1,pic2,scale,shift1,shift2,ws,we)
+%ELONG5 Compare the growth areas of two successive images
+% %E=elong5(SQ1,SQ2,S1,S2,pic1,pic2,scale,shift1,shift2,ws,we)
+%
+% SQ1 : skeleton number one
+% SQ2 : seleton number two
+% S1 : curvilinear abscissa number one
+% S2 : curvilinear abscissa number two
+% Pic1 : image number one
+% Pic2 : image number two
+% scale : the scale, define in parstart
+% shift1 : Coordinates of the origin of the skeleton number one, bottom left
+% shift2 : Coordinates of the origin of the skeleton number two, bottom left
+% ws : size of the correalting window
+% we : unnecessary in this program
+%
+% Return E , a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
 
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 disp=0;
 
 %on fait correspondre sur l'image aux pixels par lequels passent le

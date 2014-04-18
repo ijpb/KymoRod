@@ -1,6 +1,6 @@
-function [SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
+function [SK R ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 %BRANCHE Hierarchisation of the voronoi diagram
-%[SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
+%[SK R ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 %
 %%V sommet de voronoi
 %C cellule de voronoi
@@ -16,8 +16,8 @@ function [SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 %
 %
 %Return SK : the skeleton
-%diam : diameter of the skeleton
-%ordre : ?
+%R : Radius of the skeleton
+%ordre : gave a path at each branch of the skeleton whith 1 or 2. For example a branch will become (1,2,2,1,1,1)
 %
 %
 %
@@ -30,13 +30,13 @@ function [SK diam ordre]=branche(V,V_F,F,dist,jp,j,m,pere)
 %   HISTORY
 %   2014-04-16 : Add comments about the file
 
-persistent N SQ4 diam2 ordre2;
+persistent N SQ4 R2 ordre2;
 
 hold on;
 if pere==0 && m==0
     N = 1;
     SQ4=[];
-    diam2=[];
+    R2=[];
     ordre2=[];
 end
 
@@ -44,7 +44,7 @@ end
 i=1;
 SK1(i,1)=V(j,1);
 SK1(i,2)=V(j,2);
-diam1(i)=dist(j);
+R1(i)=dist(j);
 
 if V_F(j)<3
     jind=find(F{j}~=jp);
@@ -55,7 +55,7 @@ if V_F(j)<3
         i=i+1;
         SK1(i,1)=V(j,1);
         SK1(i,2)=V(j,2);
-        diam1(i)=dist(j);
+        R1(i)=dist(j);
 
         jind=find(F{j}~=jp);
         jp=j;
@@ -65,7 +65,7 @@ if V_F(j)<3
 end
 
 SQ4{N}=SK1;
-diam2{N}=diam1;
+R2{N}=R1;
     %ordre2
 if N==1
     ordre2{N}=1;
@@ -84,5 +84,5 @@ if V_F(j)>1
 end
 
 SK=SQ4;
-diam=diam2;
+R=R2;
 ordre=ordre2;

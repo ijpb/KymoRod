@@ -1,8 +1,22 @@
 function [S A C]=curvall(SK,ws)
-%[S A C]=curvall(SK,ws)
-%Compute the curvilinear abscissa S, the angle A with the vertical, and the
-%curvature C of the Skeleton SK.
-%ws is the size of the derivative window
+%CURVALL Compute the curvilinear abscissa S, the angle A with the vertical, and the curvature C of the Skeleton SK.
+% %[S A C]=curvall(SK,ws)
+% SK is the skeleton
+% ws is the size of the derivative window, define at the begin
+%
+%
+% Return : the curvilinear abscissa S
+% the angle A with the vertical
+% the curvature C of the Skeleton SK
+%
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
+
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 
 S=cell(length(SK),1);
 A=cell(length(SK),1);

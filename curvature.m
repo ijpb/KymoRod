@@ -1,7 +1,22 @@
 function [A C]=curvature(SK,S,ws)
+%CURVATURE Computation of the curvature C and the orientation A of a line SK with the curvilinear abscissa S along SK
+%
+% SK : skeleton of the figure
+% S : the value of the curvilinear abscissa
+% ws is the size of the derivative window, define at the begin
+%
+% Return : the angle A with the vertical
+% the curvature C of the Skeleton SK
+%
+%
+% ------
+% Author: Renaud Bastien
+% e-mail: rbastien@seas.harvard.edu
+% Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
+% Copyright 2012 INRA - Cepia Software Platform.
 
-%Computation of the curvature C and the orientation A of a line SK with the
-%the curvilinear abscissa S along SK
+%   HISTORY
+%   2014-04-16 : Add comments about the file
 n=length(S);
 
 
