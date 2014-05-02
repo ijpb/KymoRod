@@ -6,7 +6,7 @@ function S=curvilin(SK)
 %
 % SK : the skeleton of the figure
 % 
-% Return : S the value of the curvilinear abscissa
+% Return : S the value of the curvilinear abscissa, an array of cell
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu

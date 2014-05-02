@@ -5,8 +5,8 @@ function [A C]=curvature(SK,S,ws)
 % S : the value of the curvilinear abscissa
 % ws is the size of the derivative window, define at the begin
 %
-% Return : the angle A with the vertical
-% the curvature C of the Skeleton SK
+% Return : the angle A with the vertical, an array of cell
+% the curvature C of the Skeleton SK, an array of cell
 %
 %
 % ------

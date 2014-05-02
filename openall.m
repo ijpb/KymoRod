@@ -2,7 +2,7 @@ function col=openall(color)
 %OPENALL Open all files of the directory 'r' for red, 'g' for green or 'b' for blue
 %Images must be in one color in one bit.
 %
-% Returns col, an array with all the pictures
+% Returns col, an array of cell with all the pictures
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
@@ -13,9 +13,8 @@ function col=openall(color)
 %   2014-04-16 : Add comments about the file
 
 N=dir(strcat(color,'*'));
-col=cell(length(N),1);
-
-parfor i=1:length(N)
-    col{i}=imread(N(i).name);
+col=cell(3,1);
+parfor i=1:3
+    col{i}=imread(N(i+54).name);
 end
  

@@ -9,7 +9,7 @@ function [Ax]=reconstruct_Elg2(nx,varargin)
 %
 %
 %
-% Return : the image of kymograph
+% Return : the image of kymograph (opening with imagesc())
 %
 % ------
 % Author: Renaud Bastien
@@ -24,7 +24,6 @@ function [Ax]=reconstruct_Elg2(nx,varargin)
 if length(varargin)==2
    S=varargin{2};
    A=varargin{1};
-
 end
 
 for k=1:length(varargin{1});
@@ -39,12 +38,13 @@ for k=1:length(varargin{1});
     end
     Smin(k,1)=S{k}(1);
 	Smax(k,1)=S{k}(end);
+    
 end
 T=length(S);
 L=max(Smax);
 DL=L./nx;
 
-Ax=nan.*zeros(T,nx);
+Ax=nan.*zeros(nx,T);
 for k=1:T
     
     if length(A{k})>10
@@ -61,7 +61,7 @@ for k=1:T
           posmax=length(S{k});
       end
       
-      Ax(k,j)=...
+      Ax(j,k)=...
           -(A{k}(posmax).*(X-S{k}(posmax))-A{k}(posmin).*(X-S{k}(posmin)))...
           ./(S{k}(posmax)-S{k}(posmin));
       

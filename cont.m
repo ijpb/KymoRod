@@ -3,8 +3,10 @@ function CT=cont(pic,thres)
 %CT=cont(pic,thres)
 % pic : directory of pictures (give by openall())
 % thres : the tres, need to manually set
-
-% Return the an array of image with the biggest contour of the initial image
+%
+% Return the Contour, an array of double n by 2 whith all the coordinates
+% of top polygones
+% 
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu

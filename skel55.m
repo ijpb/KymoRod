@@ -1,13 +1,13 @@
-function [SK CT2 shift R error]=skel55(CT,dir,dir2)    
+function [SK CT2 shift R SKVerif CTVerif error]=skel55(CT,dir,dir2)    
 %SKELL55 Skeletonization SK of the contour CT by voronoisaition
 %[SK CT2 shift rad error]=skel55(CT,dir,dir2)
 %
 % CT2 : Contour of the figure
 % dir : direction of the filters define at the begin of parstart
-% dir2 : start of the filter (left,right,top or bottom) define at the begin of parstart
+% dir2 : start of the filter ('left','right','top' or 'bottom') define at the begin of parstart
 %
-%Return : SK : the skeleton of the figure Nom the point at bottom left of skeleton is at bottom left of the image
-% CT2 : New contour with new coordinates. Nom the point at bottom left of contour is at bottom left of the image
+%Return : SK : the skeleton of the figure, an array of double whith coordinates of all the points. The point at bottom left of skeleton is at bottom left of the image
+% CT2 : New contour with new coordinates, an array of double whith coordinates of all the points. Nom the point at bottom left of contour is at bottom left of the image
 % shift : Coordinates of the origin of the skeleton, bottom left
 % R : Radius
 % error : if there is error during skeletonization
@@ -15,7 +15,7 @@ function [SK CT2 shift R error]=skel55(CT,dir,dir2)
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
 % Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
-% Copyright 2012 INRA - Cepia Software Platform.
+% Copyright 2012 INRA ijpb
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file
@@ -158,9 +158,15 @@ end
     
    % coordinates at bottom left
     shift=SK(1,:);
+    %For verification to save the contour
+    CTVerif(:,1)=CT(:,1);
+    CTVerif(:,2)=CT(:,2);
    % For new contour, align at bottom left 
     CT2(:,1)=CT(:,1)-SK(1,1);
-    CT2(:,2)=-(CT(:,2)-SK(1,2));   
+    CT2(:,2)=-(CT(:,2)-SK(1,2)); 
+    %For verification
+    SKVerif(:,1)=SK(:,1);
+    SKVerif(:,2)=SK(:,2);
    % for new Skeleton, align at bottom left 
     SK(:,1)=SK(:,1)-SK(1,1);
     SK(:,2)=-(SK(:,2)-SK(1,2));

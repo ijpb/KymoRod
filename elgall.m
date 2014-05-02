@@ -13,7 +13,7 @@ function [Elg E2]=elgall(E,t0,step,ws)
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
 % Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
-% Copyright 2012 INRA - Cepia Software Platform.
+% Copyright 2012 INRA ijpb
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file

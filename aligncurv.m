@@ -5,7 +5,7 @@ function [S dec]=aligncurv(S,A)
 % S : the curvilinear abscissa 
 % A : the radius
 %
-% Return the new curvilinear abscissa  S
+% Return the new curvilinear abscissa  S, an array of cell
 % dec : shift between the two curvilinear abscissa
 %
 % ------
@@ -19,10 +19,10 @@ function [S dec]=aligncurv(S,A)
 nx=2000;
 dec=zeros(length(S),1);
 
-parfor k=1:length(S)
+for k=1:length(S)
    S{k}=S{k}-S{k}(1); 
 end
-parfor_progress(length(S));
+%parfor_progress(length(S));
 
 for k=2:length(S)
     
@@ -61,12 +61,11 @@ for k=2:length(S)
  
     S{k}=S{k}+dec(k-1)+S{k-1}(1);
     Smin(k)=S{k}(1);
-        parfor_progress;
+       % parfor_progress;
 end
-parfor_progress(0);
+%parfor_progress(0);
 Sm=min(Smin);
 
-parfor k=1:length(S)
+for k=1:length(S)
    S{k}=S{k}-Sm; 
 end
-

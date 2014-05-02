@@ -2,12 +2,13 @@ function CTf=CTfilter(CT,a,sym)
 %CTFILTER Smooth the contour
 %CTf=CTfilter(CT,a,sym)
 %
-% CT : contour
+% CT : contour n-by-2 array of double
 %  a : lenght of smoothing
 % sym : direction (droit,boucle etc...)
 %
 %
-% Return CTf, the new contour who is smoothing
+% Return CTf, the new contour who is smoothing, an array n by 2 of
+% coordinates of the new contour.
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
