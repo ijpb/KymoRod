@@ -28,10 +28,8 @@ CT=cell(length(pic),1);
 SK=cell(length(pic),1);
 shift=cell(length(pic),1);
 rad=cell(length(pic),1);
-CTVerif=cell(length(pic),1);
-SKVerif=cell(length(pic),1);
-parfor_progress(length(pic)); % j'ai enlevé le parfor qui generait une
-%erreur
+
+parfor_progress(length(pic));
 parfor i=1:length(pic)
 
     
@@ -40,13 +38,16 @@ parfor i=1:length(pic)
     %Scaling from pixel to mm
     CT2=setsc(CT2,scale);
     %Smoothing
-    CT2(:,1)=moving_average(CT2(:,1),20);
-    CT2(:,2)=moving_average(CT2(:,2),20);
+    CT2(:,1)=moving_average(CT2(:,1),60);
+    CT2(:,2)=moving_average(CT2(:,2),60);
     %Skeletonization
-    [SK{i} CT{i} shift{i} rad{i} SKVerif{i} CTVerif{i}]=skel55(CT2,dir,dirbegin);
+    [SK{i} CT{i} shift{i} rad{i} SKVerif{i} CTVerif{i} ]=skel55(CT2,dir,dirbegin);
     parfor_progress;
    
 end
 
 
 parfor_progress(0);
+
+
+

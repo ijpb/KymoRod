@@ -29,7 +29,6 @@ w = (-N+1:N);  % centered frequency vector
 H1=a./(a+1i.*w); %exp(-w.^2/a.^2);%     % centered version of H
 H2=a./(a+1i.*w);
 Hshift = [fftshift(H1)' fftshift(H2)']; 
-
 switch sym
     case 'droit'
         CTsym(:,1)=[flipud(CT(1:N2,1));CT(:,1);flipud(CT(N2+1:end,1))];

@@ -2,7 +2,7 @@ function [S A C]=curvall(SK,ws)
 %CURVALL Compute the curvilinear abscissa S, the angle A with the vertical, and the curvature C of the Skeleton SK.
 % %[S A C]=curvall(SK,ws)
 % SK is the skeleton
-% ws is the size of the derivative window, define at the begin
+% ws is the lenght of smoothing, define at begin of parstart
 %
 %
 % Return : the curvilinear abscissa S, array of cell

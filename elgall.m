@@ -7,7 +7,7 @@ function [Elg E2]=elgall(E,t0,step,ws)
 % ws : size of the correalting window
 % step : step between two measurements of displacement
 %
-% Return : Elg : a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa relative at neighbors pixels
+% Return : Elg : a vector at 2 dimensions with for each points, the elongation and the curvilinear abscissa relative at neighbors pixels
 % E2 : a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa. But smooth by kernel smoother and whitout errors
 % ------
 % Author: Renaud Bastien

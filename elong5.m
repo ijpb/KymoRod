@@ -14,7 +14,7 @@ function E=elong5(SQ1,SQ2,S1,S2,pic1,pic2,scale,shift1,shift2,ws,we)
 % ws : size of the correalting window
 % we : unnecessary in this program
 %
-% Return E , a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa
+% Return E , a vector at 2 dimensions with for each points, the curvilinear abscissa and the displacement
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
@@ -102,8 +102,8 @@ for k=1:1:length(x1)
 
             Corr=sortrows(Corr,1);
             [Corrmax Corry]=max(Corr(:,2));
-            fsz1=min([10 Corry-1]);
-            fsz2=min([10 size(Corr,1)-Corry]);
+            %fsz1=min([10 Corry-1]);
+            %fsz2=min([10 size(Corr,1)-Corry]);
             %if var(Corr(Corry-fsz1:Corry+fsz2,2))>1e-4
                 a=a+1; 
                 E(a,1)=picSQ1(i,j);

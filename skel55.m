@@ -116,58 +116,62 @@ for i=1:c1
             end
         end
     end
-    
 end
-for i=1:v1
-    
+
+% on obtient F et VF
+
+
+% ?
+for i=1:v1    
     if V_F(i)==0
         dist2(i)=1e4;
     else
         dist2(i)=norm(V(i,:)-V(F{i}(1),:));
     end
 end
-    %On choisit le point de d�part en prenant 
-    %le point le plus �loign� du contour verifiant les contraintes 1 seul
-    %voisin et ...
-    dist2=dist2';
-    %[R_ma,R_ma_ind]=max((1./dist).*(V_F==1).*(1./dist2));%.*(d_bordn>seuil));
-    
-    %remettre la ligne suivant pour les calculs sur l'hypocotyle d'Arabido
-    %[R_ma,R_ma_ind]=max((1.*V(:,2)).*(V_F==1).*in);
-    switch dir2
-        case 'left'
-            [R_ma,R_ma_ind]=max((1./V(:,1)).*(V_F==1).*in);
-        case 'right'
-            [R_ma,R_ma_ind]=max((1.*V(:,1)).*(V_F==1).*in);
-        case 'bottom'
-            [R_ma,R_ma_ind]=max((1.*V(:,2)).*(V_F==1).*in);
-        case 'top'
-            [R_ma,R_ma_ind]=max((1./V(:,2)).*(V_F==1).*in);
-    end 
 
-    j=R_ma_ind;
-    jp=j;
-    i=1;
-    close all;
-    
-    %Hierarchisation of the voronoi diagram
-    [SK2 R2 ordre]=branche(V,V_F,F,dist,jp,j,0,0);
-    %the skeleton SK is the biggest branch of the diagram
-    [SK R]=bigbranche(SK2,ordre,R2);
-    
-    
-   % coordinates at bottom left
-    shift=SK(1,:);
-    %For verification to save the contour
-    CTVerif(:,1)=CT(:,1);
-    CTVerif(:,2)=CT(:,2);
-   % For new contour, align at bottom left 
-    CT2(:,1)=CT(:,1)-SK(1,1);
-    CT2(:,2)=-(CT(:,2)-SK(1,2)); 
-    %For verification
-    SKVerif(:,1)=SK(:,1);
-    SKVerif(:,2)=SK(:,2);
-   % for new Skeleton, align at bottom left 
-    SK(:,1)=SK(:,1)-SK(1,1);
-    SK(:,2)=-(SK(:,2)-SK(1,2));
-    
+
+%On choisit le point de d�part en prenant
+%le point le plus �loign� du contour verifiant les contraintes 1 seul
+%voisin et ...
+dist2=dist2';
+%[R_ma,R_ma_ind]=max((1./dist).*(V_F==1).*(1./dist2));%.*(d_bordn>seuil));
+
+%remettre la ligne suivant pour les calculs sur l'hypocotyle d'Arabido
+%[R_ma,R_ma_ind]=max((1.*V(:,2)).*(V_F==1).*in);
+switch dir2
+    case 'left'
+        [R_ma,R_ma_ind]=max((1./V(:,1)).*(V_F==1).*in);
+    case 'right'
+        [R_ma,R_ma_ind]=max((1.*V(:,1)).*(V_F==1).*in);
+    case 'bottom'
+        [R_ma,R_ma_ind]=max((1.*V(:,2)).*(V_F==1).*in);
+    case 'top'
+        [R_ma,R_ma_ind]=max((1./V(:,2)).*(V_F==1).*in);
+end
+
+j=R_ma_ind;
+jp=j;
+i=1;
+
+%Hierarchisation of the voronoi diagram
+[SK2 R2 ordre]=branche(V,V_F,F,dist,jp,j,0,0);
+%the skeleton SK is the biggest branch of the diagram
+[SK R]=bigbranche(SK2,ordre,R2);
+
+
+% coordinates at bottom left
+shift=SK(1,:);
+%For verification to save the contour
+CTVerif(:,1)=CT(:,1);
+CTVerif(:,2)=CT(:,2);
+% For new contour, align at bottom left
+CT2(:,1)=CT(:,1)-SK(1,1);
+CT2(:,2)=-(CT(:,2)-SK(1,2));
+%For verification
+SKVerif(:,1)=SK(:,1);
+SKVerif(:,2)=SK(:,2);
+% for new Skeleton, align at bottom left
+SK(:,1)=SK(:,1)-SK(1,1);
+SK(:,2)=-(SK(:,2)-SK(1,2));
+
