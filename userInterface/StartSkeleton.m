@@ -22,7 +22,7 @@ function varargout = StartSkeleton(varargin)
 
 % Edit the above text to modify the response to help StartSkeleton
 
-% Last Modified by GUIDE v2.5 16-Jun-2014 15:00:15
+% Last Modified by GUIDE v2.5 20-Aug-2014 18:07:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,56 +52,63 @@ function StartSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to StartSkeleton (see VARARGIN)
 
-% Choose default command line output for StartSkeleton
-handles.output = hObject;
-setappdata(0,'RepertoireImage','');
-setappdata(0,'NomRep','');
-if nargin == 6    col = varargin{1};
+% initialize some global variables
+setappdata(0, 'RepertoireImage', '');
+setappdata(0, 'NomRep', '');
+
+set(handles.channelSelectionPanel, 'SelectionChangeFcn', ...
+    @channelSelectionPanel_SelectionChangeFcn);
+
+if nargin == 6 
+    col = varargin{1};
     N = varargin{2};
-    folder_name = varargin{3};
+    folderName = varargin{3};
     set(handles.slider1, 'Visible', 'on');
-    set(handles.text2, 'Visible', 'on');
-    set(handles.text3, 'Visible', 'on');
+    set(handles.axis1Label, 'Visible', 'on');
+    set(handles.axis2Label, 'Visible', 'on');
     set(handles.axes1, 'Visible', 'on');
     set(handles.axes2, 'Visible', 'on');
-    set(handles.radiobutton1,'Visible','on');
-    set(handles.radiobutton3,'Visible','on');
+    set(handles.keepAllFramesRadioButton, 'Visible', 'on');
+    set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
     
     nb = length(col);
     
     set(handles.slider1, 'Max', nb - 1);
     
-    mini =cell(2,1);
+    % demo images
+    mini = cell(2,1);
     for i = 1:2
-        
         mini{i} = col{i};
     end
     
-    axes(handles.axes1);%#ok % To show the thumbnail
+    % display first image
+    axes(handles.axes1);
     imshow(mini{1});
-    set(handles.text2, 'String', '1');
+    set(handles.axis1Label, 'String', '1');
     
-    axes(handles.axes2);%#ok
+    % display second image
+    axes(handles.axes2);
     imshow(mini{2});
-    set(handles.text3, 'String', '2');
+    set(handles.axis2Label, 'String', '2');
     
-    
-    setappdata(0,'Nbimages',nb);
-    setappdata(0,'NomRep',N);
-    setappdata(0,'RepertoireImage',folder_name);
-    setappdata(0,'col',col);
+    % update globale variables
+    setappdata(0, 'Nbimages', nb);
+    setappdata(0, 'NomRep', N);
+    setappdata(0, 'RepertoireImage', folderName);
+    setappdata(0, 'col', col);
     
     flag = 2;
     
-    char = strcat('Select a range among  ',num2str(nb),' pictures');
-    set(handles.radiobutton3, 'String', char);
+    string = sprintf('Select a range among the %d images', nb);
+    set(handles.selectFramesIndicesRadioButton, 'String', string);
 else 
     flag = 1;
 end
 
-setappdata(0,'flag',flag);
+setappdata(0, 'flag', flag);
 
-
+% Choose default command line output for StartSkeleton
+handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -121,102 +128,120 @@ function varargout = StartSkeleton_OutputFcn(hObject, eventdata, handles) %#ok
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)%#ok % To select the images from a directory
 
-if get(handles.checkbox1,'Value') == 1
-    
-    folder_name = uigetdir(); % Open a dialog box
-    if folder_name == 0;
-        warning('Select a floder please');%#ok
-        return;
-    end
-    N = dir(folder_name); % To open the directory
-    nb = length(N);
-    if nb == 0
-        warning('Not good pictures in the directory. Take an other');%#ok just a message no need identifier
-        return;
-    end
-    for i = 1 : nb - 2 % 2 'for' to eliminate the first ad second index : '.' & '..'
-        N(i) = N(i + 2);
+% --------------------------------------------------------------------
+function mainFrameMenuItem_Callback(hObject, eventdata, handles)
+% hObject    handle to mainFrameMenuItem (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+delete(gcf);
+StartProgramm();
+
+
+
+
+% --- Executes on button press in chooseInputImagesButton.
+function chooseInputImagesButton_Callback(hObject, eventdata, handles)%#ok 
+% To select the images from a directory
+
+% Open a dialog box
+folderName = getappdata(0, 'RepertoireImage');
+folderName = uigetdir(folderName);
+
+% check if cancel button was selected
+if folderName == 0;
+    return;
+end
+
+set(handles.directoryNameEdit, 'String', folderName);
+setappdata(0, 'RepertoireImage', folderName);
+
+% list files in chosen directory
+fileList = dir(fullfile(folderName, '*.*'));
+fileList = fileList(~[fileList.isdir]);
+
+if isempty(fileList)
+    errordlg({'The chosen directory contains no file.', ...
+        'Please choose another one'}, ...
+        'Empty Directory Error', 'modal')
+    return;
+end
+
+selectedRadioButton = get(handles.channelSelectionPanel, 'SelectedObject');
+if selectedRadioButton == handles.allImagesRadioButton
+    % All images selected
+    % Requires two 'for'-loops to eliminate the first and second index: '.' & '..'
+    for i = 1 : length(fileList) - 2 
+        fileList(i) = fileList(i + 2);
     end
     for i = 1 : 2
-        N(end) = [];
+        fileList(end) = [];
     end
     
-elseif get(handles.checkbox2,'Value') == 1
-    
-    str = get(handles.edit11,'String');
+elseif selectedRadioButton == handles.selectChannelRadioButton
+    % keep only images starting with a given letter
+    str = get(handles.channelPrefixEdit,'String');
     if isempty(str)
-        warning('Text area is empty');%#ok
+        warning('Text area is empty');
         return;
     end
-    
-    folder_name = uigetdir(); % Open a dialog box
-    if folder_name == 0;
-        warning('Select a floder please');%#ok
+   
+    str = strcat(str, '*.*');
+    rep = fullfile(folderName, str);
+    fileList = dir(rep);
+    fileList = fileList(~[fileList.isdir]);
+
+    if isempty(fileList)
+        errordlg({'The chosen directory contains no file.', ...
+            'Please choose another one'}, ...
+            'Empty Directory Error', 'modal')
         return;
     end
-    
-    str = strcat(str,'*.*');
-    rep = fullfile(folder_name,str);
-    N = dir(rep); % To open the directory
-    
-    
-else
-    warning('Select an option please');%#ok
-    return;
 end
 
+imageNumber = length(fileList);
 
-nb = length(N);
-if nb == 0
-    warning('Not good pictures in the directory. Take an other');%#ok just a message no need identifier
-    return;
-end
-
-
+set(handles.channelSelectionPanel, 'Visible', 'on');
+set(handles.calibrationPanel, 'Visible', 'on');
+set(handles.frameSelectionPanel, 'Visible', 'on');
 
 set(handles.slider1, 'Visible', 'on');
-set(handles.text2, 'Visible', 'on');
-set(handles.text3, 'Visible', 'on');
+set(handles.axis1Label, 'Visible', 'on');
+set(handles.axis2Label, 'Visible', 'on');
 set(handles.axes1, 'Visible', 'on');
 set(handles.axes2, 'Visible', 'on');
-set(handles.radiobutton1,'Visible','on');
-set(handles.radiobutton3,'Visible','on');
 
-set(handles.slider1, 'Max', nb - 1);
+set(handles.slider1, 'Max', imageNumber - 1);
 
-mini =cell(2,1);
+mini = cell(2,1);
 for i = 1:2 
-
-    mini{i} = imread(fullfile(folder_name,N(i).name));
+    mini{i} = imread(fullfile(folderName, fileList(i).name));
 end 
 
-axes(handles.axes1);%#ok % To show the thumbnail
+axes(handles.axes1);
 imshow(mini{1});
-set(handles.text2, 'String', '1');
+set(handles.axis1Label, 'String', sprintf('frame %d (%s)', 1, fileList(1).name));
 
-axes(handles.axes2);%#ok
+axes(handles.axes2);
 imshow(mini{2});
-set(handles.text3, 'String', '2');
+% set(handles.axis2Label, 'String', '2');
+set(handles.axis2Label, 'String', sprintf('frame %d (%s)', 2, fileList(2).name));
 
+setappdata(0, 'Nbimages', imageNumber);
+setappdata(0, 'NomRep', fileList); 
+setappdata(0, 'RepertoireImage', folderName); 
 
-setappdata(0,'Nbimages',nb);
-setappdata(0,'NomRep',N); 
-setappdata(0,'RepertoireImage',folder_name); 
-
-
-
-char = strcat('Select a range among  ',num2str(nb),' pictures');
-set(handles.radiobutton3, 'String', char);
-
-
+string = sprintf('Keep All Frames (%d)', imageNumber);
+set(handles.keepAllFramesRadioButton, 'String', string);
+string = sprintf('Select a range among the %d frames', imageNumber);
+set(handles.selectFramesIndicesRadioButton, 'String', string);
 
 guidata(hObject, handles);
 
- 
 
+% --- Executes on button change in channelSelectionPanel
+function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)
+% channelSelectionPanel
 
 % --- Executes on button press in pushbutton2.
 function pushbutton2_Callback(hObject, eventdata, handles) % To select all the pictures
@@ -246,7 +271,6 @@ function edit1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function edit2_Callback(hObject, eventdata, handles)
@@ -291,34 +315,38 @@ val = get(handles.slider1,'Value'); %Take the value between 0 and 255
 val = floor(val);
 val = val + 1; %'+1' To start at the index n°1
 
-flag = getappdata(0,'flag');
-col = getappdata(0,'col');
-folder_name = getappdata(0,'RepertoireImage');
-N = getappdata(0,'NomRep');
+flag = getappdata(0, 'flag');
+col = getappdata(0, 'col');
+folderName = getappdata(0, 'RepertoireImage');
+fileList = getappdata(0, 'NomRep');
 
-valmax = get(handles.slider1,'Max');
+valmax = get(handles.slider1, 'Max');
 if val == valmax + 1
     val = val - 1;
 end
 
-mini2=cell(2,1);
-for i=val:val + 1
+mini2 = cell(2,1);
+for i = val:val + 1
     if flag == 1
-    mini2{i - val + 1}=imread(fullfile(folder_name,N(i).name)); %'+1' To start at the index n°1
+        % '+1' To start at the index 1
+        mini2{i - val + 1} = imread(fullfile(folderName, fileList(i).name)); 
     elseif flag == 2
-    mini2{i - val + 1}=col{i}; %'+1' To start at the index n°1 
+        % '+1' To start at the index 1
+        mini2{i - val + 1} = col{i};
     end
 end
 
 
-axes(handles.axes1);%#ok
+axes(handles.axes1);
 imshow(mini2{1});
-set(handles.text2, 'String', val);
+set(handles.axis1Label, 'String', val);
+string = sprintf('frame %d (%s)', val, fileList(val).name);
+set(handles.axis1Label, 'String', string);
 
-axes(handles.axes2);%#ok
+axes(handles.axes2);
 imshow(mini2{2});
-set(handles.text3, 'String', val + 1);
-
+string = sprintf('frame %d (%s)', val + 1, fileList(val + 1).name);
+set(handles.axis2Label, 'String', string);
 
 guidata(hObject, handles);
 
@@ -355,7 +383,6 @@ function popupmenu1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function edit8_Callback(hObject, eventdata, handles)
@@ -433,24 +460,24 @@ function pushbutton4_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on button press in radiobutton1.
-function radiobutton1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to radiobutton1 (see GCBO)
+% --- Executes on button press in keepAllFramesRadioButton.
+function keepAllFramesRadioButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to keepAllFramesRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radiobutton1
+% Hint: get(hObject,'Value') returns toggle state of keepAllFramesRadioButton
 set(handles.pushbutton5,'Visible','on');
-set(handles.pushbutton6,'Visible','on');
+set(handles.saveSelectedImagesButton,'Visible','on');
 set(handles.text8,'Visible','off');
 set(handles.text10,'Visible','off');
 set(handles.text11,'Visible','off');
 set(handles.edit8,'Visible','off');
 set(handles.edit9,'Visible','off');
 set(handles.edit10,'Visible','off');
-set(handles.radiobutton1,'Value',1);
-set(handles.radiobutton3,'Value',0);
-set(handles.edit11,'Visible','off');
+set(handles.keepAllFramesRadioButton,'Value',1);
+set(handles.selectFramesIndicesRadioButton,'Value',0);
+set(handles.channelPrefixEdit,'Visible','off');
 
 guidata(hObject, handles);
 % --- Executes on button press in radiobutton2.
@@ -463,44 +490,47 @@ function radiobutton2_Callback(hObject, eventdata, handles)%#ok
 
 
 guidata(hObject, handles);
-% --- Executes on button press in radiobutton3.
-function radiobutton3_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to radiobutton3 (see GCBO)
+% --- Executes on button press in selectFramesIndicesRadioButton.
+
+
+function selectFramesIndicesRadioButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to selectFramesIndicesRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radiobutton3
+% Hint: get(hObject,'Value') returns toggle state of selectFramesIndicesRadioButton
 set(handles.pushbutton5,'Visible','on');
-set(handles.pushbutton6,'Visible','on');
-set(handles.text8,'Visible','on');
-set(handles.text10,'Visible','on');
-set(handles.text11,'Visible','on');
-set(handles.edit8,'Visible','on');
-set(handles.edit9,'Visible','on');
-set(handles.edit10,'Visible','on');
-set(handles.radiobutton1,'Value',0);
-set(handles.radiobutton3,'Value',1);
-set(handles.edit11,'Visible','off');
+set(handles.saveSelectedImagesButton,'Visible','on');
+set(handles.text8, 'Visible', 'on');
+set(handles.text10, 'Visible', 'on');
+set(handles.text11, 'Visible', 'on');
+set(handles.edit8, 'Visible', 'on');
+set(handles.edit9, 'Visible', 'on');
+set(handles.edit10, 'Visible', 'on');
+set(handles.keepAllFramesRadioButton,'Value', 0);
+set(handles.selectFramesIndicesRadioButton, 'Value', 1);
+set(handles.channelPrefixEdit, 'Visible', 'off');
 
 guidata(hObject, handles);
+
+
 % --- Executes on button press in pushbutton5.
 function pushbutton5_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to pushbutton5 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-nbInit = getappdata(0,'Nbimages');
-N = getappdata(0,'NomRep');
-folder_name=getappdata(0,'RepertoireImage');
+nbInit = getappdata(0, 'Nbimages');
+N = getappdata(0, 'NomRep');
+folderName = getappdata(0, 'RepertoireImage');
 nb = nbInit;
-flag = getappdata(0,'flag');
-colN = getappdata(0,'col');
+flag = getappdata(0, 'flag');
+colN = getappdata(0, 'col');
 
-if get(handles.radiobutton1,'Value') == 1 % For all pictures
-   
-    set(handles.pushbutton5,'Enable','off')
-    set(handles.pushbutton5,'String','Wait please...')
+if get(handles.keepAllFramesRadioButton,'Value') == 1 
+   % For all pictures
+    set(handles.pushbutton5, 'Enable', 'off')
+    set(handles.pushbutton5, 'String', 'Wait please...')
     pause(0.01);
     debut = 1;
     fin = nb;
@@ -515,7 +545,7 @@ if get(handles.radiobutton1,'Value') == 1 % For all pictures
     parfor_progress(length(N));
     for i=1:nb
         if flag == 1
-            col{i}=imread(fullfile(folder_name,N(i).name));
+            col{i}=imread(fullfile(folderName,N(i).name));
         elseif flag == 2
             col{i}=colN{i};
         end
@@ -525,10 +555,11 @@ if get(handles.radiobutton1,'Value') == 1 % For all pictures
     
     step = 1;
     delete (gcf);
-    ValidateThres(debut,fin,nb,col,step,nbInit,N,folder_name)
+    ValidateThres(debut,fin,nb,col,step,nbInit,N,folderName)
 
 
-else  % For pictures by step
+else
+    % For pictures by step
     firstPicture = get(handles.edit8, 'String');% To take the range of pictures
     lastPicture = get(handles.edit9, 'String');
     stepPicture = get(handles.edit10, 'String');
@@ -564,7 +595,7 @@ else  % For pictures by step
                 parfor_progress(nbstep);
                 for i=0:nbstep-1
                     if flag == 1
-                    col{i+1} = imread(fullfile(folder_name,N(firstPicture + stepPicture * i).name));
+                    col{i+1} = imread(fullfile(folderName,N(firstPicture + stepPicture * i).name));
                     elseif flag == 2
                         col{i+1} = colN{firstPicture + stepPicture * i};
                     end
@@ -576,77 +607,55 @@ else  % For pictures by step
                 
                 delete (gcf);
                 
-                ValidateThres(debut,fin,nb,col,stepPicture,nbInit,N,folder_name)
+                ValidateThres(debut,fin,nb,col,stepPicture,nbInit,N,folderName)
                 
             else
-                warning('Length of your range must be smaller than length of picture');%#ok this a simple message no need warning identifier
+                warning('Length of your range must be smaller than length of picture');
             end
             
         else
-            warning('Set a numeric value for the begin, the last and the end');%#ok this a simple message no need warning identifier
+            warning('Set a numeric value for the begin, the last and the end');
         end
         
 end
 
-%guidata(hObject, handles);
-% --- Executes on selection change in popupmenu2.
-function popupmenu2_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu2 (see GCBO)
+
+
+% % --- Executes on button press in allImagesCheckBox.
+% function allImagesCheckBox_Callback(hObject, eventdata, handles)%#ok
+% % hObject    handle to allImagesCheckBox (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hint: get(hObject,'Value') returns toggle state of allImagesCheckBox
+% set(handles.allImagesCheckBox,'Value',1);
+% set(handles.SelectImagesFromLetterCheckBox,'Value',0);
+% set(handles.channelPrefixEdit,'Visible','off');
+% 
+% % --- Executes on button press in SelectImagesFromLetterCheckBox.
+% function SelectImagesFromLetterCheckBox_Callback(hObject, eventdata, handles)%#ok
+% % hObject    handle to SelectImagesFromLetterCheckBox (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hint: get(hObject,'Value') returns toggle state of SelectImagesFromLetterCheckBox
+% set(handles.allImagesCheckBox,'Value',0);
+% set(handles.SelectImagesFromLetterCheckBox,'Value',1);
+% set(handles.channelPrefixEdit,'Visible','on');
+
+
+function channelPrefixEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to channelPrefixEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu2 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu2
+% Hints: get(hObject,'String') returns contents of channelPrefixEdit as text
+%        str2double(get(hObject,'String')) returns contents of channelPrefixEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in checkbox1.
-function checkbox1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to checkbox1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox1
-set(handles.checkbox1,'Value',1);
-set(handles.checkbox2,'Value',0);
-set(handles.edit11,'Visible','off');
-
-% --- Executes on button press in checkbox2.
-function checkbox2_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to checkbox2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of checkbox2
-set(handles.checkbox1,'Value',0);
-set(handles.checkbox2,'Value',1);
-set(handles.edit11,'Visible','on');
-
-
-function edit11_Callback(hObject, eventdata, handles)
-% hObject    handle to edit11 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit11 as text
-%        str2double(get(hObject,'String')) returns contents of edit11 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit11_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit11 (see GCBO)
+function channelPrefixEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to channelPrefixEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -657,56 +666,48 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton6.
-function pushbutton6_Callback(hObject, eventdata, handles)%#ok % To save the new pictures
-% hObject    handle to pushbutton6 (see GCBO)
+% --- Executes on button press in saveSelectedImagesButton.
+function saveSelectedImagesButton_Callback(hObject, eventdata, handles)%#ok % To save the new pictures
+% hObject    handle to saveSelectedImagesButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.pushbutton6,'Enable','off');
-set(handles.pushbutton6,'String','Wait please...');
+set(handles.saveSelectedImagesButton, 'Enable', 'off');
+set(handles.saveSelectedImagesButton, 'String', 'Wait please...');
+
 pause(0.01);
-nbInit = getappdata(0,'Nbimages');
-N = getappdata(0,'NomRep');
-folder_name=getappdata(0,'RepertoireImage');
+nbInit = getappdata(0, 'Nbimages');
+N = getappdata(0, 'NomRep');
+folderName = getappdata(0, 'RepertoireImage');
 nb = nbInit;
 
-
-[FileName,PathName] = uiputfile('*.*','Enter a name for your new directory of pictures');
-
+[FileName, PathName] = uiputfile('*.*', 'Enter a name for your new directory of pictures');
 
 if PathName == 0;
-    warning('Select a floder please');%#ok
+    set(handles.saveSelectedImagesButton, 'Enable', 'on');
+    set(handles.saveSelectedImagesButton, 'String', 'Save new pictures');
     return;
 end
-path = fullfile(PathName,FileName);
 
+path = fullfile(PathName, FileName); 
 mkdir(path);
 
-
-
-if get(handles.radiobutton1,'Value') == 1 % For all pictures
-   
-    
+if get(handles.keepAllFramesRadioButton,'Value') == 1 
+    % For all pictures  
     debut = 1;
     fin = nb;
     
     setappdata(0,'debut',debut);
     setappdata(0,'fin',fin);
     
-   
     disp('Opening directory ...');
-    col=cell(nb,1);
-    for i=1:nb
-        col{i}=imread(fullfile(folder_name,N(i).name));
+    col = cell(nb,1);
+    for i = 1:nb
+        col{i} = imread(fullfile(folderName,N(i).name));
     end
-    
    
-
-    
-
-
-else  % For pictures by step
+else
+    % For pictures by step
     firstPicture = get(handles.edit8, 'String');% To take the range of pictures
     lastPicture = get(handles.edit9, 'String');
     stepPicture = get(handles.edit10, 'String');
@@ -716,65 +717,97 @@ else  % For pictures by step
         lastPicture = str2num(lastPicture);%#ok
         stepPicture = str2num(stepPicture);%#ok
         
-        
         if ~isempty(firstPicture) && ~isempty(lastPicture) && ~isempty(stepPicture)
             
             nbstep = 0;
-            for i = firstPicture :stepPicture : lastPicture
+            for i = firstPicture:stepPicture:lastPicture
                 nbstep = nbstep + 1;
             end
             if nbstep <= nb
                 disp('Opening directory ...');
                 col = cell(nbstep,1);
-                for i=0:nbstep-1
-                    col{i+1} = imread(fullfile(folder_name,N(firstPicture + stepPicture * i).name));
+                for i = 0:nbstep-1
+                    col{i+1} = imread(fullfile(folderName,N(firstPicture + stepPicture * i).name));
                 end
                 
                 disp('Saving new data...');
                 nb = length(col);
                 for i = 0 : nb - 1
-                    
                     imwrite(col{i + 1},fullfile(path,'/',N(firstPicture + stepPicture * i).name));
-                    
                 end
-                
-                
             else
-                warning('Length of your range must be smaller than length of picture');%#ok this a simple message no need warning identifier
+                warning('Length of your range must be smaller than length of picture');
             end
-            
         else
-            warning('Set a numeric value for the begin, the step and the length');%#ok this a simple message no need warning identifier
+            warning('Set a numeric value for the begin, the step and the length');
         end
-        
     else
-        warning('Set 3 values not empty for the begin, the step and the length');%#ok this a simple message no need warning identifier
+        warning('Set 3 values not empty for the begin, the step and the length');
     end
 end
 
-set(handles.pushbutton6,'Enable','on');
-set(handles.pushbutton6,'String','Save new pictures');
+set(handles.saveSelectedImagesButton, 'Enable', 'on');
+set(handles.saveSelectedImagesButton, 'String', 'Save new pictures');
 
 guidata(hObject, handles);
-% --- Executes on button press in pushbutton7.
-function pushbutton7_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton7 (see GCBO)
+
+
+% --- Executes on button press in editImagesButton.
+function editImagesButton_Callback(hObject, eventdata, handles)
+% hObject    handle to editImagesButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-N = getappdata(0,'NomRep');
+N = getappdata(0, 'NomRep');
 if isempty(N)
     delete(gcf);
     StartRGB();
 else
-    folder_name = getappdata(0,'RepertoireImage');
+    folderName = getappdata(0, 'RepertoireImage');
     delete(gcf);
-    StartRGB(N,folder_name);
+    StartRGB(N, folderName);
 end
 
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)
-% hObject    handle to Untitled_1 (see GCBO)
+
+function spatialResolutionEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to spatialResolutionEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-delete(gcf);
-StartProgramm();
+
+% Hints: get(hObject,'String') returns contents of spatialResolutionEdit as text
+%        str2double(get(hObject,'String')) returns contents of spatialResolutionEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function spatialResolutionEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to spatialResolutionEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function timeIntervalEdit_Callback(hObject, eventdata, handles)
+% hObject    handle to timeIntervalEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeIntervalEdit as text
+%        str2double(get(hObject,'String')) returns contents of timeIntervalEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeIntervalEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
