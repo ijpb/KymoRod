@@ -13,8 +13,8 @@ function col=openall(color)
 %   2014-04-16 : Add comments about the file
 
 N=dir(strcat(color,'*'));
-col=cell(9,1);
-parfor i=1:9
+col=cell(4,1);
+parfor i=1:4
     col{i}=imread(N(i+174).name);
 end
  
