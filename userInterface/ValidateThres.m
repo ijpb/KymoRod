@@ -157,9 +157,7 @@ if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
     
     if ~isempty(scale)
         
-        
-        
-        if strcmp(class(seuil),'double');
+        if isnumeric(seuil);
             if seuil ~= 0
                 set(handles.pushbutton1,'Enable','off')
                 set(handles.pushbutton1,'String','Wait please...')
@@ -167,14 +165,16 @@ if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
                 disp('Smoothing...');
                 %thresholding
                 parfor_progress(length(red));
+                
+                thres = zeros(length(red), 1);
                 for k = 1:length(red) % To define the size of the picture and set the thres
+                    if isnumeric(seuil);
+                        thres(k) = seuil;
+                    end
+                    if iscell(seuil)
+                        thres(k) = seuil{k};
+                    end
                     
-                    if strcmp(class(seuil),'double');
-                        thres(k) = seuil;%#ok
-                    end
-                    if strcmp(class(seuil),'cell')%#ok
-                        thres(k) = seuil{k};%#ok
-                    end
                     red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
                     red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
                     parfor_progress;
@@ -195,22 +195,23 @@ if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
                 delete(gcf);
                 ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
             else
-                warning('Set a thres with the manual or automatic mode');%#ok this a simple message no need warning identifier
+                warning('Set a thres with the manual or automatic mode');
             end
         else
             set(handles.pushbutton1,'Enable','off')
             set(handles.pushbutton1,'String','Wait please...')
             pause(0.01);
             disp('Smoothing...');
+            
             %thresholding
             parfor_progress(length(red));
+            thres = zeros(length(red), 1);
             for k = 1:length(red) % To define the size of the picture and set the thres
-                
-                if strcmp(class(seuil),'double');
-                    thres(k) = seuil;%#ok
+                if isnumeric(seuil);
+                    thres(k) = seuil;
                 end
-                if strcmp(class(seuil),'cell')%#ok
-                    thres(k) = seuil{k};%#ok
+                if iscell(seuil)
+                    thres(k) = seuil{k};
                 end
                 red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
                 red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
@@ -235,11 +236,11 @@ if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
         
         
     else
-        warning('Set a numeric value for scale');%#ok this a simple message no need warning identifier
+        warning('Set a numeric value for scale');
     end
     
 else
-    warning('Set a value for scale');%#ok this a simple message no need warning identifier
+    warning('Set a value for scale');
 end
 % --- Executes on slider movement.
 function slider1_Callback(hObject, eventdata, handles)%#ok % To change the value of smooth
@@ -257,7 +258,7 @@ val = get(handles.slider1,'Value'); % Value of smooth between 0 and 100
 n = getappdata(0,'NumImage');
 col = getappdata(0,'col');
 
-axes(handles.axes1);%#ok
+axes(handles.axes1);
 imshow(col{end} > val);
 
 flag = 1;
@@ -807,14 +808,13 @@ function pushbutton4_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 red = getappdata(0,'col');
-n = getappdata(0,'NumImage');
-seuil = getappdata(0,'ValeurSeuillage');
+n = getappdata(0, 'NumImage');
+seuil = getappdata(0, 'ValeurSeuillage');
 nb = length(red);
 
-addThres = get(handles.edit13,'String');
-start = get(handles.edit14,'String');
-fin = get(handles.edit15,'String');
-
+addThres = get(handles.edit13, 'String');
+start   = get(handles.edit14, 'String');
+fin     = get(handles.edit15, 'String');
 
 if length(start) ~= 0    %#ok isempty does'nt work i dont know why
     start = str2num(start);%#ok
@@ -827,55 +827,49 @@ else
     fin = nb;
 end
 
-if addThres ~=0
-    addThres = str2num(addThres);%#ok
-    if ~isempty(fin) && ~isempty(start) && ~isempty(addThres)
-        
-        if start <= fin
-            set(handles.pushbutton4,'Enable','off');
-            set(handles.pushbutton4,'String','Wait please...');
-            pause(0.01);
-            flag = 2;
-            parfor_progress(length(red));
-            for i = start : fin
-                if graythresh(red{i})*255 <= 255
-                    seuil{i} = (graythresh(red{i})*255) + addThres;
-                    
-                else
-                    warning('New thres is bigger than 255. Select a smaller value at add to thres');%#ok
-                    return;
-                end
-                parfor_progress;
-            end
-           
-            parfor_progress(0);
-            
-            set(handles.text16, 'Visible', 'on');
-            set(handles.text16,'String',strcat('Thres'' Value of picture n° ',num2str(n),'is ',num2str(seuil{n})));
-            
-            setappdata(0,'ValeurSeuillage',seuil);
-            setappdata(0,'flag',flag);
-            slider3_Callback(hObject, eventdata, handles);
-            
-        else
-            warning('The first value must be smaller than the second value');%#ok
-            return;
-        end
-        
-        
-    else
-        warning('Set a numeric value for the edit text');%#ok
-        return;
-    end
-    
-    
-else
-    warning('Select a value to add at the current thres');%#ok
+if addThres == 0
+    warning('Select a value to add at the current threshold');
     return;
 end
 
-set(handles.pushbutton4,'Enable','on');
-set(handles.pushbutton4,'String','Compute new automatical thres');
+addThres = str2num(addThres);%#ok
+
+if isempty(fin) || isempty(start) || isempty(addThres)
+    warning('Set a numeric value for the edit text');
+    return;
+end
+
+if start > fin
+    warning('The first value must be smaller than the second value');
+    return;
+end
+
+set(handles.pushbutton4,'Enable','off');
+set(handles.pushbutton4,'String','Wait please...');
+pause(0.01);
+flag = 2;
+parfor_progress(length(red));
+for i = start : fin
+    if graythresh(red{i}) * 255 <= 255
+        seuil{i} = (graythresh(red{i}) * 255) + addThres;
+    else
+        warning('New thres is bigger than 255. Select a smaller value at add to thres');
+        return;
+    end
+    parfor_progress;
+end
+
+parfor_progress(0);
+
+set(handles.text16, 'Visible', 'on');
+set(handles.text16,'String',strcat('Thres'' Value of picture n° ',num2str(n),'is ',num2str(seuil{n})));
+
+setappdata(0, 'ValeurSeuillage', seuil);
+setappdata(0, 'flag', flag);
+slider3_Callback(hObject, eventdata, handles);
+
+set(handles.pushbutton4, 'Enable', 'on');
+set(handles.pushbutton4, 'String', 'Compute new automatical threshold');
 
 % --------------------------------------------------------------------
 function Untitled_1_Callback(hObject, eventdata, handles)%#ok

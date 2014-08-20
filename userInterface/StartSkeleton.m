@@ -99,7 +99,7 @@ if nargin == 6
     
     flag = 2;
     
-    string = sprintf('Select a range among the %d images', nb);
+    string = sprintf('Select a range among the %d frames', nb);
     set(handles.selectFramesIndicesRadioButton, 'String', string);
 else 
     flag = 1;
@@ -136,8 +136,6 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 delete(gcf);
 StartProgramm();
-
-
 
 
 % --- Executes on button press in chooseInputImagesButton.
@@ -527,7 +525,7 @@ nb = nbInit;
 flag = getappdata(0, 'flag');
 colN = getappdata(0, 'col');
 
-if get(handles.keepAllFramesRadioButton,'Value') == 1 
+if get(handles.keepAllFramesRadioButton, 'Value') == 1 
    % For all pictures
     set(handles.pushbutton5, 'Enable', 'off')
     set(handles.pushbutton5, 'String', 'Wait please...')
@@ -535,19 +533,18 @@ if get(handles.keepAllFramesRadioButton,'Value') == 1
     debut = 1;
     fin = nb;
     
-    setappdata(0,'debut',debut);
-    setappdata(0,'fin',fin);
+    setappdata(0, 'debut', debut);
+    setappdata(0, 'fin', fin);
     
-   
     disp('Opening directory ...');
-    col=cell(nb,1);
+    col = cell(nb,1);
     
     parfor_progress(length(N));
-    for i=1:nb
+    for i = 1:nb
         if flag == 1
-            col{i}=imread(fullfile(folderName,N(i).name));
+            col{i} = imread(fullfile(folderName, N(i).name));
         elseif flag == 2
-            col{i}=colN{i};
+            col{i} = colN{i};
         end
         parfor_progress;
     end
@@ -555,8 +552,7 @@ if get(handles.keepAllFramesRadioButton,'Value') == 1
     
     step = 1;
     delete (gcf);
-    ValidateThres(debut,fin,nb,col,step,nbInit,N,folderName)
-
+    ValidateThres(debut, fin, nb, col, step, nbInit, N, folderName);
 
 else
     % For pictures by step
@@ -582,41 +578,33 @@ else
     elseif length(stepPicture) == 0%#ok
         stepPicture = 1;
     end
-        if ~isempty(firstPicture) && ~isempty(lastPicture) && ~isempty(stepPicture)
-            
-            nbstep = 0;
-            for i = firstPicture :stepPicture : lastPicture
-                nbstep = nbstep + 1;                
-            end
-            if nbstep <= nb
-                
-                disp('Opening directory ...');
-                col = cell(nbstep,1);
-                parfor_progress(nbstep);
-                for i=0:nbstep-1
-                    if flag == 1
-                    col{i+1} = imread(fullfile(folderName,N(firstPicture + stepPicture * i).name));
-                    elseif flag == 2
-                        col{i+1} = colN{firstPicture + stepPicture * i};
-                    end
-                    parfor_progress;
-                end
-                parfor_progress(0);
-                debut = firstPicture;
-                fin = lastPicture;
-                
-                delete (gcf);
-                
-                ValidateThres(debut,fin,nb,col,stepPicture,nbInit,N,folderName)
-                
-            else
-                warning('Length of your range must be smaller than length of picture');
-            end
-            
-        else
-            warning('Set a numeric value for the begin, the last and the end');
+    
+    % check input validity
+    if isempty(firstPicture) || isempty(lastPicture) || isempty(stepPicture)
+        errordlg({'Please set a numeric value for the first, the last,', ...
+            'and the step indices'}, ...
+            'Wrong indices', 'modal')
+        return;
+    end
+    
+    disp('Opening directory ...');
+    col = cell(nbstep,1);
+    parfor_progress(nbstep);
+    for i = 0:nbstep-1
+        if flag == 1
+            col{i+1} = imread(fullfile(folderName, N(firstPicture + stepPicture * i).name));
+        elseif flag == 2
+            col{i+1} = colN{firstPicture + stepPicture * i};
         end
-        
+        parfor_progress;
+    end
+    parfor_progress(0);
+    debut = firstPicture;
+    fin = lastPicture;
+    
+    delete (gcf);
+    
+    ValidateThres(debut, fin, nb, col, stepPicture, nbInit, N, folderName);
 end
 
 
