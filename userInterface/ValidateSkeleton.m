@@ -89,7 +89,7 @@ set(handles.slider1,'Max',length(red));
 
 % Show the three squeleton
 
-axes(handles.AxFirst2);%#ok
+axes(handles.AxFirst2);
 imshow(red{1} > thres(1));
 hold on;
 plot(CTVerif{1}(:,1)*scale,CTVerif{1}(:,2)*scale,'r');
@@ -97,7 +97,7 @@ hold on;
 plot(SKVerif{1}(:,1)*scale,SKVerif{1}(:,2)*scale,'b');
 set(handles.text5,'String','Picture n° 1');
 
-axes(handles.AxMiddle2);%#ok
+axes(handles.AxMiddle2);
 imshow(red{indice} > thres(indice));
 hold on;
 plot(CTVerif{indice}(:,1)*scale,CTVerif{indice}(:,2)*scale,'r');
@@ -105,7 +105,7 @@ hold on;
 plot(SKVerif{indice}(:,1)*scale,SKVerif{indice}(:,2)*scale,'b');
 set(handles.text6,'String',strcat('Picture n°',num2str(indice)));
 
-axes(handles.AxEnd2);%#ok
+axes(handles.AxEnd2);
 imshow(red{end} > thres(end));
 hold on;
 plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
@@ -342,7 +342,7 @@ for i=1:length(red)
         CT2{i}(:,2)=moving_average(CT2{i}(:,2),smooth);
     end
     %Skeletonization
-    [SK{i} CT{i} shift{i} rad{i} SKVerif{i} CTVerif{i}] = skel55(CT2{i},dir,dirbegin);
+    [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i},dir,dirbegin);
      parfor_progress;
    
 end
@@ -393,7 +393,7 @@ folder_name = getappdata(0,'folder_name');%#ok
 [FileName,PathName] = uiputfile(); % To open the directory who the user want to save the data
 
 if PathName == 0
-    warning('Select a file please');%#ok
+    warning('Select a file please');
     return;
 end
 
@@ -426,12 +426,10 @@ if val == 0
 end
 
 
+seuil = seuil(val);
 
-if strcmp(class(seuil),'cell')%#ok
-    seuil = seuil{val};
-end
 
-axes(handles.AxMiddle2);%#ok
+axes(handles.AxMiddle2);
 imshow(red{val} > seuil);
 hold on;
 plot(CTVerif{val}(:,1)*scale,CTVerif{val}(:,2)*scale,'r');

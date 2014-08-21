@@ -612,9 +612,10 @@ function selectImagesButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-nbInit = getappdata(0, 'Nbimages');
-fileList = getappdata(0, 'NomRep');
-folderName = getappdata(0, 'RepertoireImage');
+nbInit      = getappdata(0, 'Nbimages');
+fileList    = getappdata(0, 'NomRep');
+folderName  = getappdata(0, 'RepertoireImage');
+
 nb = nbInit;
 flag = getappdata(0, 'flag');
 colN = getappdata(0, 'col');
@@ -626,13 +627,13 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     pause(0.01);
     debut = 1;
     fin = nb;
+    step = 1;
     
     setappdata(0, 'debut', debut);
     setappdata(0, 'fin', fin);
     
     disp('Opening directory ...');
-    col = cell(nb,1);
-    
+    col = cell(nb, 1);
     parfor_progress(length(fileList));
     for i = 1:nb
         if flag == 1
@@ -644,10 +645,9 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     end
     parfor_progress(0); 
     
-    step = 1;
     delete (gcf);
     ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
-
+    
 else
     % For pictures by step
     
@@ -685,10 +685,17 @@ else
         return;
     end
     
+    % compute number of images after selection (sieving)
+    nbstep = 0;
+    for i = firstPicture:stepPicture:lastPicture
+        nbstep = nbstep + 1;
+    end
+    
+    % 
     disp('Opening directory ...');
-    col = cell(nbstep,1);
+    col = cell(nbstep, 1);
     parfor_progress(nbstep);
-    for i = 0:nbstep-1
+    for i = 0:nbstep - 1
         if flag == 1
             fileName = fileList(firstPicture + stepPicture * i).name;
             col{i+1} = imread(fullfile(folderName, fileName));
@@ -698,10 +705,12 @@ else
         parfor_progress;
     end
     parfor_progress(0);
+    
     debut = firstPicture;
     fin = lastPicture;
-    
-    delete (gcf);
-    
-    ValidateThres(debut, fin, nb, col, stepPicture, nbInit, fileList, folderName);
+    step = stepPicture;
 end
+
+delete(gcf);
+    
+ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);

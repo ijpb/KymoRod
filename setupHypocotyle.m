@@ -18,6 +18,8 @@ mainDir = fileparts(fileName);
 
 disp('Installing Hypocotyl Growth Software...');
 addpath(fullfile(mainDir, 'lib'));
+addpath(fullfile(mainDir, 'lib', 'freezeColors'));
+addpath(fullfile(mainDir, 'lib', 'parfor'));
 addpath(fullfile(mainDir, 'CroissanceHypocotyle'));
 addpath(fullfile(mainDir, 'userInterface'));
 disp('Hypocotyl Growth Software installed!');
