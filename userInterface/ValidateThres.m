@@ -122,126 +122,17 @@ function varargout = ValidateThres_OutputFcn(hObject, eventdata, handles) %#ok
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+%% Menu
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)%#ok % To go to ValidateContour
-% hObject    handle to pushbutton1 (see GCBO)
+% --------------------------------------------------------------------
+function Untitled_1_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to Untitled_1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-seuil = getappdata(0,'ValeurSeuillage');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-step = getappdata(0,'step');
-red = getappdata(0,'col');
-nbInit = getappdata(0,'nbInit');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-Size = 0;
-scale = get(handles.EdScale,'String');
+delete(gcf);
+StartProgramm();
 
 
-val = get(handles.popupmenu1,'Value'); % To take the first value
-setappdata(0,'val',val);
-direction = get(handles.popupmenu1,'String');
-
-val2 = get(handles.popupmenu2,'Value'); % To take the second value
-setappdata(0,'val2',val2);
-dirInitial = get(handles.popupmenu2,'String');
-
-direction = direction{val};
-dirInitial = dirInitial{val2};
-
-if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
-    scale = str2num(scale);%#ok I want [] if it's a string and not NaN to test it
-    
-    if ~isempty(scale)
-        
-        if isnumeric(seuil);
-            if seuil ~= 0
-                set(handles.pushbutton1,'Enable','off')
-                set(handles.pushbutton1,'String','Wait please...')
-                pause(0.01);
-                disp('Smoothing...');
-                %thresholding
-                parfor_progress(length(red));
-                
-                thres = zeros(length(red), 1);
-                for k = 1:length(red) % To define the size of the picture and set the thres
-                    if isnumeric(seuil);
-                        thres(k) = seuil;
-                    end
-                    if iscell(seuil)
-                        thres(k) = seuil{k};
-                    end
-                    
-                    red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
-                    red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
-                    parfor_progress;
-                end
-                parfor_progress(0);
-                
-                % ValidateContour
-                % Compute the contour and use the scale
-                disp('Contour');
-                CT2 = cell(length(red),1);
-                parfor_progress(length(red));
-                for i = 1:length(red)
-                    CT2{i} = cont(red{i},thres(i));
-                    CT2{i} = setsc(CT2{i},scale);
-                    parfor_progress;
-                end
-                parfor_progress(0);
-                delete(gcf);
-                ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
-            else
-                warning('Set a thres with the manual or automatic mode');
-            end
-        else
-            set(handles.pushbutton1,'Enable','off')
-            set(handles.pushbutton1,'String','Wait please...')
-            pause(0.01);
-            disp('Smoothing...');
-            
-            %thresholding
-            parfor_progress(length(red));
-            thres = zeros(length(red), 1);
-            for k = 1:length(red) % To define the size of the picture and set the thres
-                if isnumeric(seuil);
-                    thres(k) = seuil;
-                end
-                if iscell(seuil)
-                    thres(k) = seuil{k};
-                end
-                red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
-                red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
-                parfor_progress;
-            end
-            parfor_progress(0);
-            
-            % ValidateContour
-            % Compute the contour and use the scale
-            disp('Contour');
-            CT2 = cell(length(red),1);
-            parfor_progress(length(red));
-            for i = 1:length(red)
-                CT2{i} = cont(red{i},thres(i));
-                CT2{i} = setsc(CT2{i},scale);
-                parfor_progress;
-            end
-            parfor_progress(0);
-            delete(gcf);
-            ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
-        end
-        
-        
-    else
-        warning('Set a numeric value for scale');
-    end
-    
-else
-    warning('Set a value for scale');
-end
 % --- Executes on slider movement.
 function slider1_Callback(hObject, eventdata, handles)%#ok % To change the value of smooth
 % hObject    handle to slider1 (see GCBO)
@@ -871,10 +762,124 @@ slider3_Callback(hObject, eventdata, handles);
 set(handles.pushbutton4, 'Enable', 'on');
 set(handles.pushbutton4, 'String', 'Compute new automatical threshold');
 
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to Untitled_1 (see GCBO)
+
+% --- Executes on button press in pushbutton1.
+function pushbutton1_Callback(hObject, eventdata, handles)%#ok % To go to ValidateContour
+% hObject    handle to pushbutton1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-delete(gcf);
-StartProgramm();
+
+seuil = getappdata(0,'ValeurSeuillage');
+debut = getappdata(0,'debut');
+fin = getappdata(0,'fin');
+step = getappdata(0,'step');
+red = getappdata(0,'col');
+nbInit = getappdata(0,'nbInit');
+N = getappdata(0,'N');
+folder_name = getappdata(0,'folder_name');
+Size = 0;
+scale = get(handles.EdScale,'String');
+
+
+val = get(handles.popupmenu1,'Value'); % To take the first value
+setappdata(0,'val',val);
+direction = get(handles.popupmenu1,'String');
+
+val2 = get(handles.popupmenu2,'Value'); % To take the second value
+setappdata(0,'val2',val2);
+dirInitial = get(handles.popupmenu2,'String');
+
+direction = direction{val};
+dirInitial = dirInitial{val2};
+
+if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
+    scale = str2num(scale);%#ok I want [] if it's a string and not NaN to test it
+    
+    if ~isempty(scale)
+        
+        if isnumeric(seuil);
+            if seuil ~= 0
+                set(handles.pushbutton1,'Enable','off')
+                set(handles.pushbutton1,'String','Wait please...')
+                pause(0.01);
+                disp('Smoothing...');
+                %thresholding
+                parfor_progress(length(red));
+                
+                thres = zeros(length(red), 1);
+                for k = 1:length(red) % To define the size of the picture and set the thres
+                    if isnumeric(seuil);
+                        thres(k) = seuil;
+                    end
+                    if iscell(seuil)
+                        thres(k) = seuil{k};
+                    end
+                    
+                    red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
+                    red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
+                    parfor_progress;
+                end
+                parfor_progress(0);
+                
+                % ValidateContour
+                % Compute the contour and use the scale
+                disp('Contour');
+                CT2 = cell(length(red),1);
+                parfor_progress(length(red));
+                for i = 1:length(red)
+                    CT2{i} = cont(red{i},thres(i));
+                    CT2{i} = setsc(CT2{i},scale);
+                    parfor_progress;
+                end
+                parfor_progress(0);
+                delete(gcf);
+                ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
+            else
+                warning('Set a thres with the manual or automatic mode');
+            end
+        else
+            set(handles.pushbutton1,'Enable','off')
+            set(handles.pushbutton1,'String','Wait please...')
+            pause(0.01);
+            disp('Smoothing...');
+            
+            %thresholding
+            parfor_progress(length(red));
+            thres = zeros(length(red), 1);
+            for k = 1:length(red) % To define the size of the picture and set the thres
+                if isnumeric(seuil);
+                    thres(k) = seuil;
+                end
+                if iscell(seuil)
+                    thres(k) = seuil{k};
+                end
+                red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
+                red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
+                parfor_progress;
+            end
+            parfor_progress(0);
+            
+            % ValidateContour
+            % Compute the contour and use the scale
+            disp('Contour');
+            CT2 = cell(length(red),1);
+            parfor_progress(length(red));
+            for i = 1:length(red)
+                CT2{i} = cont(red{i},thres(i));
+                CT2{i} = setsc(CT2{i},scale);
+                parfor_progress;
+            end
+            parfor_progress(0);
+            delete(gcf);
+            ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
+        end
+        
+        
+    else
+        warning('Set a numeric value for scale');
+    end
+    
+else
+    warning('Set a value for scale');
+end
+

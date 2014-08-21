@@ -90,19 +90,19 @@ setappdata(0,'folder_name',folder_name);
 
 
 % Show 3 images, begin middle and end of the red directory
-axes(handles.AxFirst);%#ok
+axes(handles.AxFirst);
 imshow(red{1} > thres(1));
 hold on;
 plot(CT2{1}(:,1)*scale,CT2{1}(:,2)*scale,'r','Linewidth',1.5);
 
 indice=round(length(red)/2); % to have the midle of the directory
 
-axes(handles.AxMiddle);%#ok
+axes(handles.AxMiddle);
 imshow(red{indice} > thres(indice));
 hold on;
 plot(CT2{indice}(:,1)*scale,CT2{indice}(:,2)*scale,'r','Linewidth',1.5);
 
-axes(handles.AxEnd);%#ok
+axes(handles.AxEnd);
 imshow(red{end} > thres(end));
 hold on;
 plot(CT2{end}(:,1)*scale,CT2{end}(:,2)*scale,'r','Linewidth',1.5);
@@ -130,7 +130,17 @@ varargout{1} = handles.output;
 
 
 
+%% Menu
 
+% --------------------------------------------------------------------
+function Untitled_1_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to Untitled_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+delete(gcf);
+StartProgramm();
+
+%% Widgets
 
 % --- Executes on slider movement.
 function SdSmoothing_Callback(hObject, eventdata, handles)%#ok % To select the good smooth with a slidebar
@@ -141,29 +151,32 @@ function SdSmoothing_Callback(hObject, eventdata, handles)%#ok % To select the g
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-smooth = get(handles.SdSmoothing,'Value'); % Take the value from the slide bar
+smooth = get(handles.SdSmoothing, 'Value'); % Take the value from the slide bar
 smooth = round(smooth); % round to have an integer
 
-seuil = getappdata(0,'seuil');
-CT2 = getappdata(0,'CT2');
-indice = getappdata(0,'indice');
-red = getappdata(0,'red');
-scale = getappdata(0,'scale');
+% get global data
+seuil   = getappdata(0, 'seuil');
+CT2     = getappdata(0, 'CT2');
+indice  = getappdata(0, 'indice');
+red     = getappdata(0, 'red');
+scale   = getappdata(0, 'scale');
 
-
+% get threshold value as a double
 for k = 1:length(red)
-    if strcmp(class(seuil),'double');
+    if isdouble(seuil)
         thres(k) = seuil;%#ok
     end
-    if strcmp(class(seuil),'cell')%#ok
+    if iscell(seuil)
         thres(k) = seuil{k};%#ok
     end
 end
 
-CT=cell(length(red),1); % New definition of CT
+% create an array of contours
+CT = cell(length(red),1);
 
-CT{1}(:,1) = moving_average(CT2{1}(:,1),smooth); % Compute three images with the smoothing
-CT{1}(:,2) = moving_average(CT2{1}(:,2),smooth);
+% Compute three images with the smoothing
+CT{1}(:,1) = moving_average(CT2{1}(:,1), smooth); 
+CT{1}(:,2) = moving_average(CT2{1}(:,2), smooth);
 
 CT{indice}(:,1) = moving_average(CT2{indice}(:,1),smooth);
 CT{indice}(:,2) = moving_average(CT2{indice}(:,2),smooth);
@@ -171,23 +184,26 @@ CT{indice}(:,2) = moving_average(CT2{indice}(:,2),smooth);
 CT{end}(:,1) = moving_average(CT2{end}(:,1),smooth);
 CT{end}(:,2) = moving_average(CT2{end}(:,2),smooth);
 
-axes(handles.AxFirst);%#ok % Show three images with the smoothing
+ % Show three images with the smoothing
+axes(handles.AxFirst);
 imshow(red{1} > thres(1));
 hold on;
-plot(CT{1}(:,1)*scale,CT{1}(:,2)*scale,'r','Linewidth',1.5);
+contour = [CT{1}(:,1)*scale,CT{1}(:,2)*scale];
+plot(contour(:,1), contour(:,2), 'r', 'Linewidth', 1.5);
 
-axes(handles.AxMiddle);%#ok
+axes(handles.AxMiddle);
 imshow(red{indice} > thres(indice));
 hold on;
 plot(CT{indice}(:,1)*scale,CT{indice}(:,2)*scale,'r','Linewidth',1.5);
 
-axes(handles.AxEnd);%#ok
+axes(handles.AxEnd);
 imshow(red{end} > thres(end));
 hold on;
 plot(CT{end}(:,1)*scale,CT{end}(:,2)*scale,'r','Linewidth',1.5);
 
-setappdata(0,'smooth',smooth); % set the smooth
-set(handles.text4,'String',num2str(smooth));
+% set the smooth
+setappdata(0, 'smooth', smooth); 
+set(handles.text4, 'String', num2str(smooth));
 
 % --- Executes during object creation, after setting all properties.
 function SdSmoothing_CreateFcn(hObject, eventdata, handles)%#ok
@@ -200,6 +216,8 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
+
+%% Validation and Comeback buttons
 
 % --- Executes on button press in PbBack.
 function PbBack_Callback(hObject, eventdata, handles)%#ok % To back at ValidateThres
@@ -248,17 +266,17 @@ SKVerif=cell(length(red),1);
 
 disp('Skeletonisation');
 
-
 parfor_progress(length(red));
 for i=1:length(red)
     %Smoothing
     if smooth ~= 0
-        CT2{i}(:,1)=moving_average(CT2{i}(:,1),smooth);
-        CT2{i}(:,2)=moving_average(CT2{i}(:,2),smooth);
+        CT2{i}(:,1) = moving_average(CT2{i}(:,1), smooth);
+        CT2{i}(:,2) = moving_average(CT2{i}(:,2), smooth);
     end
+    
     %Skeletonization
-    [SK{i} CT{i} shift{i} rad{i} SKVerif{i} CTVerif{i}] = skel55(CT2{i},dir,dirbegin);
-     parfor_progress;
+    [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i},dir,dirbegin);
+    parfor_progress;
    
 end
 parfor_progress(0);
@@ -266,11 +284,3 @@ parfor_progress(0);
 delete(gcf);
 ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres,scale,size,...
     seuil,debut,fin,step,nbInit,N,folder_name,SK,CT,rad,SKVerif,CTVerif,shift); % Call the next window
-
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to Untitled_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-delete(gcf);
-StartProgramm();
