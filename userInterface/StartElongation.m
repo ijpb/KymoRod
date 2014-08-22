@@ -22,7 +22,7 @@ function varargout = StartElongation(varargin)
 
 % Edit the above text to modify the response to help StartElongation
 
-% Last Modified by GUIDE v2.5 19-Jun-2014 12:56:23
+% Last Modified by GUIDE v2.5 22-Aug-2014 16:14:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,7 +54,9 @@ function StartElongation_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 
 % Choose default command line output for StartElongation
 handles.output = hObject;
-if nargin == 18 % if user come from ValidateSkeleton, normal way
+
+if nargin == 18 
+    % if user come from ValidateSkeleton, normal way
     red = varargin{1};
     CT = varargin{2};
     SK = varargin{3};
@@ -70,27 +72,23 @@ if nargin == 18 % if user come from ValidateSkeleton, normal way
     nbInit = varargin{13};
     N = varargin{14};
     folder_name = varargin{15};
-end
-if nargin == 3 % if user start the program. He must to load the data
     
-    [FileName,PathName] = uigetfile('*.mat','Select the MATLAB code file');
+elseif nargin == 3 
+    % if user start the program. He must load the data
+    [FileName, PathName] = uigetfile('*.mat', 'Select the MATLAB code file');
     if PathName == 0
-        warning('Select a directory please'); %#ok
+        warning('Select a directory please');
     else
         file = fullfile(PathName,FileName);
         load(file);
-        
-        
-        
-        
-        if step == 1 % For open all pictures
-            nb = fin - debut + 1;
+        if step == 1 %#ok<NODEF> % For open all pictures
+            nb = fin - debut + 1; %#ok<NODEF>
             disp('Opening directory ...');
-            red=cell(nb,1);
+            red = cell(nb,1);
             parfor_progress(nb);
-            for i=debut:fin
+            for i = debut:fin
                 try
-                red{i - debut + 1}=imread(fullfile(folder_name,N(i).name));
+                red{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); %#ok<NODEF>
                 catch e%#ok
                     disp('Pictures''s folder not found');
                     delete(gcf);
@@ -103,15 +101,15 @@ if nargin == 3 % if user start the program. He must to load the data
         else
             nb = 0;
             disp('Opening directory ...');
-            for i = debut : step : fin
+            for i = debut : step : fin %#ok<NODEF>
                 nb = nb + 1;
             end
             red = cell(nb,1);
             parfor_progress(nb);
-            for i=0:nb - 1
+            for i = 0:nb - 1
                 try
-                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name));
-                catch e%#ok
+                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name)); %#ok<NODEF>
+                catch ex %#ok<NASGU>
                     disp('Pictures''s folder not found');
                     delete(gcf);
                     return;
@@ -140,11 +138,9 @@ setappdata(0,'step',step);
 setappdata(0,'nbInit',nbInit);
 setappdata(0,'N',N);
 setappdata(0,'folder_name',folder_name);
-guidata(hObject, handles);
-
 
 % Update handles structure
-
+guidata(hObject, handles);
 
 % UIWAIT makes StartElongation wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -161,19 +157,140 @@ function varargout = StartElongation_OutputFcn(hObject, eventdata, handles) %#ok
 varargout{1} = handles.output;
 
 
-
-function edit1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit1 (see GCBO)
+% --------------------------------------------------------------------
+function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit1 as text
-%        str2double(get(hObject,'String')) returns contents of edit1 as a double
+delete(gcf);
+StartProgramm();
+
+
+function timeIntervalEdit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to timeIntervalEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeIntervalEdit as text
+%        str2double(get(hObject,'String')) returns contents of timeIntervalEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit1_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit1 (see GCBO)
+function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to timeIntervalEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in useDefaultSettingsRadioButton.
+function useDefaultSettingsRadioButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to useDefaultSettingsRadioButton (see GCBO)%#ok
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useDefaultSettingsRadioButton
+set(handles.changeSettingsRadioButton,'Value',0);
+set(handles.useDefaultSettingsRadioButton,'Value',1);
+set(handles.smoothingLengthEdit,'Visible','off');
+set(handles.pointNumberEdit,'Visible','off');
+set(handles.correlationWindowSize1Edit,'Visible','off');
+set(handles.correlationWindowSize2Edit,'Visible','off');
+set(handles.displacementStepEdit,'Visible','off');
+set(handles.smoothingLengthLabel,'Visible','off');
+set(handles.pointNumberLabel,'Visible','off');
+set(handles.correlationWindowSize1Label,'Visible','off');
+set(handles.correlationWindowSize2Label,'Visible','off');
+set(handles.displacementStepLabel,'Visible','off');
+
+set(handles.validateSettingsButton,'Visible','on');
+
+
+% --- Executes on button press in changeSettingsRadioButton.
+function changeSettingsRadioButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to changeSettingsRadioButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of changeSettingsRadioButton
+set(handles.useDefaultSettingsRadioButton,'Value',0);
+set(handles.changeSettingsRadioButton,'Value',1);
+set(handles.smoothingLengthEdit,'Visible','on');
+set(handles.pointNumberEdit,'Visible','on');
+set(handles.correlationWindowSize1Edit,'Visible','on');
+set(handles.correlationWindowSize2Edit,'Visible','on');
+set(handles.displacementStepEdit,'Visible','on');
+set(handles.smoothingLengthLabel,'Visible','on');
+set(handles.pointNumberLabel,'Visible','on');
+set(handles.correlationWindowSize1Label,'Visible','on');
+set(handles.correlationWindowSize2Label,'Visible','on');
+set(handles.displacementStepLabel,'Visible','on');
+
+set(handles.validateSettingsButton,'Visible','on');
+
+
+function smoothingLengthEdit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to smoothingLengthEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of smoothingLengthEdit as text
+%        str2double(get(hObject,'String')) returns contents of smoothingLengthEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function smoothingLengthEdit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to smoothingLengthEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function pointNumberEdit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to pointNumberEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of pointNumberEdit as text
+%        str2double(get(hObject,'String')) returns contents of pointNumberEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function pointNumberEdit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to pointNumberEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function correlationWindowSize1Edit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to correlationWindowSize1Edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of correlationWindowSize1Edit as text
+%        str2double(get(hObject,'String')) returns contents of correlationWindowSize1Edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to correlationWindowSize1Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -185,18 +302,18 @@ end
 
 
 
-function edit2_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit2 (see GCBO)
+function correlationWindowSize2Edit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit2 as text
-%        str2double(get(hObject,'String')) returns contents of edit2 as a double
+% Hints: get(hObject,'String') returns contents of correlationWindowSize2Edit as text
+%        str2double(get(hObject,'String')) returns contents of correlationWindowSize2Edit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit2_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit2 (see GCBO)
+function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -208,18 +325,86 @@ end
 
 
 
-function edit3_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit3 (see GCBO)
+function displacementStepEdit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+% Hints: get(hObject,'String') returns contents of displacementStepEdit as text
+%        str2double(get(hObject,'String')) returns contents of displacementStepEdit as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit3 (see GCBO)
+function displacementStepEdit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to displacementStepEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+        
+% --- Executes on button press in changeDirectoryCheckBox.
+function changeDirectoryCheckBox_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to changeDirectoryCheckBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of changeDirectoryCheckBox
+if get(handles.changeDirectoryCheckBox,'Value') == 1
+    set(handles.keepAllFramesCheckBox,'Visible','on');
+    set(handles.choosePrefixRadioButton,'Visible','on');
+    set(handles.fileNamePrefixEdit,'Visible','on');
+    set(handles.changeInputDirectoryButton,'Visible','on');
+    set(handles.changeDirectoryCheckBox,'Value',1);
+    
+elseif get(handles.changeDirectoryCheckBox,'Value') == 0
+    set(handles.keepAllFramesCheckBox,'Visible','off');
+    set(handles.choosePrefixRadioButton,'Visible','off');
+    set(handles.fileNamePrefixEdit,'Visible','off');
+    set(handles.changeInputDirectoryButton,'Visible','off');
+    set(handles.changeDirectoryCheckBox,'Value',0);
+    
+end
+
+% --- Executes on button press in keepAllFramesCheckBox.
+function keepAllFramesCheckBox_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to keepAllFramesCheckBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of keepAllFramesCheckBox
+
+set(handles.keepAllFramesCheckBox,'Value',1);
+set(handles.choosePrefixRadioButton,'Value',0);
+
+
+% --- Executes on button press in choosePrefixRadioButton.
+function choosePrefixRadioButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to choosePrefixRadioButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of choosePrefixRadioButton
+
+set(handles.keepAllFramesCheckBox,'Value',0);
+set(handles.choosePrefixRadioButton,'Value',1);
+
+function fileNamePrefixEdit_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to fileNamePrefixEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fileNamePrefixEdit as text
+%        str2double(get(hObject,'String')) returns contents of fileNamePrefixEdit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function fileNamePrefixEdit_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to fileNamePrefixEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -230,60 +415,99 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit4_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit4 (see GCBO)
+% --- Executes on button press in changeInputDirectoryButton.
+function changeInputDirectoryButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to changeInputDirectoryButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit4 as text
-%        str2double(get(hObject,'String')) returns contents of edit4 as a double
+debut   = getappdata(0, 'debut');
+fin     = getappdata(0, 'fin');
+step    = getappdata(0, 'step');
+nbInit  = getappdata(0, 'nbInit');
 
-
-% --- Executes during object creation, after setting all properties.
-function edit4_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+if get(handles.keepAllFramesCheckBox,'Value') == 1
+    
+    folder_name = uigetdir(); % Open a dialog box
+    if folder_name == 0;
+        warning('Select a floder please');
+        return;
+    end
+    N = dir(folder_name); % To open the directory
+    nb = length(N);
+    for i = 1 : nb - 2 % 2 for to eliminate the first and second index : '.' & '..'
+        N(i) = N(i + 2);
+    end
+    for i = 1 : 2
+        N(end) = [];
+    end
+    nb = length(N);
+    if nb == 0
+        warning('Not good pictures in the directory. Take an other');
+        return;
+    end
+    if(nb ~= nbInit)
+        error('The two directory must have the same number of picture'); 
+    end
+    
+elseif get(handles.choosePrefixRadioButton,'Value') == 1
+    
+    str = get(handles.fileNamePrefixEdit,'String');
+    if isempty(str)
+        warning('Text area is empty');
+        return;
+    end
+    
+    % chose another folder
+    folder_name = uigetdir();
+    if folder_name == 0;
+        warning('Select a floder please');
+        return;
+    end
+    
+    str = strcat(str,'*.*');
+    rep = fullfile(folder_name,str);
+    N = dir(rep); % To open the directory
+    nb = length(N);
+    if nb == 0
+        warning('Not good pictures in the directory. Take an other');
+        return;
+    end
+    if nb ~= nbInit
+         error('The two directory must have the same number of picture'); 
+    end
+    
+else
+    warning('Select an option please');
+    return;
 end
 
 
-
-function edit5_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit5 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit5 as text
-%        str2double(get(hObject,'String')) returns contents of edit5 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit5_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit5 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+plage = fin - debut;
+if step == 1
+    col = cell(plage,1);
+    for i = debut:fin
+        col{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); % Same thing for the '+1'
+    end
+else
+    col = cell(plage,1);
+    for i= 0 :plage-1
+        col{i} = imread(fullfile(folder_name,N(debut + step * i).name));
+    end
 end
 
+setappdata(0, 'red', col);
+disp('Directory changed');
 
-% --- Executes on button press in pushbutton1.
-function pushbutton1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to pushbutton1 (see GCBO)
+
+% --- Executes on button press in validateSettingsButton.
+function validateSettingsButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to validateSettingsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % To start the programm
-set(handles.pushbutton1,'Enable','off')
-set(handles.pushbutton1,'String','Wait please...')
+set(handles.validateSettingsButton,'Enable','off')
+set(handles.validateSettingsButton,'String','Wait please...')
 pause(0.01);
 
 SK = getappdata(0,'SK');
@@ -302,346 +526,76 @@ folder_name = getappdata(0,'folder_name');
 stepPicture = getappdata(0,'step');
 
 tic;
-t0 = get(handles.edit6,'String');
+t0 = get(handles.timeIntervalEdit, 'String');
 
-if get(handles.radiobutton1,'Value') == 1
+if get(handles.useDefaultSettingsRadioButton, 'Value') == 1
+    % default values
     iw = '10';
     nx = '500';
     ws = '15';
     ws2 = '30';
     step = '2';
     
-elseif get(handles.radiobutton3,'Value') == 1
-    iw = get(handles.edit1,'String'); % Take the parameters gave by the user
-    
-    
-    nx = get(handles.edit2,'String');
-    
-    
-    ws = get(handles.edit3,'String');
-    
-    
-    ws2 = get(handles.edit4,'String');
-    
-    
-    step = get(handles.edit5,'String');
-    
-    
-    
+elseif get(handles.changeSettingsRadioButton, 'Value') == 1
+    % Take the parameters given by the user
+    iw = get(handles.smoothingLengthEdit,'String'); 
+    nx = get(handles.pointNumberEdit,'String');
+    ws = get(handles.correlationWindowSize1Edit,'String');
+    ws2 = get(handles.correlationWindowSize2Edit,'String');
+    step = get(handles.displacementStepEdit,'String');
 end
 
-if length(iw) ~=0 && length(nx) ~=0 && length(ws) ~= 0 && length(ws2) ~=0 && length(step) ~=0 && length(t0) ~= 0 %#ok
-    iw = str2num(iw);%#ok
-    nx = str2num(nx);%#ok
-    ws = str2num(ws);%#ok
-    ws2 = str2num(ws2);%#ok
-    step = str2num(step);%#ok
-    t0 = str2num(t0);%#ok
-    if ~isempty(nx) && ~isempty(iw) && ~isempty(ws) && ~isempty(ws2) && ~isempty(step) && ~isempty(t0)
-        if iw >= 0 && nx >= 0 && ws >= 0 && ws2 >= 0 && step >= 0 && t0 >=0
-            
-            we = 1; % Doesn't work
-            
-            
-            % Start the program
-            %% Curvature
-            
-            disp('Curvature');
-            [S A C] = curvall(SK,iw);
-            %% Alignment of all the results
-            
-            disp('Aligncurv');
-            Sa = aligncurv(S,R);
-            
-            
-            %% Displacement
-            
-            disp('Displacement');
-            E = displall(SK,Sa,red,scale,shift,ws,we,step);
-            
-            %% Elongation
-            
-            disp('Elongation');
-            [Elg E2] = elgall(E,t0,step,ws2);
-            
-            %%  Space-time mapping
-            % Subsampling size
-            
-            
-            ElgE1 = reconstruct_Elg2(nx,Elg);
-            
-            CE1 = reconstruct_Elg2(nx,C,Sa);
-            
-            AE1 = reconstruct_Elg2(nx,A,Sa);
-            
-            RE1 = reconstruct_Elg2(nx,R,Sa);
-            
-           
-            
-            disp('Programm done');
-            toc;
-            delete(gcf);
-            FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
-            scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
-            
-        else
-            warning('Value must be positive');%#ok
-        end
-    else
-        warning('Value must be a number');%#ok
-    end
-else warning('Edit must be not empty');%#ok
-end
-        
-function edit6_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit6 as text
-%        str2double(get(hObject,'String')) returns contents of edit6 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit6_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to pushbutton2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-step = getappdata(0,'step');
-%red = setappdata(0,'red');
-nbInit = getappdata(0,'nbInit');
-
-if get(handles.checkbox1,'Value') == 1
-    
-    folder_name = uigetdir(); % Open a dialog box
-    if folder_name == 0;
-        warning('Select a floder please');%#ok
-        return;
-    end
-    N = dir(folder_name); % To open the directory
-    nb = length(N);
-    for i = 1 : nb - 2 % 2 for to eliminate the first ad second index : '.' & '..'
-        N(i) = N(i + 2);
-    end
-    for i = 1 : 2
-        N(end) = [];
-    end
-    nb = length(N);
-    if nb == 0
-        warning('Not good pictures in the directory. Take an other');%#ok just a message no need identifier
-        return;
-    end
-    if(nb ~= nbInit)
-        error('The two directory must have the same number of picture'); 
-    end
-   
-    
-elseif get(handles.checkbox2,'Value') == 1
-    
-    str = get(handles.edit7,'String');
-    if isempty(str)
-        warning('Text area is empty');%#ok
-        return;
-    end
-    
-    folder_name = uigetdir(); % Open a dialog box
-    if folder_name == 0;
-        warning('Select a floder please');%#ok
-        return;
-    end
-    
-    str = strcat(str,'*.*');
-    rep = fullfile(folder_name,str);
-    N = dir(rep); % To open the directory
-    nb = length(N);
-    if nb == 0
-        warning('Not good pictures in the directory. Take an other');%#ok just a message no need identifier
-        return;
-    end
-    if nb ~= nbInit
-         error('The two directory must have the same number of picture'); 
-    end
-    
-else
-    warning('Select an option please');%#ok
+if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0 || length(t0) == 0 %#ok
+    warning('Edit must not be empty');
     return;
 end
 
+iw = str2num(iw);%#ok
+nx = str2num(nx);%#ok
+ws = str2num(ws);%#ok
+ws2 = str2num(ws2);%#ok
+step = str2num(step);%#ok
+t0 = str2num(t0);%#ok
 
-plage = fin - debut;
-if step == 1
-    col = cell(plage,1);
-    for i = debut:fin
-        col{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); % Same thing for the '+1'
-    end
-else
-    col = cell(plage,1);
-    for i=0:plage-1
-        col{i} = imread(fullfile(folder_name,N(debut + step * i).name));
-    end
+if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step) || isempty(t0)
+    warning('Value must be a number');
+    return;
 end
 
-
-setappdata(0,'red',col);
-disp('Directory changed');
-
-
-
-% --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu1
-
-
-% --- Executes during object creation, after setting all properties.
-function popupmenu1_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0 || t0 < 0
+    warning('Value must be positive');
+    return;
 end
 
+% ?
+we = 1; 
 
-% --- Executes on button press in checkbox1.
-function checkbox1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to checkbox1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Start the program
 
-% Hint: get(hObject,'Value') returns toggle state of checkbox1
+% Curvature
+disp('Curvature');
+[S, A, C] = curvall(SK,iw);
 
-set(handles.checkbox1,'Value',1);
-set(handles.checkbox2,'Value',0);
+% Alignment of all the results
+disp('Aligncurv');
+Sa = aligncurv(S,R);
 
+% Displacement
+disp('Displacement');
+E = displall(SK,Sa,red,scale,shift,ws,we,step);
 
-% --- Executes on button press in checkbox2.
-function checkbox2_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to checkbox2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Elongation
+disp('Elongation');
+[Elg, E2] = elgall(E,t0,step,ws2);
 
-% Hint: get(hObject,'Value') returns toggle state of checkbox2
+%  Space-time mapping
+ElgE1 = reconstruct_Elg2(nx,Elg);
+CE1 = reconstruct_Elg2(nx,C,Sa);
+AE1 = reconstruct_Elg2(nx,A,Sa);
+RE1 = reconstruct_Elg2(nx,R,Sa);
 
-set(handles.checkbox1,'Value',0);
-set(handles.checkbox2,'Value',1);
-
-function edit7_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to edit7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit7 as text
-%        str2double(get(hObject,'String')) returns contents of edit7 as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit7_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to edit7 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to Untitled_1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+disp('Programm done');
+toc;
 delete(gcf);
-StartProgramm();
-
-
-% --- Executes on button press in radiobutton1.
-function radiobutton1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to radiobutton1 (see GCBO)%#ok
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton1
-set(handles.radiobutton3,'Value',0);
-set(handles.radiobutton1,'Value',1);
-set(handles.edit1,'Visible','off');
-set(handles.edit2,'Visible','off');
-set(handles.edit3,'Visible','off');
-set(handles.edit4,'Visible','off');
-set(handles.edit5,'Visible','off');
-set(handles.text1,'Visible','off');
-set(handles.text2,'Visible','off');
-set(handles.text3,'Visible','off');
-set(handles.text4,'Visible','off');
-set(handles.text5,'Visible','off');
-
-set(handles.pushbutton1,'Visible','on');
-% --- Executes on button press in radiobutton3.
-function radiobutton3_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to radiobutton3 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton3
-set(handles.radiobutton1,'Value',0);
-set(handles.radiobutton3,'Value',1);
-set(handles.edit1,'Visible','on');
-set(handles.edit2,'Visible','on');
-set(handles.edit3,'Visible','on');
-set(handles.edit4,'Visible','on');
-set(handles.edit5,'Visible','on');
-set(handles.text1,'Visible','on');
-set(handles.text2,'Visible','on');
-set(handles.text3,'Visible','on');
-set(handles.text4,'Visible','on');
-set(handles.text5,'Visible','on');
-
-set(handles.pushbutton1,'Visible','on');
-
-% --- Executes on button press in radiobutton5.
-function radiobutton5_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to radiobutton5 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radiobutton5
-if get(handles.radiobutton5,'Value') == 1
-set(handles.checkbox1,'Visible','on');
-set(handles.checkbox2,'Visible','on');
-set(handles.edit7,'Visible','on');
-set(handles.pushbutton2,'Visible','on');
-set(handles.radiobutton5,'Value',1);
-
-elseif get(handles.radiobutton5,'Value') == 0
-set(handles.checkbox1,'Visible','off');
-set(handles.checkbox2,'Visible','off');
-set(handles.edit7,'Visible','off');
-set(handles.pushbutton2,'Visible','off');    
-set(handles.radiobutton5,'Value',0); 
-
-end
+FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
+    scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);

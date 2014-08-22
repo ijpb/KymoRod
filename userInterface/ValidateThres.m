@@ -78,11 +78,12 @@ if nargin == 11
     setappdata(0, 'nbInit', nbInit);
     setappdata(0, 'N', N);
     setappdata(0, 'folder_name', folder_name);
-    imshow(col{1});
+%     imshow(col{1});
+    
 elseif nargin == 4 
     % if user come from ValidateContour, back way
     col = varargin{1};
-    imshow(col{1});
+%     imshow(col{1});
     setappdata(0, 'col', col);
 else
     error('requires 11 or 4 input arguments');
@@ -117,15 +118,28 @@ thresholdValues = zeros(length(col), 1);
 for i = 1 : length(col)
     thresholdValues(i) = round(graythresh(col{i}) * 255);
 end
-setappdata(0, 'thresholdValues', thresholdValues);
 
 % setup slider for display of current frame
-maxSlide = length(col);
-set(handles.frameIndexSlider, 'Max', maxSlide); 
-sliderStep = min(max([1 5] ./ (maxSlide - 1), 0.001), 1);
+set(handles.frameIndexSlider, 'Max', imageNumber); 
+sliderStep = min(max([1 5] ./ (imageNumber - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
 
+% get threshold of current frame
+frameIndex = 1;
+set(handles.currentFrameThresholdLabel, 'Visible', 'on');
+currentThreshold = int16(thresholdValues(frameIndex));
+string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+set(handles.currentFrameThresholdLabel, 'String', string);
+
+% compute binarised image
+seg = col{1} > currentThreshold;
+axis(handles.axes1);
+imshow(seg);
+
+% store variables for future use
+setappdata(0, 'thresholdValues', thresholdValues);
 setappdata(0, 'sizePixel', sizePixel);
+
 guidata(hObject, handles);
 
 % UIWAIT makes ValidateThres wait for user response (see UIRESUME)
