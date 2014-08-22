@@ -52,6 +52,7 @@ function StartElongation_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to StartElongation (see VARARGIN)
 
+
 % Choose default command line output for StartElongation
 handles.output = hObject;
 
@@ -78,47 +79,47 @@ elseif nargin == 3
     [FileName, PathName] = uigetfile('*.mat', 'Select the MATLAB code file');
     if PathName == 0
         warning('Select a directory please');
-    else
-        file = fullfile(PathName,FileName);
-        load(file);
-        if step == 1 %#ok<NODEF> % For open all pictures
-            nb = fin - debut + 1; %#ok<NODEF>
-            disp('Opening directory ...');
-            red = cell(nb,1);
-            parfor_progress(nb);
-            for i = debut:fin
-                try
+        return;
+    end
+    
+    file = fullfile(PathName,FileName);
+    load(file);
+    if step == 1 %#ok<NODEF> % For open all pictures
+        nb = fin - debut + 1; %#ok<NODEF>
+        disp('Opening directory ...');
+        red = cell(nb,1);
+        parfor_progress(nb);
+        for i = debut:fin
+            try
                 red{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); %#ok<NODEF>
-                catch e%#ok
-                    disp('Pictures''s folder not found');
-                    delete(gcf);
-                    return;
-                end
-                parfor_progress;
+            catch e%#ok
+                disp('Pictures''s folder not found');
+                delete(gcf);
+                return;
             end
-            parfor_progress(0);
-            
-        else
-            nb = 0;
-            disp('Opening directory ...');
-            for i = debut : step : fin %#ok<NODEF>
-                nb = nb + 1;
-            end
-            red = cell(nb,1);
-            parfor_progress(nb);
-            for i = 0:nb - 1
-                try
-                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name)); %#ok<NODEF>
-                catch ex %#ok<NASGU>
-                    disp('Pictures''s folder not found');
-                    delete(gcf);
-                    return;
-                end
-                parfor_progress;
-            end
-            parfor_progress(0);
-            
+            parfor_progress;
         end
+        parfor_progress(0);
+        
+    else
+        nb = 0;
+        disp('Opening directory ...');
+        for i = debut : step : fin %#ok<NODEF>
+            nb = nb + 1;
+        end
+        red = cell(nb,1);
+        parfor_progress(nb);
+        for i = 0:nb - 1
+            try
+                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name)); %#ok<NODEF>
+            catch ex %#ok<NASGU>
+                disp('Pictures''s folder not found');
+                delete(gcf);
+                return;
+            end
+            parfor_progress;
+        end
+        parfor_progress(0);
         
     end
 end
@@ -597,5 +598,7 @@ RE1 = reconstruct_Elg2(nx,R,Sa);
 disp('Programm done');
 toc;
 delete(gcf);
-FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
+% FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
+%     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
+DisplayKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);

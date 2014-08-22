@@ -163,5 +163,5 @@ elseif get(handles.radiobutton4,'Value') == 1
     StartComposedElongation();
 elseif get(handles.radiobutton5,'Value') == 1
     delete(gcf);
-    FinalKymograph();
+    DisplayKymograph();
 end
