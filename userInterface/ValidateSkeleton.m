@@ -22,7 +22,7 @@ function varargout = ValidateSkeleton(varargin)
 
 % Edit the above text to modify the response to help ValidateSkeleton
 
-% Last Modified by GUIDE v2.5 15-May-2014 09:52:16
+% Last Modified by GUIDE v2.5 21-Aug-2014 20:01:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -82,7 +82,7 @@ SKVerif = varargin{20};
 CTVerif = varargin{21};
 shift = varargin{22};
 
-set(handles.slider1,'Max',length(red));
+set(handles.middleImageIndexSlider,'Max',length(red));
 
 
 
@@ -115,31 +115,31 @@ set(handles.text7,'String',strcat('Picture n°',num2str(length(red))));
 
 switch direction
     case 'boucle'
-        set(handles.popupmenu1,'Value',1);
+        set(handles.filterDirectionPopup,'Value',1);
     case 'droit'
-        set(handles.popupmenu1,'Value',2);
+        set(handles.filterDirectionPopup,'Value',2);
     case 'droit2'
-        set(handles.popupmenu1,'Value',3);
+        set(handles.filterDirectionPopup,'Value',3);
     case 'penche'
-        set(handles.popupmenu1,'Value',4);
+        set(handles.filterDirectionPopup,'Value',4);
     case 'penche2'
-        set(handles.popupmenu1,'Value',5);
+        set(handles.filterDirectionPopup,'Value',5);
     case 'dep'
-        set(handles.popupmenu1,'Value',6);
+        set(handles.filterDirectionPopup,'Value',6);
     case 'rien'
-        set(handles.popupmenu1,'Value',7);
+        set(handles.filterDirectionPopup,'Value',7);
 end
 
 
 switch dirInitial
     case 'bottom'
-        set(handles.popupmenu2,'Value',1);
+        set(handles.firstSkeletonPointPopup,'Value',1);
     case 'left'
-        set(handles.popupmenu2,'Value',2);
+        set(handles.firstSkeletonPointPopup,'Value',2);
     case 'right'
-        set(handles.popupmenu2,'Value',3);
+        set(handles.firstSkeletonPointPopup,'Value',3);
     case 'top'
-        set(handles.popupmenu2,'Value',4);
+        set(handles.firstSkeletonPointPopup,'Value',4);
 end
 
 
@@ -184,38 +184,64 @@ function varargout = ValidateSkeleton_OutputFcn(hObject, eventdata, handles) %#o
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in PbValidate.
-function PbValidate_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to PbValidate (see GCBO)
+% --------------------------------------------------------------------
+function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok % To save the 
+% hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%delete ( GCF)
-
-
-red = getappdata(0,'red');
-CT = getappdata(0,'CT');
-SK = getappdata(0,'SK');
-R = getappdata(0,'rad');
-shift = getappdata(0,'shift');
-CTVerif = getappdata(0,'CTVerif');
-SKVerif = getappdata(0,'SKVerif');
-seuil = getappdata(0,'thres');
-scale = getappdata(0,'scale');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-step = getappdata(0,'step');
-nbInit = getappdata(0,'nbInit');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-
 delete(gcf);
+StartProgramm();
 
-StartElongation(red,CT,SK,R,shift,CTVerif,SKVerif,seuil,scale,debut,fin,step,nbInit,N,folder_name);
 
-% --- Executes on button press in PbBack.
-function PbBack_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to PbBack (see GCBO)
+% --- Executes on slider movement.
+function middleImageIndexSlider_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to middleImageIndexSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') retkurns position osf slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+red = getappdata(0,'red');
+seuil = getappdata(0,'seuil');
+SKVerif = getappdata(0,'SKVerif');
+CTVerif = getappdata(0,'CTVerif');
+scale = getappdata(0,'scale');
+
+
+val = get(handles.middleImageIndexSlider,'Value');
+val = ceil(val);
+
+if val == 0
+    val = 1;
+end
+
+seuil = seuil(val);
+
+axes(handles.AxMiddle2);
+imshow(red{val} > seuil);
+hold on;
+plot(CTVerif{val}(:,1)*scale,CTVerif{val}(:,2)*scale,'r');
+hold on;
+plot(SKVerif{val}(:,1)*scale,SKVerif{val}(:,2)*scale,'b');
+
+set(handles.text6,'String',strcat('Picture n�',num2str(val)));
+
+
+% --- Executes during object creation, after setting all properties.
+function middleImageIndexSlider_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to middleImageIndexSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+% --- Executes on button press in BackToContourButton.
+function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to BackToContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 red=getappdata(0,'red');
@@ -236,19 +262,19 @@ delete (gcf);
 
 ValidateContour(seuil,red,scale,size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
 
-% --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to popupmenu1 (see GCBO)
+% --- Executes on selection change in filterDirectionPopup.
+function filterDirectionPopup_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to filterDirectionPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu1
+% Hints: contents = cellstr(get(hObject,'String')) returns filterDirectionPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from filterDirectionPopup
 
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu1_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to popupmenu1 (see GCBO)
+function filterDirectionPopup_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to filterDirectionPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -259,19 +285,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in popupmenu2.
-function popupmenu2_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to popupmenu2 (see GCBO)
+% --- Executes on selection change in firstSkeletonPointPopup.
+function firstSkeletonPointPopup_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to firstSkeletonPointPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu2 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu2
+% Hints: contents = cellstr(get(hObject,'String')) returns firstSkeletonPointPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from firstSkeletonPointPopup
 
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu2_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to popupmenu2 (see GCBO)
+function firstSkeletonPointPopup_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to firstSkeletonPointPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -282,24 +308,24 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton3.
-function pushbutton3_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to pushbutton3 (see GCBO)
+% --- Executes on button press in updateSkeletonButton.
+function updateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to updateSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Update the skeleton with the new settings in popupmenu
-set(handles.pushbutton3,'Enable','off')
-set(handles.pushbutton3,'String','Wait please...')
+set(handles.updateSkeletonButton,'Enable','off')
+set(handles.updateSkeletonButton,'String','Wait please...')
 pause(0.01);
 
-val = get(handles.popupmenu1,'Value'); % To take the first value
+val = get(handles.filterDirectionPopup,'Value'); % To take the first value
 setappdata(0,'val',val);
-direction = get(handles.popupmenu1,'String');
+direction = get(handles.filterDirectionPopup,'String');
 
-val2 = get(handles.popupmenu2,'Value'); % To take the second value
+val2 = get(handles.firstSkeletonPointPopup,'Value'); % To take the second value
 setappdata(0,'val2',val2);
-dirInitial = get(handles.popupmenu2,'String');
+dirInitial = get(handles.firstSkeletonPointPopup,'String');
 
 red = getappdata(0,'red');
 smooth = getappdata(0,'smooth');
@@ -356,23 +382,13 @@ ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres...
 % ... show the new window with the new settings
 
 
-% --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)%#ok % To save the 
-% hObject    handle to Untitled_1 (see GCBO)
+% --- Executes on button press in saveSkeletonDataButton.
+function saveSkeletonDataButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to saveSkeletonDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-delete(gcf);
-StartProgramm();
-
-
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to pushbutton4 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-set(handles.pushbutton4,'Enable','off')
-set(handles.pushbutton4,'String','Wait please...')
+set(handles.saveSkeletonDataButton,'Enable','off')
+set(handles.saveSkeletonDataButton,'String','Wait please...')
 pause(0.01);
 red = getappdata(0,'red');%#ok
 CT = getappdata(0,'CT');%#ok
@@ -401,52 +417,35 @@ name = fullfile(PathName,FileName);
 save(name,'CT','SK','R','shift','CTVerif','SKVerif'...
     ,'seuil','scale','debut','fin','step','nbInit','N','folder_name');
 
-set(handles.pushbutton4,'Enable','on');
-set(handles.pushbutton4,'String','Save data of skeleton');
-% --- Executes on slider movement.
-function slider1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to slider1 (see GCBO)
+set(handles.saveSkeletonDataButton,'Enable','on');
+set(handles.saveSkeletonDataButton,'String','Save data of skeleton');
+
+
+% --- Executes on button press in validateSkeletonButton.
+function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to validateSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') retkurns position osf slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+%delete ( GCF)
+
+
 red = getappdata(0,'red');
-seuil = getappdata(0,'seuil');
-SKVerif = getappdata(0,'SKVerif');
+CT = getappdata(0,'CT');
+SK = getappdata(0,'SK');
+R = getappdata(0,'rad');
+shift = getappdata(0,'shift');
 CTVerif = getappdata(0,'CTVerif');
+SKVerif = getappdata(0,'SKVerif');
+seuil = getappdata(0,'thres');
 scale = getappdata(0,'scale');
+debut = getappdata(0,'debut');
+fin = getappdata(0,'fin');
+step = getappdata(0,'step');
+nbInit = getappdata(0,'nbInit');
+N = getappdata(0,'N');
+folder_name = getappdata(0,'folder_name');
 
+delete(gcf);
 
-val = get(handles.slider1,'Value');
-val = ceil(val);
-
-if val == 0
-    val = 1;
-end
-
-
-seuil = seuil(val);
-
-
-axes(handles.AxMiddle2);
-imshow(red{val} > seuil);
-hold on;
-plot(CTVerif{val}(:,1)*scale,CTVerif{val}(:,2)*scale,'r');
-hold on;
-plot(SKVerif{val}(:,1)*scale,SKVerif{val}(:,2)*scale,'b');
-
-
-set(handles.text6,'String',strcat('Picture n°',num2str(val)));
-
-
-% --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
+StartElongation(red,CT,SK,R,shift,CTVerif,SKVerif,seuil,scale,debut,fin,step,nbInit,N,folder_name);
