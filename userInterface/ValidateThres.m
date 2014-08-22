@@ -563,117 +563,65 @@ dirInitial = get(handles.firstPointSkeletonPopup, 'String');
 direction = direction{val};
 dirInitial = dirInitial{val2};
 
-if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
-    scale = str2num(scale);%#ok I want [] if it's a string and not NaN to test it
-    
-    if ~isempty(scale)
-        
-%         if isnumeric(seuil);
-%             if seuil ~= 0
-%                 set(handles.validateTresholdButton, 'Enable', 'off')
-%                 set(handles.validateTresholdButton, 'String', 'Wait please...')
-%                 pause(0.01);
-%                 disp('Smoothing...');
-%                 %thresholding
-%                 parfor_progress(length(red));
-%                 
-%                 % setup threshold for all frames
-%                 thres = zeros(length(red), 1);
-%                 for k = 1:length(red) 
-%                     if isnumeric(seuil);
-%                         thres(k) = seuil;
-%                     end
-%                     if iscell(seuil)
-%                         thres(k) = seuil{k};
-%                     end
-%                     
-%                     % set a black border around image (why ?)
-% %                     red{k} = [red{k}(:,1).*0 red{k} red{k}(:,1).*0];
-% %                     red{k} = [red{k}(1,:).*0;red{k};red{k}(1,:).*0];
-%                     red{k} = imAddBlackBorder(red{k});
-%                     parfor_progress;
-%                 end
-%                 parfor_progress(0);
-%                 
-%                 % ValidateContour
-%                 % Compute the contour and use the scale
-%                 disp('Contour');
-%                 CT2 = cell(length(red),1);
-%                 parfor_progress(length(red));
-%                 for i = 1:length(red)
-%                     CT2{i} = cont(red{i},thres(i));
-%                     CT2{i} = setsc(CT2{i},scale);
-%                     parfor_progress;
-%                 end
-%                 parfor_progress(0);
-%                 delete(gcf);
-%                 ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
-%             else
-%                 warning('Set a thres with the manual or automatic mode');
-%             end
-%         else
-            set(handles.validateTresholdButton, 'Enable', 'off')
-            set(handles.validateTresholdButton, 'String', 'Wait please...')
-            pause(0.01);
-            
-            disp('Binarisation...');
-            hDialog = msgbox(...
-                {'Performing Binarisation,', 'please wait...'}, ...
-                'Binarisation');
-  
-            thres = seuil;
-            
-            % thresholding
-            parfor_progress(length(red));
-%             thres = zeros(length(red), 1);
-            for k = 1:length(red) 
-%                 if isnumeric(seuil);
-%                     thres(k) = seuil;
-%                 end
-%                 if iscell(seuil)
-%                     thres(k) = seuil{k};
-%                 end
-                
-                % set a black border around image (why ?)
-%                 red{k}=[red{k}(:,1).*0 red{k} red{k}(:,1).*0];
-%                 red{k}=[red{k}(1,:).*0;red{k};red{k}(1,:).*0];
-                red{k} = imAddBlackBorder(red{k});
-                parfor_progress;
-            end
-            parfor_progress(0);
-            if ishandle(hDialog)
-                close(hDialog);
-            end
-            
-            % ValidateContour
-            % Compute the contour and use the scale
-            disp('Contour');
-            hDialog = msgbox(...
-                {'Computing contours,', 'please wait...'}, ...
-                'Contour');
-
-            CT2 = cell(length(red),1);
-            parfor_progress(length(red));
-            for i = 1:length(red)
-                CT2{i} = cont(red{i}, thres(i));
-                CT2{i} = setsc(CT2{i}, scale);
-                parfor_progress;
-            end
-            
-            parfor_progress(0);
-            if ishandle(hDialog)
-                close(hDialog);
-            end
-            
-            delete(gcf);
-            ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
-%         end
-        
-        
-    else
-        warning('Set a numeric value for scale');
-    end
-    
-else
-    warning('Set a value for scale');
+scale = str2double(scale);
+if isempty(scale)
+    errordlg({'Please specify a valid scale.'}, ...
+        'Invalid Scale', 'modal');
+    return;
 end
+
+% if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
+%     scale = str2num(scale);%#ok I want [] if it's a string and not NaN to test it
+%     
+%     if ~isempty(scale)
+        set(handles.validateTresholdButton, 'Enable', 'off')
+        set(handles.validateTresholdButton, 'String', 'Wait please...')
+        pause(0.01);
+        
+        disp('Binarisation...');
+        hDialog = msgbox(...
+            {'Performing Binarisation,', 'please wait...'}, ...
+            'Binarisation');
+        
+        thres = seuil;
+        
+        % add black border
+        parfor_progress(length(red));
+        for k = 1:length(red)
+            red{k} = imAddBlackBorder(red{k});
+            parfor_progress;
+        end
+        parfor_progress(0);
+        if ishandle(hDialog)
+            close(hDialog);
+        end
+        
+        % Compute the contour and use the scale
+        disp('Contour');
+        hDialog = msgbox(...
+            {'Computing contours,', 'please wait...'}, ...
+            'Contour');
+        
+        CT2 = cell(length(red),1);
+        parfor_progress(length(red));
+        for i = 1:length(red)
+            CT2{i} = cont(red{i}, thres(i));
+            CT2{i} = setsc(CT2{i}, scale);
+            parfor_progress;
+        end
+        
+        parfor_progress(0);
+        if ishandle(hDialog)
+            close(hDialog);
+        end
+        
+        delete(gcf);
+        ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
+        
+%     else
+%         warning('Set a numeric value for scale');
+%     end
+%     
+% else
+%     warning('Set a value for scale');
+% end

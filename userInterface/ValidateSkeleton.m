@@ -55,10 +55,9 @@ function ValidateSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for Skeleton
 handles.output = hObject;
 
-% Compute 3 squeleton to should be validate by the user
+% Compute 3 skeletons that should be validated by the user
 
-% Take the arguments
-
+% extract input arguments
 red = varargin{1};
 smooth = varargin{2};
 CT2 = varargin{3};
@@ -82,36 +81,30 @@ SKVerif = varargin{20};
 CTVerif = varargin{21};
 shift = varargin{22};
 
-set(handles.middleImageIndexSlider,'Max',length(red));
+set(handles.middleImageIndexSlider, 'Max', length(red));
 
 
-
-
-% Show the three squeleton
-
+% Show the three skeletons
 axes(handles.AxFirst2);
 imshow(red{1} > thres(1));
 hold on;
-plot(CTVerif{1}(:,1)*scale,CTVerif{1}(:,2)*scale,'r');
-hold on;
-plot(SKVerif{1}(:,1)*scale,SKVerif{1}(:,2)*scale,'b');
-set(handles.text5,'String','Picture nÂ° 1');
+plot(CTVerif{1}(:,1) * scale, CTVerif{1}(:,2) * scale, 'r');
+plot(SKVerif{1}(:,1) * scale, SKVerif{1}(:,2) * scale, 'b');
+set(handles.text5, 'String', 'Frame n° 1');
 
 axes(handles.AxMiddle2);
 imshow(red{indice} > thres(indice));
 hold on;
-plot(CTVerif{indice}(:,1)*scale,CTVerif{indice}(:,2)*scale,'r');
-hold on;
-plot(SKVerif{indice}(:,1)*scale,SKVerif{indice}(:,2)*scale,'b');
-set(handles.text6,'String',strcat('Picture nÂ°',num2str(indice)));
+plot(CTVerif{indice}(:,1)*scale, CTVerif{indice}(:,2)*scale, 'r');
+plot(SKVerif{indice}(:,1)*scale, SKVerif{indice}(:,2)*scale, 'b');
+set(handles.text6, 'String', strcat('Frame n°', num2str(indice)));
 
 axes(handles.AxEnd2);
 imshow(red{end} > thres(end));
 hold on;
 plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
-hold on;
 plot(SKVerif{end}(:,1)*scale,SKVerif{end}(:,2)*scale,'b');
-set(handles.text7,'String',strcat('Picture nÂ°',num2str(length(red))));
+set(handles.text7, 'String', strcat('Frame n°', num2str(length(red))));
 
 switch direction
     case 'boucle'
@@ -144,27 +137,27 @@ end
 
 
 
-setappdata(0,'red',red);
-setappdata(0,'Direction',direction);
-setappdata(0,'DirInitial',dirInitial);
-setappdata(0,'SK',SK);
-setappdata(0,'CT',CT);
-setappdata(0,'shift',shift);
-setappdata(0,'rad',rad);
-setappdata(0,'SKVerif',SKVerif);
-setappdata(0,'CTVerif',CTVerif);
-setappdata(0,'smooth',smooth);
-setappdata(0,'thres',thres);
-setappdata(0,'scale',scale);
-setappdata(0,'size',size);
-setappdata(0,'seuil',seuil);
-setappdata(0,'debut',debut);
-setappdata(0,'fin',fin);
-setappdata(0,'step',step);
-setappdata(0,'nbInit',nbInit);
-setappdata(0,'N',N);
-setappdata(0,'folder_name',folder_name);
-setappdata(0,'CT2',CT2);
+setappdata(0, 'red', red);
+setappdata(0, 'Direction', direction);
+setappdata(0, 'DirInitial', dirInitial);
+setappdata(0, 'SK', SK);
+setappdata(0, 'CT', CT);
+setappdata(0, 'shift', shift);
+setappdata(0, 'rad', rad);
+setappdata(0, 'SKVerif', SKVerif);
+setappdata(0, 'CTVerif', CTVerif);
+setappdata(0, 'smooth', smooth);
+setappdata(0, 'thres', thres);
+setappdata(0, 'scale', scale);
+setappdata(0, 'size', size);
+setappdata(0, 'seuil', seuil);
+setappdata(0, 'debut', debut);
+setappdata(0, 'fin', fin);
+setappdata(0, 'step', step);
+setappdata(0, 'nbInit', nbInit);
+setappdata(0, 'N', N);
+setappdata(0, 'folder_name', folder_name);
+setappdata(0, 'CT2', CT2);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -202,15 +195,16 @@ function middleImageIndexSlider_Callback(hObject, eventdata, handles)%#ok
 
 % Hints: get(hObject,'Value') retkurns position osf slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-red = getappdata(0,'red');
-seuil = getappdata(0,'seuil');
-SKVerif = getappdata(0,'SKVerif');
-CTVerif = getappdata(0,'CTVerif');
-scale = getappdata(0,'scale');
+red     = getappdata(0, 'red');
+seuil   = getappdata(0, 'seuil');
+SKVerif = getappdata(0, 'SKVerif');
+CTVerif = getappdata(0, 'CTVerif');
+scale   = getappdata(0, 'scale');
 
-
-val = get(handles.middleImageIndexSlider,'Value');
+val = get(handles.middleImageIndexSlider, 'Value');
 val = ceil(val);
+
+set(handles.middleImageIndexSlider, 'Enable', 'Off');
 
 if val == 0
     val = 1;
@@ -221,11 +215,17 @@ seuil = seuil(val);
 axes(handles.AxMiddle2);
 imshow(red{val} > seuil);
 hold on;
-plot(CTVerif{val}(:,1)*scale,CTVerif{val}(:,2)*scale,'r');
-hold on;
-plot(SKVerif{val}(:,1)*scale,SKVerif{val}(:,2)*scale,'b');
+plot(CTVerif{val}(:,1)*scale, CTVerif{val}(:,2)*scale, 'r');
+plot(SKVerif{val}(:,1)*scale, SKVerif{val}(:,2)*scale, 'b');
 
-set(handles.text6,'String',strcat('Picture n°',num2str(val)));
+% setup slider for display of current frame
+maxSlide = length(red);
+set(handles.middleImageIndexSlider, 'Max', maxSlide); 
+sliderStep = min(max([1 5] ./ (maxSlide - 1), 0.001), 1);
+set(handles.middleImageIndexSlider, 'SliderStep', sliderStep); 
+set(handles.middleImageIndexSlider, 'Enable', 'On');
+
+set(handles.text6, 'String', strcat('Frame n°',num2str(val)));
 
 
 % --- Executes during object creation, after setting all properties.
@@ -238,29 +238,6 @@ function middleImageIndexSlider_CreateFcn(hObject, eventdata, handles)%#ok
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
-% --- Executes on button press in BackToContourButton.
-function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to BackToContourButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-red=getappdata(0,'red');
-seuil = getappdata(0,'seuil');
-scale = getappdata(0,'scale');
-size = getappdata(0,'size');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-step = getappdata(0,'step');
-direction = getappdata(0,'direction');
-dirInitial = getappdata(0,'dirInitial');
-nbInit = getappdata(0,'nbInit');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-thres = getappdata(0,'thres');
-CT2 = getappdata(0,'CT2');
-delete (gcf);
-
-ValidateContour(seuil,red,scale,size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
 
 % --- Executes on selection change in filterDirectionPopup.
 function filterDirectionPopup_Callback(hObject, eventdata, handles)%#ok
@@ -327,22 +304,19 @@ val2 = get(handles.firstSkeletonPointPopup,'Value'); % To take the second value
 setappdata(0,'val2',val2);
 dirInitial = get(handles.firstSkeletonPointPopup,'String');
 
-red = getappdata(0,'red');
-smooth = getappdata(0,'smooth');
-CT2 = getappdata(0,'CT2');
-indice = getappdata(0,'indice');
-seuil = getappdata(0,'Seuil');
-scale = getappdata(0,'scale');
-size = getappdata(0,'size');
-thres = getappdata(0,'thres');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-step = getappdata(0,'step');
-nbInit = getappdata(0,'nbInit');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-
-
+red     = getappdata(0, 'red');
+smooth  = getappdata(0, 'smooth');
+CT2     = getappdata(0, 'CT2');
+indice  = getappdata(0, 'indice');
+scale   = getappdata(0, 'scale');
+size    = getappdata(0, 'size');
+thres   = getappdata(0, 'thres');
+debut   = getappdata(0, 'debut');
+fin     = getappdata(0, 'fin');
+step    = getappdata(0, 'step');
+nbInit  = getappdata(0, 'nbInit');
+N       = getappdata(0, 'N');
+folder_name = getappdata(0, 'folder_name');
 
 direction = direction{val};
 dirInitial = dirInitial{val2};
@@ -350,36 +324,42 @@ dirInitial = dirInitial{val2};
 dir = direction;
 dirbegin = dirInitial;
 
-CT=cell(length(red),1);
-SK=cell(length(red),1);
-shift=cell(length(red),1);
-rad=cell(length(red),1);
-CTVerif=cell(length(red),1);
-SKVerif=cell(length(red),1);
+% initialize result arrays
+CT      = cell(length(red), 1);
+SK      = cell(length(red), 1);
+shift   = cell(length(red), 1);
+rad     = cell(length(red), 1);
+CTVerif = cell(length(red), 1);
+SKVerif = cell(length(red), 1);
 
-disp('Skeletonisation');
-
+disp('Skeletonization');
+hDialog = msgbox(...
+    {'Computing skeletons from contours,', 'please wait...'}, ...
+    'Skeletonization');
 
 parfor_progress(length(red));
-for i=1:length(red)
-    %Smoothing
+for i = 1:length(red)
+    % Smoothing
     if smooth ~= 0
-        CT2{i}(:,1)=moving_average(CT2{i}(:,1),smooth);
-        CT2{i}(:,2)=moving_average(CT2{i}(:,2),smooth);
+        CT2{i} = smoothContour(CT2{i}, smooth);
     end
-    %Skeletonization
+    
+    % Skeletonization
     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i},dir,dirbegin);
-     parfor_progress;
-   
+    parfor_progress;
 end
+
 parfor_progress(0);
+if ishandle(hDialog)
+    close(hDialog);
+end
 
+
+% close the window and open again with the new settings
 delete(gcf);
-ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres...
-    ,scale,size,seuil,debut,fin,step,nbInit,N,folder_name,SK,CT,rad,SKVerif,CTVerif,shift);
-
-
-% ... show the new window with the new settings
+seuil = thres;
+ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres,...
+    scale,size,seuil,debut,fin,step,nbInit,N,folder_name,SK,CT,rad,SKVerif,CTVerif,shift);
 
 
 % --- Executes on button press in saveSkeletonDataButton.
@@ -406,7 +386,8 @@ nbInit = getappdata(0,'nbInit');%#ok
 N = getappdata(0,'N');%#ok
 folder_name = getappdata(0,'folder_name');%#ok
 
-[FileName,PathName] = uiputfile(); % To open the directory who the user want to save the data
+% To open the directory who the user want to save the data
+[FileName, PathName] = uiputfile(); 
 
 if PathName == 0
     warning('Select a file please');
@@ -414,21 +395,41 @@ if PathName == 0
 end
 
 name = fullfile(PathName,FileName);
-save(name,'CT','SK','R','shift','CTVerif','SKVerif'...
-    ,'seuil','scale','debut','fin','step','nbInit','N','folder_name');
+save(name,'CT','SK','R','shift','CTVerif','SKVerif',...
+    'seuil','scale','debut','fin','step','nbInit','N','folder_name');
 
-set(handles.saveSkeletonDataButton,'Enable','on');
-set(handles.saveSkeletonDataButton,'String','Save data of skeleton');
+set(handles.saveSkeletonDataButton, 'Enable', 'on');
+set(handles.saveSkeletonDataButton, 'String', 'Save data of skeleton');
 
+
+% --- Executes on button press in BackToContourButton.
+function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to BackToContourButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+red=getappdata(0,'red');
+seuil = getappdata(0,'seuil');
+scale = getappdata(0,'scale');
+size = getappdata(0,'size');
+debut = getappdata(0,'debut');
+fin = getappdata(0,'fin');
+step = getappdata(0,'step');
+direction = getappdata(0,'direction');
+dirInitial = getappdata(0,'dirInitial');
+nbInit = getappdata(0,'nbInit');
+N = getappdata(0,'N');
+folder_name = getappdata(0,'folder_name');
+thres = getappdata(0,'thres');
+CT2 = getappdata(0,'CT2');
+delete (gcf);
+
+ValidateContour(seuil,red,scale,size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
 
 % --- Executes on button press in validateSkeletonButton.
 function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to validateSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-%delete ( GCF)
-
 
 red = getappdata(0,'red');
 CT = getappdata(0,'CT');

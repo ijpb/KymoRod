@@ -22,7 +22,7 @@ function varargout = ValidateContour(varargin)
 
 % Edit the above text to modify the response to help ValidateContour
 
-% Last Modified by GUIDE v2.5 19-Jun-2014 17:07:53
+% Last Modified by GUIDE v2.5 22-Aug-2014 13:25:32
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -89,21 +89,17 @@ setappdata(0, 'folder_name', folder_name);
 axes(handles.AxFirst);
 imshow(red{1} > thres(1));
 hold on;
-% contour = [CT2{1}(:,1), CT2{1}(:,2)] * scale;
-% plot(contour(:,1), contour(:,2), 'r', 'Linewidth', 1.5);
 drawContour(CT2{1} * scale, 'r', 'LineWidth', 1.5);
 
 indice = round(length(red)/2); % to have the midle of the directory
 axes(handles.AxMiddle);
 imshow(red{indice} > thres(indice));
 hold on;
-% plot(CT2{indice}(:,1)*scale,CT2{indice}(:,2)*scale,'r','Linewidth',1.5);
 drawContour(CT2{indice} * scale, 'r', 'LineWidth', 1.5);
 
 axes(handles.AxEnd);
 imshow(red{end} > thres(end));
 hold on;
-% plot(CT2{end}(:,1)*scale,CT2{end}(:,2)*scale,'r','Linewidth',1.5);
 drawContour(CT2{end} * scale, 'r', 'LineWidth', 1.5);
 
 % To use it at the next window
@@ -134,8 +130,8 @@ varargout{1} = handles.output;
 %% Menu
 
 % --------------------------------------------------------------------
-function Untitled_1_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to Untitled_1 (see GCBO)
+function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 delete(gcf);
@@ -144,16 +140,19 @@ StartProgramm();
 %% Widgets
 
 % --- Executes on slider movement.
-function SdSmoothing_Callback(hObject, eventdata, handles)%#ok % To select the good smooth with a slidebar
-% hObject    handle to SdSmoothing (see GCBO)
+function smoothValueSlider_Callback(hObject, eventdata, handles)%#ok % To select the good smooth with a slidebar
+% hObject    handle to smoothValueSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-smooth = get(handles.SdSmoothing, 'Value'); % Take the value from the slide bar
-smooth = round(smooth); % round to have an integer
+% Take the value from the slide bar, rounded to have an integer
+smooth = round(get(handles.smoothValueSlider, 'Value')); 
+
+% disable slider to avoid multiple calls
+set(handles.smoothValueSlider, 'Enable', 'Off');
 
 % get global data
 thres   = getappdata(0, 'seuil');
@@ -162,63 +161,40 @@ indice  = getappdata(0, 'indice');
 red     = getappdata(0, 'red');
 scale   = getappdata(0, 'scale');
 
-% % get threshold value as a double
-% for k = 1:length(red)
-%     if isnumeric(seuil)
-%         thres(k) = seuil;%#ok
-%     end
-%     if iscell(seuil)
-%         thres(k) = seuil{k};%#ok
-%     end
-% end
-
 % create an array of contours
-CT = cell(length(red),1);
+CT = cell(length(red), 1);
 
 % Compute three images with the current smoothing value
-CT{1} = smoothContour(CT2{1}, smooth); 
-CT{indice} = smoothContour(CT2{indice}, smooth); 
-CT{end} = smoothContour(CT2{end}, smooth); 
-
-% % Compute three images with the current smoothing value
-% CT{1}(:,1) = moving_average(CT2{1}(:,1), smooth); 
-% CT{1}(:,2) = moving_average(CT2{1}(:,2), smooth);
-% 
-% CT{indice}(:,1) = moving_average(CT2{indice}(:,1), smooth);
-% CT{indice}(:,2) = moving_average(CT2{indice}(:,2), smooth);
-% 
-% CT{end}(:,1) = moving_average(CT2{end}(:,1), smooth);
-% CT{end}(:,2) = moving_average(CT2{end}(:,2), smooth);
+CT{1}       = smoothContour(CT2{1}, smooth); 
+CT{indice}  = smoothContour(CT2{indice}, smooth); 
+CT{end}     = smoothContour(CT2{end}, smooth); 
 
  % Show three images with the smoothing
 axes(handles.AxFirst);
 imshow(red{1} > thres(1));
 hold on;
-% contour = [CT{1}(:,1), CT{1}(:,2)] * scale;
-% plot(contour(:,1), contour(:,2), 'r', 'Linewidth', 1.5);
 drawContour(CT{1} * scale, 'r', 'Linewidth', 1.5);
 
 axes(handles.AxMiddle);
 imshow(red{indice} > thres(indice));
 hold on;
-% contour = [CT{indice}(:,1), CT{indice}(:,2)] * scale;
-% plot(contour(:,1), contour(:,2), 'r', 'Linewidth', 1.5);
 drawContour(CT{indice} * scale, 'r', 'Linewidth', 1.5);
 
 axes(handles.AxEnd);
 imshow(red{end} > thres(end));
 hold on;
-% contour = [CT{end}(:,1), CT{end}(:,2)] * scale;
-% plot(contour(:,1), contour(:,2), 'r', 'Linewidth', 1.5);
 drawContour(CT{end} * scale, 'r', 'Linewidth', 1.5);
+
+% once processing is finished, re-enable smoothing
+set(handles.smoothValueSlider, 'Enable', 'On');
 
 % set the smooth
 setappdata(0, 'smooth', smooth); 
-set(handles.text4, 'String', num2str(smooth));
+set(handles.smoothValueLabel, 'String', num2str(smooth));
 
 % --- Executes during object creation, after setting all properties.
-function SdSmoothing_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to SdSmoothing (see GCBO)
+function smoothValueSlider_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to smoothValueSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -230,9 +206,9 @@ end
 
 %% Validation and Comeback buttons
 
-% --- Executes on button press in PbBack.
-function PbBack_Callback(hObject, eventdata, handles)%#ok % To back at ValidateThres
-% hObject    handle to PbBack (see GCBO)
+% --- Executes on button press in backToTresholdButton.
+function backToTresholdButton_Callback(hObject, eventdata, handles)%#ok % To back at ValidateThres
+% hObject    handle to backToTresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -241,14 +217,14 @@ delete(gcf);
 ValidateThres(red);
 
 
-% --- Executes on button press in PbValidate.
-function PbValidate_Callback(hObject, eventdata, handles)%#ok % To go in the next window
-% hObject    handle to PbValidate (see GCBO)
+% --- Executes on button press in validateContourButton.
+function validateContourButton_Callback(hObject, eventdata, handles)%#ok % To go in the next window
+% hObject    handle to validateContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.PbValidate, 'Enable', 'off')
-set(handles.PbValidate, 'String', 'Wait please...')
+set(handles.validateContourButton, 'Enable', 'off')
+set(handles.validateContourButton, 'String', 'Wait please...')
 pause(0.01);
 
 smooth  = getappdata(0, 'smooth');
@@ -287,16 +263,14 @@ parfor_progress(length(red));
 for i = 1:length(red)
     % Smooth current contour
     if smooth ~= 0
-%         CT2{i}(:,1) = moving_average(CT2{i}(:,1), smooth);
-%         CT2{i}(:,2) = moving_average(CT2{i}(:,2), smooth);
         CT2{i} = smoothContour(CT2{i}, smooth);
     end
     
     % Skeleton of current contour
     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i}, dir, dirbegin);
     parfor_progress;
-   
 end
+
 parfor_progress(0);
 if ishandle(hDialog)
     close(hDialog);
