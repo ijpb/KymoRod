@@ -63,7 +63,6 @@ if nargin == 6
     col = varargin{1};
     fileList = varargin{2};
     folderName = varargin{3};
-    set(handles.framePreviewSlider, 'Visible', 'on');
     set(handles.axis1Label, 'Visible', 'on');
     set(handles.axis2Label, 'Visible', 'on');
     set(handles.axes1, 'Visible', 'on');
@@ -71,10 +70,20 @@ if nargin == 6
     set(handles.keepAllFramesRadioButton, 'Visible', 'on');
     set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
     
-    nb = length(col);
+    nImages = length(col);
     
-    set(handles.framePreviewSlider, 'Max', nb - 1);
+    set(handles.framePreviewSlider, 'Value', 1);
+    set(handles.framePreviewSlider, 'Min', 1);
+    set(handles.framePreviewSlider, 'Max', nImages - 1);
+    set(handles.framePreviewSlider, 'Visible', 'on');
     
+    % setup slider such that 1 image is changed at a time
+    step1 = 1 / (nImages - 1);
+    step2 = min(10 / (nImages - 1), .5);
+    set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
+    
+    set(handles.framePreviewLabel, 'Visible', 'on');
+
     % demo images
     mini = cell(2,1);
     for i = 1:2
@@ -101,6 +110,9 @@ if nargin == 6
     
     string = sprintf('Select a range among the %d frames', nb);
     set(handles.selectFramesIndicesRadioButton, 'String', string);
+    
+    set(handles.selectImagesButton, 'Visible', 'on');
+
 else 
     flag = 1;
 end
@@ -206,13 +218,22 @@ set(handles.channelSelectionPanel, 'Visible', 'on');
 set(handles.calibrationPanel, 'Visible', 'on');
 set(handles.frameSelectionPanel, 'Visible', 'on');
 
-set(handles.framePreviewSlider, 'Visible', 'on');
 set(handles.axis1Label, 'Visible', 'on');
 set(handles.axis2Label, 'Visible', 'on');
 set(handles.axes1, 'Visible', 'on');
 set(handles.axes2, 'Visible', 'on');
 
+set(handles.framePreviewSlider, 'Visible', 'off');
+set(handles.framePreviewSlider, 'Value', 1);
+set(handles.framePreviewSlider, 'Min', 1);
 set(handles.framePreviewSlider, 'Max', imageNumber - 1);
+set(handles.framePreviewSlider, 'Visible', 'on');
+% setup slider such that 1 image is changed at a time
+step1 = 1 / (imageNumber - 1);
+step2 = min(10 / (imageNumber - 1), .5);
+set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
+
+set(handles.framePreviewLabel, 'Visible', 'on');
 
 mini = cell(2,1);
 for i = 1:2 
@@ -225,7 +246,6 @@ set(handles.axis1Label, 'String', sprintf('frame %d (%s)', 1, fileList(1).name))
 
 axes(handles.axes2);
 imshow(mini{2});
-% set(handles.axis2Label, 'String', '2');
 set(handles.axis2Label, 'String', sprintf('frame %d (%s)', 2, fileList(2).name));
 
 setappdata(0, 'Nbimages', imageNumber);
@@ -236,6 +256,9 @@ string = sprintf('Keep All Frames (%d)', imageNumber);
 set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', imageNumber);
 set(handles.selectFramesIndicesRadioButton, 'String', string);
+
+set(handles.selectImagesButton,'Visible','on');
+set(handles.saveSelectedImagesButton,'Visible','on');
 
 guidata(hObject, handles);
 
@@ -302,8 +325,8 @@ function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 val = get(handles.framePreviewSlider,'Value'); %Take the value between 0 and 255
-val = floor(val);
-val = val + 1; %'+1' To start at the index n°1
+val = round(val);
+% val = val + 1; %'+1' To start at the index n°1
 
 flag = getappdata(0, 'flag');
 col = getappdata(0, 'col');
@@ -311,8 +334,8 @@ folderName = getappdata(0, 'RepertoireImage');
 fileList = getappdata(0, 'NomRep');
 
 valmax = get(handles.framePreviewSlider, 'Max');
-if val == valmax + 1
-    val = val - 1;
+if val > valmax
+    val = valmax ;
 end
 
 mini2 = cell(2,1);
