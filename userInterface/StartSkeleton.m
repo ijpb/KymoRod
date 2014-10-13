@@ -75,7 +75,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
         % extract input data
         col         = app.imageList;
         fileList    = app.imageNameList;
-        folderName  = app.inputImageDir;
+        folderName  = app.inputImagesDir;
         
         set(handles.axis1Label, 'Visible', 'on');
         set(handles.axis2Label, 'Visible', 'on');

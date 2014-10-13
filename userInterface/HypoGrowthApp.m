@@ -42,10 +42,14 @@ classdef HypoGrowthApp < handle
         thresholdValues = [];
         
         % length of window for smoothing coutours
-        contourSmoothingSize = 200;
+        contourSmoothingSize = 20;
         
         % list of contours, one polygon by cell, in pixel unit
-        countourList = {};
+        contourList = {};
+        
+        % location of the first point of the skeleton. Can be one of 
+        % 'bottom', 'top', 'left', 'right'.
+        firstPointLocation = 'bottom';
         
         % list of skeletons, one curve by cell, in pixel unit
         skeletonList = {};

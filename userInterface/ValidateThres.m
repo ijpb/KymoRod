@@ -66,9 +66,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     % should be the canonical way of calling the program
     
     disp('validate threshold from app');
-    app = varargin{1};
-    setappdata(0, 'app', app);
-    
+    app = varargin{1};    
     col = app.imageList;
     
 elseif nargin == 11 
@@ -89,6 +87,7 @@ elseif nargin == 11
     setappdata(0, 'nbInit', nbInit);
     setappdata(0, 'N', N);
     setappdata(0, 'folder_name', folder_name);
+
 %     imshow(col{1});
     
 elseif nargin == 4 
@@ -96,13 +95,17 @@ elseif nargin == 4
     col = varargin{1};
     app = HypoGrowthApp();
     app.imageList = col;
-    setappdata(0, 'app', app);
+%     setappdata(0, 'app', app);
 %     imshow(col{1});
 %     setappdata(0, 'col', col);
     
 else
     error('requires 11 or 4 input arguments');
 end
+
+% update current process state
+app.currentStep = 'threshold';
+setappdata(0, 'app', app);
 
 imageNumber = length(col);
 string = sprintf('Current Frame: %d / %d', 1, imageNumber);
@@ -600,13 +603,13 @@ function validateTresholdButton_Callback(hObject, eventdata, handles)%#ok
 
 app     = getappdata(0, 'app');
 seuil   = app.thresholdValues;
-debut   = app.firstIndex;
-fin     = app.lastIndex;
-step    = app.indexStep;
+% debut   = app.firstIndex;
+% fin     = app.lastIndex;
+% step    = app.indexStep;
 red     = app.imageList;
-nbInit  = length(red);
-N       = length(red);
-folderName = app.inputImagesDir;
+% nbInit  = length(red);
+% N       = length(red);
+% folderName = app.inputImagesDir;
 % seuil   = getappdata(0, 'thresholdValues');
 % debut   = getappdata(0, 'debut');
 % fin     = getappdata(0, 'fin');
@@ -615,21 +618,23 @@ folderName = app.inputImagesDir;
 % nbInit  = getappdata(0, 'nbInit');
 % N       = getappdata(0, 'N');
 % folderName = getappdata(0, 'folder_name');
-Size    = 0;
+% Size    = 0;
 scale   = get(handles.pixelScaleEdit, 'String');
 
-% To take the first value
-val = get(handles.directionFilterPopup, 'Value');
-% setappdata(0, 'val', val);
-direction = get(handles.directionFilterPopup, 'String');
+% % To take the first value
+% val = get(handles.directionFilterPopup, 'Value');
+% % setappdata(0, 'val', val);
+% direction = get(handles.directionFilterPopup, 'String');
 
 % To take the second value
 val2 = get(handles.firstPointSkeletonPopup, 'Value'); 
 % setappdata(0, 'val2', val2);
 dirInitial = get(handles.firstPointSkeletonPopup, 'String');
 
-direction = direction{val};
-dirInitial = dirInitial{val2};
+% direction = direction{val};
+% dirInitial = dirInitial{val2};
+% app.direction = direction{val};
+app.firstPointLocation = dirInitial{val2};
 
 scale = str2double(scale);
 if isempty(scale)
@@ -661,6 +666,7 @@ if ishandle(hDialog)
 end
 
 % allocate memory for contour array
+CT = cell(length(red), 1);
 CT2 = cell(length(red), 1);
 
 % Compute the contour and use the scale
@@ -672,10 +678,10 @@ hDialog = msgbox(...
 parfor_progress(length(red));
 for i = 1:length(red)
     % apply threshold and compute contour
-    CT2{i} = cont(red{i}, thres(i));
+    CT{i} = cont(red{i}, thres(i));
     
     % rescale
-    CT2{i} = setsc(CT2{i}, scale);
+    CT2{i} = setsc(CT{i}, scale);
     parfor_progress;
 end
 
@@ -684,6 +690,9 @@ if ishandle(hDialog)
     close(hDialog);
 end
 
+app.contourList = CT;
+
 delete(gcf);
-ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial, ...
-    nbInit,N,folderName,CT2,thres);
+ValidateContour(app);
+% ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial, ...
+%     nbInit,N,folderName,CT2,thres);
