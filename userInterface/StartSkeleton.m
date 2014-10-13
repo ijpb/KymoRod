@@ -59,7 +59,77 @@ setappdata(0, 'NomRep', '');
 set(handles.channelSelectionPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
 
-if nargin == 6 
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+    disp('init from HypoGrowthApp');
+    
+    app = varargin{1};
+    setappdata(0, 'app', app);
+    
+
+    if strcmp(app.currentStep, 'none')
+        % no image selected
+        flag = 1;
+    else
+        % images already selected
+        
+        % extract input data
+        col         = app.imageList;
+        fileList    = app.imageNameList;
+        folderName  = app.inputImageDir;
+        
+        set(handles.axis1Label, 'Visible', 'on');
+        set(handles.axis2Label, 'Visible', 'on');
+        set(handles.axes1, 'Visible', 'on');
+        set(handles.axes2, 'Visible', 'on');
+        set(handles.keepAllFramesRadioButton, 'Visible', 'on');
+        set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
+        
+        nImages = length(col);
+        
+        set(handles.framePreviewSlider, 'Value', 1);
+        set(handles.framePreviewSlider, 'Min', 1);
+        set(handles.framePreviewSlider, 'Max', nImages - 1);
+        set(handles.framePreviewSlider, 'Visible', 'on');
+        
+        % setup slider such that 1 image is changed at a time
+        step1 = 1 / (nImages - 1);
+        step2 = min(10 / (nImages - 1), .5);
+        set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
+        
+        set(handles.framePreviewLabel, 'Visible', 'on');
+        
+        % demo images
+        mini = cell(2,1);
+        for i = 1:2
+            mini{i} = col{i};
+        end
+        
+        % display first image
+        axes(handles.axes1);
+        imshow(mini{1});
+        set(handles.axis1Label, 'String', '1');
+        
+        % display second image
+        axes(handles.axes2);
+        imshow(mini{2});
+        set(handles.axis2Label, 'String', '2');
+        
+        % update globale variables
+        setappdata(0, 'Nbimages', nb);
+        setappdata(0, 'NomRep', fileList);
+        setappdata(0, 'RepertoireImage', folderName);
+        setappdata(0, 'col', col);
+        
+        flag = 2;
+        
+        string = sprintf('Select a range among the %d frames', nb);
+        set(handles.selectFramesIndicesRadioButton, 'String', string);
+        
+        set(handles.selectImagesButton, 'Visible', 'on');
+    end
+    
+    
+elseif nargin == 6 
     col = varargin{1};
     fileList = varargin{2};
     folderName = varargin{3};
@@ -157,8 +227,11 @@ StartProgramm();
 function chooseInputImagesButton_Callback(hObject, eventdata, handles)%#ok 
 % To select the images from a directory
 
-% Open a dialog box
-folderName = getappdata(0, 'RepertoireImage');
+% extract app data
+app = getappdata(0, 'app');
+
+% folderName = getappdata(0, 'RepertoireImage');
+folderName = app.inputImagesDir;
 folderName = uigetdir(folderName);
 
 % check if cancel button was selected
@@ -168,6 +241,7 @@ end
 
 set(handles.directoryNameEdit, 'String', folderName);
 setappdata(0, 'RepertoireImage', folderName);
+app.inputImagesDir = folderName;
 
 % list files in chosen directory
 fileList = dir(fullfile(folderName, '*.*'));
@@ -227,11 +301,11 @@ set(handles.framePreviewSlider, 'Visible', 'off');
 set(handles.framePreviewSlider, 'Value', 1);
 set(handles.framePreviewSlider, 'Min', 1);
 set(handles.framePreviewSlider, 'Max', imageNumber - 1);
-set(handles.framePreviewSlider, 'Visible', 'on');
 % setup slider such that 1 image is changed at a time
 step1 = 1 / (imageNumber - 1);
 step2 = min(10 / (imageNumber - 1), .5);
 set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
+set(handles.framePreviewSlider, 'Visible', 'on');
 
 set(handles.framePreviewLabel, 'Visible', 'on');
 
@@ -248,10 +322,6 @@ axes(handles.axes2);
 imshow(mini{2});
 set(handles.axis2Label, 'String', sprintf('frame %d (%s)', 2, fileList(2).name));
 
-setappdata(0, 'Nbimages', imageNumber);
-setappdata(0, 'NomRep', fileList); 
-setappdata(0, 'RepertoireImage', folderName); 
-
 string = sprintf('Keep All Frames (%d)', imageNumber);
 set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', imageNumber);
@@ -259,6 +329,13 @@ set(handles.selectFramesIndicesRadioButton, 'String', string);
 
 set(handles.selectImagesButton,'Visible','on');
 set(handles.saveSelectedImagesButton,'Visible','on');
+
+% save user data for future use
+setappdata(0, 'Nbimages', imageNumber);
+setappdata(0, 'NomRep', fileList); 
+setappdata(0, 'RepertoireImage', folderName); 
+app.inputImagesDir = folderName;
+app.imageNameList = fileList;
 
 guidata(hObject, handles);
 
@@ -324,15 +401,29 @@ function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-val = get(handles.framePreviewSlider,'Value'); %Take the value between 0 and 255
-val = round(val);
-% val = val + 1; %'+1' To start at the index n°1
+% extract app data
+app = getappdata(0, 'app');
 
-flag = getappdata(0, 'flag');
-col = getappdata(0, 'col');
-folderName = getappdata(0, 'RepertoireImage');
-fileList = getappdata(0, 'NomRep');
+% extract global data
+% flag = 1 -> images pas encore chargees
+% flag = 2 -> images deja chargees
+% flag = getappdata(0, 'flag');
+% col = getappdata(0, 'col');
+% folderName = getappdata(0, 'RepertoireImage');
+% fileList = getappdata(0, 'NomRep');
+col         = app.imageList;
+folderName  = app.inputImagesDir;
+fileList    = app.imageNameList;
+if isempty(col)
+    flag = 1;
+else
+    flag = 2;
+end
 
+% extract index of first frame to display
+val = round(get(handles.framePreviewSlider, 'Value'));
+
+% ensure value is between bounds
 valmax = get(handles.framePreviewSlider, 'Max');
 if val > valmax
     val = valmax ;
@@ -349,13 +440,14 @@ for i = val:val + 1
     end
 end
 
-
+% display first frame
 axes(handles.axes1);
 imshow(mini2{1});
 set(handles.axis1Label, 'String', val);
 string = sprintf('frame %d (%s)', val, fileList(val).name);
 set(handles.axis1Label, 'String', string);
 
+% display second frame
 axes(handles.axes2);
 imshow(mini2{2});
 string = sprintf('frame %d (%s)', val + 1, fileList(val + 1).name);
@@ -373,17 +465,6 @@ function framePreviewSlider_CreateFcn(hObject, eventdata, handles) %#ok<*INUSD,*
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
-
-% --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu1
-
 
 
 function firstFrameIndexEdit_Callback(hObject, eventdata, handles)
@@ -526,11 +607,17 @@ function saveSelectedImagesButton_Callback(hObject, eventdata, handles)%#ok % To
 
 set(handles.saveSelectedImagesButton, 'Enable', 'off');
 set(handles.saveSelectedImagesButton, 'String', 'Wait please...');
-
 pause(0.01);
-nbInit = getappdata(0, 'Nbimages');
-fileList = getappdata(0, 'NomRep');
-folderName = getappdata(0, 'RepertoireImage');
+
+% extract  app data
+app = getappdata(0, 'app');
+folderName  = app.inputImagesDir;
+fileList    = app.imageNameList;
+nbInit = length(fileList);
+
+% nbInit = getappdata(0, 'Nbimages');
+% fileList = getappdata(0, 'NomRep');
+% folderName = getappdata(0, 'RepertoireImage');
 nb = nbInit;
 
 [fileName, pathName] = uiputfile('*.*', 'Enter a name for your new directory of pictures');
@@ -550,8 +637,10 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     debut = 1;
     fin = nb;
     
-    setappdata(0, 'debut', debut);
-    setappdata(0, 'fin', fin);
+%     setappdata(0, 'debut', debut);
+%     setappdata(0, 'fin', fin);
+    app.startIndex = debut;
+    app.lastIndex = fin;
     
     disp('Opening directory ...');
     col = cell(nb, 1);
@@ -616,12 +705,16 @@ function editImagesButton_Callback(hObject, eventdata, handles)
 % hObject    handle to editImagesButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-fileList = getappdata(0, 'NomRep');
+
+app = getappdata(0, 'NomRep');
+fileList = app.imageNameList;
+% fileList = getappdata(0, 'NomRep');
 if isempty(fileList)
     delete(gcf);
     StartRGB();
 else
     folderName = getappdata(0, 'RepertoireImage');
+%     folderName = app.inputImagesDir;
     delete(gcf);
     StartRGB(fileList, folderName);
 end
@@ -635,13 +728,25 @@ function selectImagesButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-nbInit      = getappdata(0, 'Nbimages');
-fileList    = getappdata(0, 'NomRep');
-folderName  = getappdata(0, 'RepertoireImage');
+
+% extract global data
+app = getappdata(0, 'app');
+colN         = app.imageList;
+nbInit = length(colN);
+folderName  = app.inputImagesDir;
+fileList    = app.imageNameList;
+% nbInit      = getappdata(0, 'Nbimages');
+% fileList    = getappdata(0, 'NomRep');
+% folderName  = getappdata(0, 'RepertoireImage');
 
 nb = nbInit;
-flag = getappdata(0, 'flag');
-colN = getappdata(0, 'col');
+if isempty(colN)
+    flag = 1;
+else
+    flag = 2;
+end
+% flag = getappdata(0, 'flag');
+% colN = getappdata(0, 'col');
 
 if get(handles.keepAllFramesRadioButton, 'Value') == 1 
    % For all pictures
@@ -652,8 +757,10 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     fin = nb;
     step = 1;
     
-    setappdata(0, 'debut', debut);
-    setappdata(0, 'fin', fin);
+%     setappdata(0, 'debut', debut);
+%     setappdata(0, 'fin', fin);
+    app.startIndex = debut;
+    app.lastIndex  = fin;
     
     disp('Opening directory ...');
     col = cell(nb, 1);
@@ -668,8 +775,8 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     end
     parfor_progress(0); 
     
-    delete (gcf);
-    ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
+%     delete (gcf);
+%     ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
     
 else
     % For pictures by step
@@ -680,8 +787,8 @@ else
     stepPicture = get(handles.frameIndexStepEdit, 'String');
     
     % set some widget to waiting state
-    set(handles.selectImagesButton,'Enable','off')
-    set(handles.selectImagesButton,'String','Wait please...')
+    set(handles.selectImagesButton, 'Enable', 'off')
+    set(handles.selectImagesButton, 'String', 'Wait please...')
     pause(0.01);
     
     if length(firstPicture) ~= 0   %#ok isempty does'nt work i dont know why
