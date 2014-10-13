@@ -432,7 +432,7 @@ function manualThresholdSlider_Callback(hObject, eventdata, handles)%#ok % To ch
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-% get threshodl value between 0 and 255
+% get threshold value between 0 and 255
 val = round(get(handles.manualThresholdSlider, 'Value'));
 
 n = getappdata(0, 'NumImage');
@@ -549,6 +549,10 @@ StartSkeleton();
 % --- Executes on button press in validateTresholdButton.
 function validateTresholdButton_Callback(hObject, eventdata, handles)%#ok
 % To go to ValidateContour
+%
+% Extract input argments from dialog, compute contours, and opens the 
+% 'validateContour' dialog.
+%
 % hObject    handle to validateTresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -584,58 +588,47 @@ if isempty(scale)
     return;
 end
 
-% if length(scale) ~= 0   %#ok isempty does'nt work i dont know why
-%     scale = str2num(scale);%#ok I want [] if it's a string and not NaN to test it
-%     
-%     if ~isempty(scale)
-        set(handles.validateTresholdButton, 'Enable', 'off')
-        set(handles.validateTresholdButton, 'String', 'Wait please...')
-        pause(0.01);
-        
-        disp('Binarisation...');
-        hDialog = msgbox(...
-            {'Performing Binarisation,', 'please wait...'}, ...
-            'Binarisation');
-        
-        thres = seuil;
-        
-        % add black border
-        parfor_progress(length(red));
-        for k = 1:length(red)
-            red{k} = imAddBlackBorder(red{k});
-            parfor_progress;
-        end
-        parfor_progress(0);
-        if ishandle(hDialog)
-            close(hDialog);
-        end
-        
-        % Compute the contour and use the scale
-        disp('Contour');
-        hDialog = msgbox(...
-            {'Computing contours,', 'please wait...'}, ...
-            'Contour');
-        
-        CT2 = cell(length(red),1);
-        parfor_progress(length(red));
-        for i = 1:length(red)
-            CT2{i} = cont(red{i}, thres(i));
-            CT2{i} = setsc(CT2{i}, scale);
-            parfor_progress;
-        end
-        
-        parfor_progress(0);
-        if ishandle(hDialog)
-            close(hDialog);
-        end
-        
-        delete(gcf);
-        ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
-        
-%     else
-%         warning('Set a numeric value for scale');
-%     end
-%     
-% else
-%     warning('Set a value for scale');
-% end
+set(handles.validateTresholdButton, 'Enable', 'off')
+set(handles.validateTresholdButton, 'String', 'Please wait...')
+pause(0.01);
+
+disp('Binarisation...');
+hDialog = msgbox(...
+    {'Performing Binarisation,', 'please wait...'}, ...
+    'Binarisation');
+
+thres = seuil;
+
+% add black border
+parfor_progress(length(red));
+for k = 1:length(red)
+    red{k} = imAddBlackBorder(red{k});
+    parfor_progress;
+end
+parfor_progress(0);
+if ishandle(hDialog)
+    close(hDialog);
+end
+
+% Compute the contour and use the scale
+disp('Contour');
+hDialog = msgbox(...
+    {'Computing contours,', 'please wait...'}, ...
+    'Contour');
+
+CT2 = cell(length(red),1);
+parfor_progress(length(red));
+for i = 1:length(red)
+    CT2{i} = cont(red{i}, thres(i));
+    CT2{i} = setsc(CT2{i}, scale);
+    parfor_progress;
+end
+
+parfor_progress(0);
+if ishandle(hDialog)
+    close(hDialog);
+end
+
+delete(gcf);
+ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial, ...
+    nbInit,N,folder_name,CT2,thres);

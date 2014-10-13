@@ -492,8 +492,8 @@ if step == 1
     end
 else
     col = cell(plage,1);
-    for i= 0 :plage-1
-        col{i} = imread(fullfile(folder_name,N(debut + step * i).name));
+    for i = 0:plage-1
+        col{i} = imread(fullfile(folder_name, N(debut + step * i).name));
     end
 end
 
@@ -579,7 +579,7 @@ disp('Curvature');
 
 % Alignment of all the results
 disp('Aligncurv');
-Sa = aligncurv(S,R);
+Sa = aligncurv(S, R);
 
 % Displacement
 disp('Displacement');

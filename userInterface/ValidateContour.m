@@ -91,7 +91,8 @@ imshow(red{1} > thres(1));
 hold on;
 drawContour(CT2{1} * scale, 'r', 'LineWidth', 1.5);
 
-indice = round(length(red)/2); % to have the midle of the directory
+% initialize middle image to the middle of the directory
+indice = round(length(red) / 2); 
 axes(handles.AxMiddle);
 imshow(red{indice} > thres(indice));
 hold on;

@@ -1,4 +1,4 @@
-function Csc=setsc(C,sc)
+function Csc = setsc(C,sc)
 %SETSC Open The functions C are rescaled with the scale sc pixel.mm^-1
 %Csc=setsc(C,sc)
 %
@@ -14,4 +14,5 @@ function Csc=setsc(C,sc)
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file
-Csc=C./sc;
+
+Csc = C ./ sc;
