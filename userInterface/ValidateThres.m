@@ -56,14 +56,25 @@ function ValidateThres_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 handles.output = hObject;
 
 % default is now 2 (was 0 before)
-flag = 2;
-setappdata(0, 'flag', flag);
-n = 1;
-setappdata(0, 'NumImage', n);
-setappdata(0, 'ValeurSeuillage', 0);
+% flag = 2;
+% setappdata(0, 'flag', flag);
+% n = 1;
+% setappdata(0, 'NumImage', n);
+% setappdata(0, 'ValeurSeuillage', 0);
 
-if nargin == 11 
-    % if user come from StartSkeleton, normal way ..
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+    % should be the canonical way of calling the program
+    
+    disp('validate threshold from app');
+    app = varargin{1};
+    setappdata(0, 'app', app);
+    
+    col = app.imageList;
+    
+elseif nargin == 11 
+    % if user come from StartSkeleton
+    warning('deprecated way of calling ValidateThresh');
+    
     col = varargin{4};
     fin = varargin{2};
     debut = varargin{1};
@@ -83,8 +94,12 @@ if nargin == 11
 elseif nargin == 4 
     % if user come from ValidateContour, back way
     col = varargin{1};
+    app = HypoGrowthApp();
+    app.imageList = col;
+    setappdata(0, 'app', app);
 %     imshow(col{1});
-    setappdata(0, 'col', col);
+%     setappdata(0, 'col', col);
+    
 else
     error('requires 11 or 4 input arguments');
 end
@@ -95,8 +110,8 @@ set(handles.currentFrameIndexLabel, 'String', string);
 
 set(handles.autoThresholdFinalEdit, 'String', num2str(imageNumber));
 
-% To show in default settings the width of the picture
-sizePixel = size(col{end},1);
+% % To show in default settings the width of the picture
+% sizePixel = size(col{end}, 1);
 
 set(handles.automaticThresholdRadioButton, 'Value', 1);
 set(handles.manualThresholdRadioButton, 'Value', 0);
@@ -118,6 +133,7 @@ thresholdValues = zeros(length(col), 1);
 for i = 1 : length(col)
     thresholdValues(i) = round(graythresh(col{i}) * 255);
 end
+app.thresholdValues = thresholdValues;
 
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Max', imageNumber); 
@@ -130,15 +146,18 @@ set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 currentThreshold = int16(thresholdValues(frameIndex));
 string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
+app.currentFrameIndex = frameIndex;
 
 % compute binarised image
 seg = col{1} > currentThreshold;
 axis(handles.axes1);
 imshow(seg);
 
-% store variables for future use
-setappdata(0, 'thresholdValues', thresholdValues);
-setappdata(0, 'sizePixel', sizePixel);
+% % store variables for future use
+% setappdata(0, 'thresholdValues', thresholdValues);
+% setappdata(0, 'sizePixel', sizePixel);
+
+setappdata(0, 'app', app);
 
 guidata(hObject, handles);
 
@@ -178,9 +197,12 @@ function frameIndexSlider_Callback(hObject, eventdata, handles)%#ok
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-thresholdValues = getappdata(0, 'thresholdValues');
+app = getappdata(0, 'app');
+% thresholdValues = getappdata(0, 'thresholdValues');
+thresholdValues = app.thresholdValues;
 
-red = getappdata(0, 'col');
+% red = getappdata(0, 'col');
+red = app.imageList;
 frameIndex = int16(get(handles.frameIndexSlider, 'Value'));
 
 currentFrame = red{frameIndex};
@@ -197,8 +219,9 @@ imageNumber = length(red);
 string = sprintf('Current Frame: %d / %d', frameIndex, imageNumber);
 set(handles.currentFrameIndexLabel, 'String', string);
 
-setappdata(0, 'NumImage', frameIndex);
-
+app.currentFrameIndex = frameIndex;
+% setappdata(0, 'NumImage', frameIndex);
+setappdata(0, 'app', app);
 
 % --- Executes during object creation, after setting all properties.
 function frameIndexSlider_CreateFcn(hObject, eventdata, handles)%#ok
@@ -222,8 +245,11 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok
 
 % Hint: get(hObject,'Value') returns toggle state of automaticThresholdRadioButton
 
-red = getappdata(0, 'col');
-n = getappdata(0, 'NumImage');
+app = getappdata(0, 'app');
+red = app.imageList;
+n = app.currentFrameIndex;
+% red = getappdata(0, 'col');
+% n = getappdata(0, 'NumImage');
 
 set(handles.manualThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'off');
@@ -238,7 +264,7 @@ set(handles.autoThresholdStartEdit, 'Visible', 'on');
 set(handles.autoThresholdFinalEdit, 'Visible', 'on');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
 
-flag = 2;
+% flag = 2;
 
 nImages = length(red);
 
@@ -247,13 +273,15 @@ thresholdValues = zeros(nImages, 1);
 for i = 1 : nImages
     thresholdValues(i) = round(graythresh(red{i}) * 255);
 end
+app.thresholdValues = thresholdValues;
 
 string = sprintf('Threshold for frame %d is %d', n, round(thresholdValues(n)));
 set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
-setappdata(0, 'thresholdValues', thresholdValues);
-setappdata(0, 'flag', flag);
+setappdata(0, 'app', app);
+% setappdata(0, 'thresholdValues', thresholdValues);
+% setappdata(0, 'flag', flag);
 
 % update display
 frameIndexSlider_Callback(hObject, eventdata, handles);
@@ -331,9 +359,15 @@ function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles)%#o
 % hObject    handle to updateAutomaticThresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-red     = getappdata(0, 'col');
-n       = getappdata(0, 'NumImage');
-seuil   = getappdata(0, 'thresholdValues');
+
+% extract application data
+app     = getappdata(0, 'app');
+red     = app.imageList;
+n       = app.currentFrameIndex;
+seuil   = app.thresholdValues;
+% red     = getappdata(0, 'col');
+% n       = getappdata(0, 'NumImage');
+% seuil   = getappdata(0, 'thresholdValues');
 nb      = length(red);
 
 addThres = get(handles.autoThresholdValueEdit, 'String');
@@ -371,7 +405,7 @@ end
 set(handles.updateAutomaticThresholdButton, 'Enable', 'off');
 set(handles.updateAutomaticThresholdButton, 'String', 'Wait please...');
 pause(0.01);
-flag = 2;
+% flag = 2;
 for i = start : fin
     if graythresh(red{i}) * 255 <= 255
         seuil(i) = round(graythresh(red{i}) * 255) + addThres;
@@ -389,8 +423,10 @@ string = sprintf('Threshold for frame %d is %d', n, seuil(n));
 set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
-setappdata(0, 'thresholdValues', seuil);
-setappdata(0, 'flag', flag);
+app.thresholdValues = seuil;
+setappdata(0, 'app', app);
+% setappdata(0, 'thresholdValues', seuil);
+% setappdata(0, 'flag', flag);
 frameIndexSlider_Callback(hObject, eventdata, handles);
 
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
@@ -420,8 +456,8 @@ set(handles.autoThresholdStartEdit, 'Visible', 'off');
 set(handles.autoThresholdFinalEdit, 'Visible', 'off');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'off');
 
-flag = 1;
-setappdata(0, 'flag', flag);
+% flag = 1;
+% setappdata(0, 'flag', flag);
 
 % --- Executes on slider movement.
 function manualThresholdSlider_Callback(hObject, eventdata, handles)%#ok % To change the value of smooth
@@ -435,19 +471,24 @@ function manualThresholdSlider_Callback(hObject, eventdata, handles)%#ok % To ch
 % get threshold value between 0 and 255
 val = round(get(handles.manualThresholdSlider, 'Value'));
 
-n = getappdata(0, 'NumImage');
-col = getappdata(0, 'col');
+app = getappdata(0, 'app');
+col = app.imageList;
+n   = app.currentFrameIndex;
+% n = getappdata(0, 'NumImage');
+% col = getappdata(0, 'col');
 
 axes(handles.axes1);
 imshow(col{end} > val);
 
-flag = 1;
+% flag = 1;
 
 nImages = length(col);
 thresholdValues = ones(nImages, 1) * val;
 
-setappdata(0, 'flag', flag);
-setappdata(0, 'thresholdValues', thresholdValues); 
+% setappdata(0, 'flag', flag);
+app.thresholdValues = thresholdValues;
+setappdata(0, 'app', app);
+% setappdata(0, 'thresholdValues', thresholdValues); 
 set(handles.manualThresholdValueLabel, 'String', num2str(thresholdValues(n)));
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 string = sprintf('Threshold for frame %d is %d', n, round(thresholdValues(n)));
@@ -541,9 +582,9 @@ function backToSelectionButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+app = getappdata(0, 'app');
 delete(gcf);
-StartSkeleton();
-
+StartSkeleton(app);
 
 
 % --- Executes on button press in validateTresholdButton.
@@ -557,25 +598,34 @@ function validateTresholdButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-seuil   = getappdata(0, 'thresholdValues');
-debut   = getappdata(0, 'debut');
-fin     = getappdata(0, 'fin');
-step    = getappdata(0, 'step');
-red     = getappdata(0, 'col');
-nbInit  = getappdata(0, 'nbInit');
-N       = getappdata(0, 'N');
-folder_name = getappdata(0, 'folder_name');
+app     = getappdata(0, 'app');
+seuil   = app.thresholdValues;
+debut   = app.firstIndex;
+fin     = app.lastIndex;
+step    = app.indexStep;
+red     = app.imageList;
+nbInit  = length(red);
+N       = length(red);
+folderName = app.inputImagesDir;
+% seuil   = getappdata(0, 'thresholdValues');
+% debut   = getappdata(0, 'debut');
+% fin     = getappdata(0, 'fin');
+% step    = getappdata(0, 'step');
+% red     = getappdata(0, 'col');
+% nbInit  = getappdata(0, 'nbInit');
+% N       = getappdata(0, 'N');
+% folderName = getappdata(0, 'folder_name');
 Size    = 0;
 scale   = get(handles.pixelScaleEdit, 'String');
 
 % To take the first value
 val = get(handles.directionFilterPopup, 'Value');
-setappdata(0, 'val', val);
+% setappdata(0, 'val', val);
 direction = get(handles.directionFilterPopup, 'String');
 
 % To take the second value
 val2 = get(handles.firstPointSkeletonPopup, 'Value'); 
-setappdata(0, 'val2', val2);
+% setappdata(0, 'val2', val2);
 dirInitial = get(handles.firstPointSkeletonPopup, 'String');
 
 direction = direction{val};
@@ -599,7 +649,7 @@ hDialog = msgbox(...
 
 thres = seuil;
 
-% add black border
+% add black border around each image
 parfor_progress(length(red));
 for k = 1:length(red)
     red{k} = imAddBlackBorder(red{k});
@@ -610,16 +660,21 @@ if ishandle(hDialog)
     close(hDialog);
 end
 
+% allocate memory for contour array
+CT2 = cell(length(red), 1);
+
 % Compute the contour and use the scale
 disp('Contour');
 hDialog = msgbox(...
     {'Computing contours,', 'please wait...'}, ...
     'Contour');
 
-CT2 = cell(length(red),1);
 parfor_progress(length(red));
 for i = 1:length(red)
+    % apply threshold and compute contour
     CT2{i} = cont(red{i}, thres(i));
+    
+    % rescale
     CT2{i} = setsc(CT2{i}, scale);
     parfor_progress;
 end
@@ -631,4 +686,4 @@ end
 
 delete(gcf);
 ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial, ...
-    nbInit,N,folder_name,CT2,thres);
+    nbInit,N,folderName,CT2,thres);

@@ -8,7 +8,7 @@ classdef HypoGrowthApp < handle
         %
         % Valid steps:
         % 'none'
-        % 'imageSelection'
+        % 'selection'
         % 'threshold'
         % 'contour'
         % 'skeleton'
@@ -16,7 +16,7 @@ classdef HypoGrowthApp < handle
         currentStep = 'none';
         
         % index of current frame for display
-        currentDisplayIndex = 1;
+        currentFrameIndex = 1;
         
         % list of images to process
         imageList = {};
@@ -31,7 +31,7 @@ classdef HypoGrowthApp < handle
         indexStep = 1;
         
         % spatial calibration of input images
-        pixelsize = 1;
+        pixelSize = 1;
         pixelSizeUnit = '';
         
         % time interval between two frames
@@ -39,7 +39,7 @@ classdef HypoGrowthApp < handle
         timeIntervalUnit = 'min';
         
         % the list of threshold values used to segment images
-        thresholdValueList = [];
+        thresholdValues = [];
         
         % length of window for smoothing coutours
         contourSmoothingSize = 200;

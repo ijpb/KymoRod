@@ -731,8 +731,8 @@ function selectImagesButton_Callback(hObject, eventdata, handles)%#ok
 
 % extract global data
 app = getappdata(0, 'app');
-colN         = app.imageList;
-nbInit = length(colN);
+colN        = app.imageList;
+nbInit      = length(colN);
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
 % nbInit      = getappdata(0, 'Nbimages');
@@ -757,10 +757,10 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     fin = nb;
     step = 1;
     
-%     setappdata(0, 'debut', debut);
-%     setappdata(0, 'fin', fin);
-    app.startIndex = debut;
-    app.lastIndex  = fin;
+% %     setappdata(0, 'debut', debut);
+% %     setappdata(0, 'fin', fin);
+%     app.startIndex = debut;
+%     app.lastIndex  = fin;
     
     disp('Opening directory ...');
     col = cell(nb, 1);
@@ -815,7 +815,7 @@ else
         return;
     end
     
-    % compute number of images after selection (sieving)
+    % compute number of images after selection
     nbstep = 0;
     for i = firstPicture:stepPicture:lastPicture
         nbstep = nbstep + 1;
@@ -841,6 +841,13 @@ else
     step = stepPicture;
 end
 
+app.firstIndex = debut;
+app.lastIndex = fin;
+app.indexStep = step;
+app.imageList = col;
+app.currentStep = 'selection';
+
 delete(gcf);
     
-ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
+% ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
+ValidateThres(app);
