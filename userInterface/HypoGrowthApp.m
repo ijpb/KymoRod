@@ -44,20 +44,38 @@ classdef HypoGrowthApp < handle
         % length of window for smoothing coutours
         contourSmoothingSize = 20;
         
-        % list of contours, one polygon by cell, in pixel unit
+        % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
         contourList = {};
         
+        % list of contours after rescaling, and translation wrt skeleton
+        % origin (old CT).
+        scaledContourList = {};
+        
         % location of the first point of the skeleton. Can be one of 
-        % 'bottom', 'top', 'left', 'right'.
+        % 'bottom', 'top', 'left', 'right'. 
         firstPointLocation = 'bottom';
         
-        % list of skeletons, one curve by cell, in pixel unit
+        % list of skeletons, one curve by cell, in pixel unit (old SKVerif)
         skeletonList = {};
         
-        % list of radius values
+        % list of skeletons after rescaling, and translation wrt first
+        % point of skeleton (olf SK).
+        scaledSkeletonList = {};
+        
+        % list of radius values (old 'rad')
         radiusList = {};
         
-        % maybe more to come...
+        % index of point corresponding to transition between root and
+        % hypocotyl (old 'shift').
+        originPosition = [0 0];
+        
+%         % maybe more to come...
+%         SK = varargin{17};
+%         CT = varargin{18};
+%         rad = varargin{19};
+%         SKVerif = varargin{20}; % obsolete
+%         CTVerif = varargin{21}; % obsolete
+%         shift = varargin{22};
     end
     
     methods

@@ -25,6 +25,7 @@ E=cell(length(SK)-step,1);
 parfor_progress(length(SK));
 
 parfor i=1:length(SK)-step
+% for i=1:length(SK)-step
    
 
     if length(SK{i})>2.*80 && length(SK{i+step})>2.*80

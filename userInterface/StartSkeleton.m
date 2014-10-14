@@ -63,8 +63,6 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     disp('init from HypoGrowthApp');
     
     app = varargin{1};
-    setappdata(0, 'app', app);
-    
 
     if strcmp(app.currentStep, 'none')
         % no image selected
@@ -128,6 +126,8 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
         set(handles.selectImagesButton, 'Visible', 'on');
     end
     
+    app.currentStep = 'selection';
+    setappdata(0, 'app', app);
     
 elseif nargin == 6 
     col = varargin{1};
@@ -186,6 +186,7 @@ elseif nargin == 6
 else 
     flag = 1;
 end
+
 
 setappdata(0, 'flag', flag);
 
@@ -841,11 +842,20 @@ else
     step = stepPicture;
 end
 
+% 
 app.firstIndex = debut;
 app.lastIndex = fin;
 app.indexStep = step;
 app.imageList = col;
-app.currentStep = 'selection';
+
+% get study calibration
+resolString = get(handles.spatialResolutionEdit, 'String');
+resol = str2double(resolString);
+app.pixelSize = resol;
+timeString = get(handles.timeIntervalEdit, 'String');
+time = str2double(timeString);
+app.timeInterval = time;
+
 
 delete(gcf);
     

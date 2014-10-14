@@ -1,4 +1,4 @@
-function [SK CT2 shift R SKVerif CTVerif error]=skel55(CT,dir,dir2)    
+function [SK, CT2, shift, R, SKVerif, CTVerif, error] = skel55(CT, dir, dir2)    
 %SKELL55 Skeletonization SK of the contour CT by voronoisaition
 %[SK CT2 shift rad error]=skel55(CT,dir,dir2)
 %
@@ -155,9 +155,9 @@ jp=j;
 i=1;
 
 %Hierarchisation of the voronoi diagram
-[SK2 R2 ordre]=branche(V,V_F,F,dist,jp,j,0,0);
+[SK2, R2, ordre]=branche(V,V_F,F,dist,jp,j,0,0);
 %the skeleton SK is the biggest branch of the diagram
-[SK R]=bigbranche(SK2,ordre,R2);
+[SK, R]=bigbranche(SK2,ordre,R2);
 
 
 % coordinates at bottom left

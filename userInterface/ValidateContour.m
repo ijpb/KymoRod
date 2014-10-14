@@ -271,22 +271,6 @@ app = getappdata(0, 'app');
 smooth  = app.contourSmoothingSize;
 CT2     = app.contourList;
 red     = app.imageList;
-indice  = app.currentFrameIndex;
-seuil   = app.thresholdValues;
-thres   = app.thresholdValues;
-scale   = app.pixelSize;
-size    = 0;
-debut   = app.firstIndex;
-fin     = app.lastIndex;
-step    = app.indexStep;
-% direction   = getappdata(0, 'direction');
-% dirInitial  = getappdata(0, 'dirInitial');
-% nbInit  = getappdata(0, 'nbInit');
-% N       = getappdata(0, 'N');
-folderName = app.inputImagesDir;
-
-N = length(red);
-nbInit = length(red);
 
 % smooth  = getappdata(0, 'smooth');
 % CT2     = getappdata(0, 'CT2');
@@ -308,7 +292,7 @@ nbInit = length(red);
 % dir = direction;
 % dirbegin = dirInitial;
 direction = 'boucle';
-dirInitial = app.firstPointLocation;
+% dirInitial = app.firstPointLocation;
 dir = direction;
 dirbegin = app.firstPointLocation;
 
@@ -333,12 +317,17 @@ for i = 1:length(red)
         contour = smoothContour(contour, smooth);
     end
     
+    CTVerif{i} = contour;
+    
     % scale contour in user unit
-    contour = contour * app.pixelSize;
+    contour = contour * app.pixelSize / 1000;
     
     % Skeleton of current contour
 %     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i}, dir, dirbegin);
     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(contour, dir, dirbegin);
+%     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
+%     [SK{i}, CT{i}, shift{i}] = shiftSkeleton(SKVerif{i}, contour);
+    
     parfor_progress;
 end
 
@@ -346,9 +335,18 @@ parfor_progress(0);
 if ishandle(hDialog)
     close(hDialog);
 end
-           
+
+app.skeletonList = SKVerif;
+
+app.scaledContourList = CT;
+app.scaledSkeletonList = SK;
+app.radiusList = rad;
+app.originPosition = shift;
+setappdata(0, 'app', app); 
+
 delete(gcf);
 
 % Call the next window
-ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres,scale,size,...
-    seuil,debut,fin,step,nbInit,N,folderName,SK,CT,rad,SKVerif,CTVerif,shift); 
+ValidateSkeleton(app);
+% ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres,scale,size,...
+%     seuil,debut,fin,step,nbInit,N,folderName,SK,CT,rad,SKVerif,CTVerif,shift); 
