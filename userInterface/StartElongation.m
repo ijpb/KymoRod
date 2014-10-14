@@ -56,8 +56,33 @@ function StartElongation_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for StartElongation
 handles.output = hObject;
 
-if nargin == 18 
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+    disp('init from HypoGrowthApp');
+    
+    app = varargin{1};
+    app.currentStep = 'elongation';
+    setappdata(0, 'app', app);
+
+    red     = app.imageList;
+    CT      = app.scaledContourList;
+    SK      = app.scaledSkeletonList;
+    R       = app.radiusList;
+    shift   = app.originPosition;
+    CTVerif = app.contourList;
+    SKVerif = app.skeletonList;
+    seuil   = app.thresholdValues;
+    scale   = 1000 / app.pixelSize;
+    debut   = app.firstIndex;
+    fin     = app.lastIndex;
+    step    = app.indexStep;
+    nbInit  = length(red);
+    N       = length(red);
+    folder_name = app.inputImagesDir;
+
+    
+elseif nargin == 18 
     % if user come from ValidateSkeleton, normal way
+    disp('old way of calling StartElongation');
     red = varargin{1};
     CT = varargin{2};
     SK = varargin{3};
@@ -166,7 +191,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 
 delete(gcf);
 StartProgramm();
-
+%TODO: add call with app
 
 function timeIntervalEdit_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to timeIntervalEdit (see GCBO)
@@ -422,6 +447,8 @@ function changeInputDirectoryButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% TODO: was not modified. Proposal is to remove it.
+
 debut   = getappdata(0, 'debut');
 fin     = getappdata(0, 'fin');
 step    = getappdata(0, 'step');
@@ -506,42 +533,61 @@ function validateSettingsButton_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to validateSettingsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
 % To start the programm
-set(handles.validateSettingsButton,'Enable','off')
-set(handles.validateSettingsButton,'String','Wait please...')
+set(handles.validateSettingsButton, 'Enable', 'off')
+set(handles.validateSettingsButton, 'String', 'Wait please...')
 pause(0.01);
 
-SK = getappdata(0,'SK');
-CT = getappdata(0,'CT');%#ok
-red = getappdata(0,'red');
-R = getappdata(0,'R');
-SKVerif = getappdata(0,'SKVerif');
-CTVerif = getappdata(0,'CTVerif');
-seuil = getappdata(0,'seuil');
-scale = getappdata(0,'scale');
-shift = getappdata(0,'shift');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-stepPicture = getappdata(0,'step');
+% get global data
+app = getappdata(0, 'app');
+red     = app.imageList;
+% CT      = app.scaledContourList;
+SK      = app.scaledSkeletonList;
+R       = app.radiusList;
+shift   = app.originPosition;
+CTVerif = app.contourList;
+SKVerif = app.skeletonList;
+seuil   = app.thresholdValues;
+scale   = 1000 ./ app.pixelSize;
+debut   = app.firstIndex;
+fin     = app.lastIndex;
+stepPicture    = app.indexStep;
+N       = length(red);
+folderName = app.inputImagesDir;
+
+% SK      = getappdata(0, 'SK');
+% CT      = getappdata(0, 'CT');%#ok
+% red     = getappdata(0, 'red');
+% R       = getappdata(0, 'R');
+% SKVerif = getappdata(0, 'SKVerif');
+% CTVerif = getappdata(0, 'CTVerif');
+% seuil   = getappdata(0, 'seuil');
+% scale   = getappdata(0, 'scale');
+% shift   = getappdata(0, 'shift');
+% debut   = getappdata(0, 'debut');
+% fin     = getappdata(0, 'fin');
+% N       = getappdata(0, 'N');
+% folder_name = getappdata(0,'folder_name');
+% stepPicture = getappdata(0,'step');
 
 tic;
 t0 = get(handles.timeIntervalEdit, 'String');
 
 if get(handles.useDefaultSettingsRadioButton, 'Value') == 1
     % default values
-    iw = '10';
-    nx = '500';
-    ws = '15';
+    iw  = '10';
+    nx  = '500';
+    ws  = '15';
     ws2 = '30';
     step = '2';
     
 elseif get(handles.changeSettingsRadioButton, 'Value') == 1
     % Take the parameters given by the user
-    iw = get(handles.smoothingLengthEdit,'String'); 
-    nx = get(handles.pointNumberEdit,'String');
-    ws = get(handles.correlationWindowSize1Edit,'String');
+    iw  = get(handles.smoothingLengthEdit,'String'); 
+    nx  = get(handles.pointNumberEdit,'String');
+    ws  = get(handles.correlationWindowSize1Edit,'String');
     ws2 = get(handles.correlationWindowSize2Edit,'String');
     step = get(handles.displacementStepEdit,'String');
 end
@@ -551,12 +597,12 @@ if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || le
     return;
 end
 
-iw = str2num(iw);%#ok
-nx = str2num(nx);%#ok
-ws = str2num(ws);%#ok
+iw  = str2num(iw);%#ok
+nx  = str2num(nx);%#ok
+ws  = str2num(ws);%#ok
 ws2 = str2num(ws2);%#ok
 step = str2num(step);%#ok
-t0 = str2num(t0);%#ok
+t0  = str2num(t0);%#ok
 
 if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step) || isempty(t0)
     warning('Value must be a number');
@@ -575,30 +621,31 @@ we = 1;
 
 % Curvature
 disp('Curvature');
-[S, A, C] = curvall(SK,iw);
+[S, A, C] = curvall(SK, iw);
 
 % Alignment of all the results
-disp('Aligncurv');
+disp('Alignment of curves');
 Sa = aligncurv(S, R);
 
 % Displacement
 disp('Displacement');
-E = displall(SK,Sa,red,scale,shift,ws,we,step);
+E = displall(SK, Sa, red, scale, shift, ws, we, step);
 
 % Elongation
 disp('Elongation');
-[Elg, E2] = elgall(E,t0,step,ws2);
+[Elg, E2] = elgall(E, t0, step, ws2);
 
 %  Space-time mapping
-ElgE1 = reconstruct_Elg2(nx,Elg);
-CE1 = reconstruct_Elg2(nx,C,Sa);
-AE1 = reconstruct_Elg2(nx,A,Sa);
-RE1 = reconstruct_Elg2(nx,R,Sa);
+ElgE1 = reconstruct_Elg2(nx, Elg);
+CE1 = reconstruct_Elg2(nx, C, Sa);
+AE1 = reconstruct_Elg2(nx, A, Sa);
+RE1 = reconstruct_Elg2(nx, R, Sa);
 
 disp('Programm done');
 toc;
 delete(gcf);
+
 % FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
 %     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
 DisplayKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
-    scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
+    scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folderName);

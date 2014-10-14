@@ -12,6 +12,7 @@ classdef HypoGrowthApp < handle
         % 'threshold'
         % 'contour'
         % 'skeleton'
+        % 'elongation'
         % 'kymogram'
         currentStep = 'none';
         
@@ -65,17 +66,21 @@ classdef HypoGrowthApp < handle
         % list of radius values (old 'rad')
         radiusList = {};
         
-        % index of point corresponding to transition between root and
-        % hypocotyl (old 'shift').
-        originPosition = [0 0];
+        % coordinates of the first point of the skeleton for each image
+        originPosition = {};
         
-%         % maybe more to come...
-%         SK = varargin{17};
-%         CT = varargin{18};
-%         rad = varargin{19};
-%         SKVerif = varargin{20}; % obsolete
-%         CTVerif = varargin{21}; % obsolete
-%         shift = varargin{22};
+        % smoothing window size for computation of curvature
+        curvatureSmoothingSize = 10;
+        
+        % size of first correlation window (in pixels)
+        windowSize1 = 15;
+        % size of second correlation window (in pixels)
+        windowSize2 = 20;
+        
+        % length of displacement (in pixels)
+        displacementStep = 2;
+        
+        finalResultLength = 500;
     end
     
     methods

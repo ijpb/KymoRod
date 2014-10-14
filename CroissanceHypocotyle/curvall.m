@@ -1,4 +1,4 @@
-function [S A C] = curvall(SK, ws)
+function [S, A, C] = curvall(SK, ws)
 %CURVALL Compute the curvilinear abscissa S, the angle A with the vertical, and the curvature C of the Skeleton SK.
 % 
 % [S A C] = curvall(SK, WS)
@@ -31,15 +31,15 @@ parfor i = 1:length(SK)
         % Computation of the curvilinear abscissa
         S{i} = curvilin(SK{i});
         
-		% Computation of the angle A and tghe curvature C
-        [A{i} C{i}]=curvature(SK{i},S{i},ws);
+		% Computation of the angle A and the curvature C
+        [A{i}, C{i}] = curvature(SK{i}, S{i}, ws);
     else
-        %if the length is too small gives standard size of 0 in order to
-        %avoid the errors
+        % if the length is too small gives standard size of 0 in order to
+        % avoid the errors
         S{i} = (1:10)';
         A{i} = 0.*S{i};
         C{i} = 0.*S{i};
-        diam{i} = 0.*S{i};
+%         diam{i} = 0.*S{i};
     end
     parfor_progress;
 
