@@ -548,15 +548,15 @@ red     = app.imageList;
 SK      = app.scaledSkeletonList;
 R       = app.radiusList;
 shift   = app.originPosition;
-CTVerif = app.contourList;
-SKVerif = app.skeletonList;
-seuil   = app.thresholdValues;
+% CTVerif = app.contourList;
+% SKVerif = app.skeletonList;
+% seuil   = app.thresholdValues;
 scale   = 1000 ./ app.pixelSize;
-debut   = app.firstIndex;
-fin     = app.lastIndex;
-stepPicture    = app.indexStep;
-N       = length(red);
-folderName = app.inputImagesDir;
+% debut   = app.firstIndex;
+% fin     = app.lastIndex;
+% stepPicture    = app.indexStep;
+% N       = length(red);
+% folderName = app.inputImagesDir;
 
 % SK      = getappdata(0, 'SK');
 % CT      = getappdata(0, 'CT');%#ok
@@ -669,7 +669,8 @@ setappdata(0, 'app', app);
 delete(gcf);
 
 disp('Display Kymographs');
-% FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
-%     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
-DisplayKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
-    scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folderName);
+DisplayKymograph(app);
+% % FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
+% %     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
+% DisplayKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
+%     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folderName);
