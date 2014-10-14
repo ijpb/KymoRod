@@ -81,6 +81,24 @@ classdef HypoGrowthApp < handle
         displacementStep = 2;
         
         finalResultLength = 500;
+        
+        abscissaList;
+
+        verticalAngleList;
+        
+        curvatureList;
+        
+        displacementList;
+        
+        elongationList;
+        
+        elongationImage;
+        
+        curvatureImage;
+        
+        verticalAngleImage;
+        
+        radiusImage;
     end
     
     methods

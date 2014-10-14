@@ -547,21 +547,21 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 
-red     = app.imageList;
-CT      = app.scaledContourList;
-SK      = app.scaledSkeletonList;
-R       = app.radiusList;
-shift   = app.originPosition;
-CTVerif = app.contourList;
-SKVerif = app.skeletonList;
-seuil   = app.thresholdValues;
-scale   = 1000 ./ app.pixelSize;
-debut   = app.firstIndex;
-fin     = app.lastIndex;
-step    = app.indexStep;
-nbInit  = length(R);
-N       = length(R);
-folderName = app.inputImagesDir;
+% red     = app.imageList;
+% CT      = app.scaledContourList;
+% SK      = app.scaledSkeletonList;
+% R       = app.radiusList;
+% shift   = app.originPosition;
+% CTVerif = app.contourList;
+% SKVerif = app.skeletonList;
+% seuil   = app.thresholdValues;
+% scale   = 1000 ./ app.pixelSize;
+% debut   = app.firstIndex;
+% fin     = app.lastIndex;
+% step    = app.indexStep;
+% nbInit  = length(R);
+% N       = length(R);
+% folderName = app.inputImagesDir;
 
 % red = getappdata(0,'red');
 % CT = getappdata(0,'CT');
@@ -581,4 +581,5 @@ folderName = app.inputImagesDir;
 
 delete(gcf);
 
-StartElongation(red,CT,SK,R,shift,CTVerif,SKVerif,seuil,scale,debut,fin,step,nbInit,N,folderName);
+% StartElongation(red,CT,SK,R,shift,CTVerif,SKVerif,seuil,scale,debut,fin,step,nbInit,N,folderName);
+StartElongation(app);

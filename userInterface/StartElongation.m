@@ -81,8 +81,9 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
 
     
 elseif nargin == 18 
-    % if user come from ValidateSkeleton, normal way
-    disp('old way of calling StartElongation');
+    % if user come from ValidateSkeleton
+    warning('old way of calling StartElongation');
+    
     red = varargin{1};
     CT = varargin{2};
     SK = varargin{3};
@@ -617,6 +618,14 @@ end
 % ?
 we = 1; 
 
+% store new settings in Application Data
+app.curvatureSmoothingSize = iw;
+app.windowSize1 = ws;
+app.windowSize2 = ws2;
+app.displacementStep = step;
+app.finalResultLength = nx;
+
+
 % Start the program
 
 % Curvature
@@ -641,10 +650,25 @@ CE1 = reconstruct_Elg2(nx, C, Sa);
 AE1 = reconstruct_Elg2(nx, A, Sa);
 RE1 = reconstruct_Elg2(nx, R, Sa);
 
-disp('Programm done');
 toc;
+
+% store results in Application Data
+app.abscissaList        = Sa;
+app.verticalAngleList   = A;
+app.curvatureList       = C;
+app.displacementList    = E;
+app.elongationList      = Elg;
+
+app.elongationImage     = ElgE1;
+app.curvatureImage      = CE1;
+app.verticalAngleImage  = AE1;
+app.radiusImage         = RE1;
+
+setappdata(0, 'app', app);
+
 delete(gcf);
 
+disp('Display Kymographs');
 % FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
 %     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
 DisplayKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
