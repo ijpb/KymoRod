@@ -60,12 +60,19 @@ guidata(hObject, handles);
 
 % UIWAIT makes StartComposedElongation wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-if nargin == 3
-    [FileName,PathName] = uigetfile('*.mat','Select the MATLAB code file');
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+    % should be the canonical way of calling the program
+    
+    disp('Compute Composed elongation from app');
+    app = varargin{1};    
+    setappdata(0, 'app', app);
+    
+elseif nargin == 3
+    [FileName, PathName] = uigetfile('*.mat','Select the MATLAB code file');
     if PathName == 0
-        warning('Select a directory please'); %#ok
+        warning('Select a directory please');
     else
-        file = fullfile(PathName,FileName);
+        file = fullfile(PathName, FileName);
         load(file);
         
         setappdata(0,'Elg',Elongation);
@@ -97,10 +104,10 @@ if nargin == 3
             disp('Opening directory ...');
             red=cell(nb,1);
             parfor_progress(nb);
-            for i=debut:fin
+            for i = debut:fin
                 try
                     red{i - debut + 1}=imread(fullfile(folder_name,N(i).name));
-                catch e%#ok
+                catch e%#ok<NASGU> 
                     disp('Pictures''s folder not found');
                     delete(gcf);
                     return;
@@ -194,10 +201,12 @@ elseif nargin == 31
     setappdata(0,'folder_name',folder_name);
     
 end 
+   
+axes(handles.axes1);
 
-     
-axes(handles.axes1);%#ok
+red = app.imageList;
 imshow(red{end});
+
 
 % --- Outputs from this function are returned to the command line.
 function varargout = StartComposedElongation_OutputFcn(hObject, eventdata, handles) %#ok
@@ -222,113 +231,142 @@ function pushbutton2_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to pushbutton2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-set(handles.pushbutton2,'Enable','off')
-set(handles.pushbutton2,'String','Wait please...')
+
+set(handles.pushbutton2, 'Enable', 'Off')
+set(handles.pushbutton2, 'String', 'Wait please...')
 pause(0.01);
+
 disp('Composed elongation ...')
-Sa = getappdata(0,'Sa');
-R = getappdata(0,'R');
-Elg = getappdata(0,'Elg');
-scale = getappdata(0,'scale');
-red = getappdata(0,'red');
-C = getappdata(0,'C');
-A = getappdata(0,'A');
-t0 = getappdata(0,'t0');
-nx = getappdata(0,'nx');
-E2 = getappdata(0,'E2');
-SK = getappdata(0,'SK');
-shift = getappdata(0,'shift');
-seuil = getappdata(0,'seuil');%#ok
-CTVerif = getappdata(0,'CTVerif');
-SKVerif = getappdata(0,'SKVerif');
-ws2 = getappdata(0,'ws2');
-ws = getappdata(0,'ws');
-iw = getappdata(0,'iw');
-seuil = getappdata(0,'seuil');
-step = getappdata(0,'step');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-stepPicture = getappdata(0,'stepPicture');
+
+app     = getappdata(0, 'app');
+Sa      = app.abscissaList;
+R       = app.radiusList;
+Elg     = app.elongationList;
+scale   = 1000 / app.pixelSize;
+red     = app.imageList;
+C       = app.curvatureList;
+A       = app.verticalAngleList;
+t0      = app.timeInterval;
+nx      = app.finalResultLength;
+E2      = app.smoothedDisplacementList;
+SK      = app.scaledSkeletonList;
+shift   = app.originPosition;
+seuil   = app.thresholdValues;
+CTVerif = app.contourList;
+SKVerif = app.skeletonList;
+ws2     = app.windowSize2;
+ws      = app.windowSize1;
+iw      = app.curvatureSmoothingSize;
+step    = app.displacementStep;
+debut   = app.firstIndex;
+fin     = app.lastIndex;
+N       = length(red);
+folder_name = app.inputImagesDir;
+stepPicture = app.indexStep;
+
+% Sa = getappdata(0,'Sa');
+% R = getappdata(0,'R');
+% Elg = getappdata(0,'Elg');
+% scale = getappdata(0,'scale');
+% red = getappdata(0,'red');
+% C = getappdata(0,'C');
+% A = getappdata(0,'A');
+% t0 = getappdata(0,'t0');
+% nx = getappdata(0,'nx');
+% E2 = getappdata(0,'E2');
+% SK = getappdata(0,'SK');
+% shift = getappdata(0,'shift');
+% seuil = getappdata(0,'seuil');%#ok
+% CTVerif = getappdata(0,'CTVerif');
+% SKVerif = getappdata(0,'SKVerif');
+% ws2 = getappdata(0,'ws2');
+% ws = getappdata(0,'ws');
+% iw = getappdata(0,'iw');
+% seuil = getappdata(0,'seuil');
+% step = getappdata(0,'step');
+% debut = getappdata(0,'debut');
+% fin = getappdata(0,'fin');
+% N = getappdata(0,'N');
+% folder_name = getappdata(0,'folder_name');
+% stepPicture = getappdata(0,'stepPicture');
+
 
  %% Detection of the transition between root and hypoctyl
-    %
-    Smax = 4;
-    Phr=hyproot(R,Sa,Smax);
+ 
+ %
+ Smax = 4;
+ Phr = hyproot(R, Sa, Smax);
+ 
+ % split data  vectors at transition point
+ [Sa1, Sa2] = deccurv(Sa, Phr);
+ [E21, E22] = deccurv(E2, Phr);
+ [Elg1, Elg2] = deccurv(Elg, Phr);
+ [Enorm1, Enorm2] = displnorm(E22, E21);
+ 
+ %Phh=hyphook(C,Sa1);
+ %[Elg3 Elg4]=deccurv2(Phh,Elg1);
+ %[R3 R4]=deccurv2(Phh,Sa1,R);
+ %[A3 A4]=deccurv2(Phh,Sa1,A);
+ %[C3 C4]=deccurv2(Phh,Sa1,C);
     
-    
-    %decay of the functions
-    [Sa1 Sa2]=deccurv(Sa,Phr);
-    [E21 E22]=deccurv(E2,Phr);
-    [Elg1 Elg2]=deccurv(Elg,Phr);
-    [Enorm1 Enorm2]=displnorm(E22,E21);
-    
-    %Phh=hyphook(C,Sa1);
-    %[Elg3 Elg4]=deccurv2(Phh,Elg1);
-    %[R3 R4]=deccurv2(Phh,Sa1,R);
-    %[A3 A4]=deccurv2(Phh,Sa1,A);    
-    %[C3 C4]=deccurv2(Phh,Sa1,C); 
 %% Separate hypocotyl and Root
     
-    %[tdecr tdech Elgr Elgh]=hyprootdec(Elg1,SK,shift,scale,red);
-    
-    %Separation of hypoctyl and roots
-    [Elgr Elgh tdecr tdech]=hyprootdec2(SK,shift,scale,red,Elg1);%#ok
-    [Er Eh tdecr tdech]=hyprootdec2(SK,shift,scale,red,Enorm1);%#ok
-    [Cr Ch]=hyprootdec2(SK,shift,scale,red,Sa1,C);%#ok
-    
-    %Detection of the top of the hook (maxima of curvature)
-    Phh=hyphook2(Ch);      
-    
-    %Hypocotyl: From the apex to the base
-    [Elgh1 Elgh2]=deccurv2(Phh,Elgh);
-    [Eh1 Eh2]=deccurv2(Phh,Eh);    %#ok
-    
-    %Ltot total length of the organ
-    %Lgz length of the growth zone
-    %Emoy averaged elongation in the growth zone
-    
-    [Ltotr Lgzr Emoyr]=growthlength(Elgr);%#ok % a quoi ca sert?
-    [Ltoth Lgzh Emoyh]=growthlength(Elgh1);%#ok
+% [tdecr tdech Elgr Elgh]=hyprootdec(Elg1,SK,shift,scale,red);
+
+% Separation of hypoctyl and roots
+[Elgr Elgh tdecr tdech] = hyprootdec2(SK,shift,scale,red,Elg1);%#ok
+[Er Eh tdecr tdech] = hyprootdec2(SK,shift,scale,red,Enorm1);%#ok
+[Cr Ch] = hyprootdec2(SK,shift,scale,red,Sa1,C);%#ok
+
+% Detection of the top of the hook (maxima of curvature)
+Phh = hyphook2(Ch);
+
+% Hypocotyl: From the apex to the base
+[Elgh1, Elgh2] = deccurv2(Phh,Elgh);
+[Eh1 Eh2] = deccurv2(Phh,Eh);    %#ok
+
+%Ltot total length of the organ
+%Lgz length of the growth zone
+%Emoy averaged elongation in the growth zone
+
+[Ltotr Lgzr Emoyr] = growthlength(Elgr);%#ok % a quoi ca sert?
+[Ltoth Lgzh Emoyh] = growthlength(Elgh1);%#ok
 
 
 %% radial Elongation
-    [ElgR anis]=elongrad(Elg2,Sa2,Elg2{end}(1,1)-Elg1{end}(1,1),R,t0);
-    %[ElgR anis]=elongrad(Elg,Sa,0,R,t0);
+[ElgR, anis] = elongrad(Elg2,Sa2,Elg2{end}(1,1)-Elg1{end}(1,1),R,t0);
+%[ElgR anis]=elongrad(Elg,Sa,0,R,t0);
 
 
 %%  Space-time mapping
-% Subsampling size
 
-    
-    ElgE1=reconstruct_Elg2(nx,Elg);     
-    ElgE2=reconstruct_Elg2(nx,Elg2);    
-    %ElgE3=reconstruct_Elg2(nx,Elg4);
+ElgE1 = reconstruct_Elg2(nx,Elg);
+ElgE2 = reconstruct_Elg2(nx,Elg2);
+%ElgE3=reconstruct_Elg2(nx,Elg4);
 
-    CE1=reconstruct_Elg2(nx,C,Sa);
-    CE2=reconstruct_Elg2(nx,C,Sa2);
-    %CE3=reconstruct_Elg2(nx,C4);
-    AE1=reconstruct_Elg2(nx,A,Sa);
-    AE2=reconstruct_Elg2(nx,A,Sa2);
-    %AE3=reconstruct_Elg2(nx,A4);   
-    RE1=reconstruct_Elg2(nx,R,Sa);
-    RE2=reconstruct_Elg2(nx,R,Sa2);
-    %RE3=reconstruct_Elg2(nx,R4);
-    EnormE=reconstruct_Elg2(nx,Enorm2);
+CE1 = reconstruct_Elg2(nx,C,Sa);
+CE2 = reconstruct_Elg2(nx,C,Sa2);
+%CE3=reconstruct_Elg2(nx,C4);
+AE1 = reconstruct_Elg2(nx,A,Sa);
+AE2 = reconstruct_Elg2(nx,A,Sa2);
+%AE3=reconstruct_Elg2(nx,A4);
+RE1 = reconstruct_Elg2(nx,R,Sa);
+RE2 = reconstruct_Elg2(nx,R,Sa2);
+%RE3=reconstruct_Elg2(nx,R4);
+EnormE = reconstruct_Elg2(nx,Enorm2);
 
-    ElgEh=reconstruct_Elg2(nx,Elgh2);
-    ElgEr=reconstruct_Elg2(nx,Elgr);
-    EEh=reconstruct_Elg2(nx,Eh2);
-    EEr=reconstruct_Elg2(nx,Er);    
-    ElgRE=reconstruct_Elg2(nx,ElgR);
-    anisE=reconstruct_Elg2(nx,anis);
+ElgEh = reconstruct_Elg2(nx,Elgh2);
+ElgEr = reconstruct_Elg2(nx,Elgr);
+EEh = reconstruct_Elg2(nx,Eh2);
+EEr = reconstruct_Elg2(nx,Er);
+ElgRE = reconstruct_Elg2(nx,ElgR);
+anisE = reconstruct_Elg2(nx,anis);
 
-    delete(gcf);
-    FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,scale,Elg,C,A,R,Sa...
+delete(gcf);
+FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,scale,Elg,C,A,R,Sa...
     ,t0,step,ws2,ws,nx,iw,E2,SK,shift,ElgE2,CE2,AE2,RE2,EnormE...
-        ,ElgEh,ElgEr,EEh,EEr,ElgRE,anisE,Elg2,Sa2,Enorm2,Elgh2,Elgr,Eh2,Er,ElgR,anis...
-        ,debut,fin,stepPicture,N,folder_name);
+    ,ElgEh,ElgEr,EEh,EEr,ElgRE,anisE,Elg2,Sa2,Enorm2,Elgh2,Elgr,Eh2,Er,ElgR,anis...
+    ,debut,fin,stepPicture,N,folder_name);
     
 
 

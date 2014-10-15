@@ -90,7 +90,10 @@ classdef HypoGrowthApp < handle
         
         displacementList;
         
+        smoothedDisplacementList;
+        
         elongationList;
+        
         
         elongationImage;
         

@@ -70,60 +70,60 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
 %     else
         % images already selected
         
-        % extract input data
-        col         = app.imageList;
-        fileList    = app.imageNameList;
-        folderName  = app.inputImagesDir;
-        
-        set(handles.axis1Label, 'Visible', 'on');
-        set(handles.axis2Label, 'Visible', 'on');
-        set(handles.axes1, 'Visible', 'on');
-        set(handles.axes2, 'Visible', 'on');
-        set(handles.keepAllFramesRadioButton, 'Visible', 'on');
-        set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
-        
-        nImages = length(col);
-        
-        set(handles.framePreviewSlider, 'Value', 1);
-        set(handles.framePreviewSlider, 'Min', 1);
-        set(handles.framePreviewSlider, 'Max', nImages - 1);
-        set(handles.framePreviewSlider, 'Visible', 'on');
-        
-        % setup slider such that 1 image is changed at a time
-        step1 = 1 / (nImages - 1);
-        step2 = min(10 / (nImages - 1), .5);
-        set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
-        
-        set(handles.framePreviewLabel, 'Visible', 'on');
-        
-        % demo images
-        mini = cell(2,1);
-        for i = 1:2
-            mini{i} = col{i};
-        end
-        
-        % display first image
-        axes(handles.axes1);
-        imshow(mini{1});
-        set(handles.axis1Label, 'String', '1');
-        
-        % display second image
-        axes(handles.axes2);
-        imshow(mini{2});
-        set(handles.axis2Label, 'String', '2');
-        
-        % update globale variables
-        setappdata(0, 'Nbimages', nb);
-        setappdata(0, 'NomRep', fileList);
-        setappdata(0, 'RepertoireImage', folderName);
-        setappdata(0, 'col', col);
-        
+%         % extract input data
+%         col         = app.imageList;
+%         fileList    = app.imageNameList;
+%         folderName  = app.inputImagesDir;
+%         
+%         set(handles.axis1Label, 'Visible', 'on');
+%         set(handles.axis2Label, 'Visible', 'on');
+%         set(handles.axes1, 'Visible', 'on');
+%         set(handles.axes2, 'Visible', 'on');
+%         set(handles.keepAllFramesRadioButton, 'Visible', 'on');
+%         set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
+%         
+%         nImages = length(col);
+%         
+%         set(handles.framePreviewSlider, 'Value', 1);
+%         set(handles.framePreviewSlider, 'Min', 1);
+%         set(handles.framePreviewSlider, 'Max', nImages - 1);
+%         set(handles.framePreviewSlider, 'Visible', 'on');
+%         
+%         % setup slider such that 1 image is changed at a time
+%         step1 = 1 / (nImages - 1);
+%         step2 = min(10 / (nImages - 1), .5);
+%         set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
+%         
+%         set(handles.framePreviewLabel, 'Visible', 'on');
+%         
+%         % demo images
+%         mini = cell(2,1);
+%         for i = 1:2
+%             mini{i} = col{i};
+%         end
+%         
+%         % display first image
+%         axes(handles.axes1);
+%         imshow(mini{1});
+%         set(handles.axis1Label, 'String', '1');
+%         
+%         % display second image
+%         axes(handles.axes2);
+%         imshow(mini{2});
+%         set(handles.axis2Label, 'String', '2');
+%         
+%         % update globale variables
+%         setappdata(0, 'Nbimages', nb);
+%         setappdata(0, 'NomRep', fileList);
+%         setappdata(0, 'RepertoireImage', folderName);
+%         setappdata(0, 'col', col);
+%         
 %         flag = 2;
-        
-        string = sprintf('Select a range among the %d frames', nb);
-        set(handles.selectFramesIndicesRadioButton, 'String', string);
-        
-        set(handles.selectImagesButton, 'Visible', 'on');
+%         
+%         string = sprintf('Select a range among the %d frames', nb);
+%         set(handles.selectFramesIndicesRadioButton, 'String', string);
+%         
+%         set(handles.selectImagesButton, 'Visible', 'on');
 %     end
     
     app.currentStep = 'selection';

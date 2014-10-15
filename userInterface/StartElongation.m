@@ -62,43 +62,10 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     app = varargin{1};
     app.currentStep = 'elongation';
     setappdata(0, 'app', app);
-
-%     red     = app.imageList;
-%     CT      = app.scaledContourList;
-%     SK      = app.scaledSkeletonList;
-%     R       = app.radiusList;
-%     shift   = app.originPosition;
-%     CTVerif = app.contourList;
-%     SKVerif = app.skeletonList;
-%     seuil   = app.thresholdValues;
-%     scale   = 1000 / app.pixelSize;
-%     debut   = app.firstIndex;
-%     fin     = app.lastIndex;
-%     step    = app.indexStep;
-%     nbInit  = length(red);
-%     N       = length(red);
-%     folder_name = app.inputImagesDir;
-
-    
+ 
 elseif nargin == 18 
     % if user come from ValidateSkeleton
     warning('old way of calling StartElongation');
-    
-%     red = varargin{1};
-%     CT = varargin{2};
-%     SK = varargin{3};
-%     R = varargin{4};
-%     shift = varargin{5};
-%     CTVerif = varargin{6};
-%     SKVerif = varargin{7};
-%     seuil = varargin{8};
-%     scale = varargin{9};
-%     debut = varargin{10};
-%     fin = varargin{11};
-%     step = varargin{12};
-%     nbInit = varargin{13};
-%     N = varargin{14};
-%     folder_name = varargin{15};
     
 elseif nargin == 3 
     % if user start the program. He must load the data
@@ -110,14 +77,15 @@ elseif nargin == 3
     
     file = fullfile(PathName,FileName);
     load(file);
-    if step == 1 %#ok<NODEF> % For open all pictures
-        nb = fin - debut + 1; %#ok<NODEF>
+    if step == 1 
+        % For open all pictures
+        nb = fin - debut + 1; 
         disp('Opening directory ...');
         red = cell(nb,1);
         parfor_progress(nb);
         for i = debut:fin
             try
-                red{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); %#ok<NODEF>
+                red{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); 
             catch e%#ok
                 disp('Pictures''s folder not found');
                 delete(gcf);
@@ -130,14 +98,14 @@ elseif nargin == 3
     else
         nb = 0;
         disp('Opening directory ...');
-        for i = debut : step : fin %#ok<NODEF>
+        for i = debut : step : fin
             nb = nb + 1;
         end
         red = cell(nb,1);
         parfor_progress(nb);
         for i = 0:nb - 1
             try
-                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name)); %#ok<NODEF>
+                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name)); 
             catch ex %#ok<NASGU>
                 disp('Pictures''s folder not found');
                 delete(gcf);
@@ -149,22 +117,6 @@ elseif nargin == 3
         
     end
 end
-
-% setappdata(0,'red',red);
-% setappdata(0,'CT',CT);
-% setappdata(0,'SK',SK);
-% setappdata(0,'R',R);
-% setappdata(0,'CTVerif',CTVerif);
-% setappdata(0,'SKVerif',SKVerif);
-% setappdata(0,'seuil',seuil);
-% setappdata(0,'scale',scale);
-% setappdata(0,'shift',shift);
-% setappdata(0,'debut',debut);
-% setappdata(0,'fin',fin);
-% setappdata(0,'step',step);
-% setappdata(0,'nbInit',nbInit);
-% setappdata(0,'N',N);
-% setappdata(0,'folder_name',folder_name);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -619,7 +571,7 @@ E = displall(SK, Sa, red, scale, shift, ws, we, step);
 
 % Elongation
 disp('Elongation');
-[Elg, E2] = elgall(E, t0, step, ws2); %#ok<NASGU>
+[Elg, E2] = elgall(E, t0, step, ws2);
 
 %  Space-time mapping
 ElgE1 = reconstruct_Elg2(nx, Elg);
@@ -634,6 +586,7 @@ app.abscissaList        = Sa;
 app.verticalAngleList   = A;
 app.curvatureList       = C;
 app.displacementList    = E;
+app.smoothedDisplacementList = E2;
 app.elongationList      = Elg;
 
 app.elongationImage     = ElgE1;

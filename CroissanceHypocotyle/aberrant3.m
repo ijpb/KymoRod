@@ -1,7 +1,7 @@
-function Eab=aberrant3(E2)
-
-%ABBERANT Smooth the curve and remove errors using kernel smoothers
-%Eab=aberrant3(E2)
+function Eab = aberrant3(E2)
+% ABBERANT3 Smooth the curve and remove errors using kernel smoothers
+%
+% Eab = aberrant3(E2)
 %
 % E2 : a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa. gave by dispall()
 %
@@ -21,7 +21,7 @@ LX=.1;
 LY=1e-2;
 Smin=E2(1,1);
 E(:,1)=E2(:,1)-Smin;
-[X Y]= avgd(E,LX,LY,5e-3);
+[X, Y]= avgd(E,LX,LY,5e-3);
 
 Eab(:,1)=X+Smin;
 Eab(:,2)=Y;

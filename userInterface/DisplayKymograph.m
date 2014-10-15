@@ -390,7 +390,7 @@ function kymographTypePopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % To select the kymograph with a popupmenu
 
 app = getappdata(0, 'app');
-t = app.frameInterval;
+t = app.timeInterval;
 
 % flag = getappdata(0,'flag');
 % t = getappdata(0,'t0');
@@ -403,8 +403,8 @@ t = app.frameInterval;
     
 ElgE1   = app.elongationImage;
 CE1     = app.curvatureImage;
-AE1     = verticalAngleImage;
-RE1     = radiusImage;
+AE1     = app.verticalAngleImage;
+RE1     = app.radiusImage;
 
 % Take the value of popupmenu
 valPopUp = get(handles.kymographTypePopup, 'Value');
@@ -568,6 +568,145 @@ if valPopUp == 2 || valPopUp == 3 || valPopUp == 4 % For angle curvature and Rad
 end
 
 
+
+% --- Executes on slider movement.
+function slider1_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to slider1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+
+app = getappdata(0, 'app');
+
+minCaxis = getappdata(0, 'minCaxis');
+maxCaxis = getappdata(0, 'maxCaxis');
+val = get(handles.slider1, 'Value');
+
+t = app.timeInterval;
+   
+ElgE1   = app.elongationImage;
+CE1     = app.curvatureImage;
+AE1     = app.verticalAngleImage;
+RE1     = app.radiusImage;
+
+% Take the value of popupmenu
+valPopUp = get(handles.kymographTypePopup, 'Value');
+
+switch valPopUp
+    case 1
+        axes(handles.axes1);
+        im = imagesc(ElgE1);
+        set(gca, 'YDir', 'normal')
+        caxis([minCaxis,maxCaxis - val]);colorbar;
+        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        str = (strcat('one equals ',num2str(t),'minutes'));
+        xlabel(str);
+        colormap jet;
+        freezeColors;
+        
+    case 2
+        axes(handles.axes1);
+        im = imagesc(RE1);
+        set(gca, 'YDir', 'normal')
+        caxis([minCaxis,maxCaxis - val]);colorbar;
+        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        str = (strcat('one equals ',num2str(t),'minutes'));
+        xlabel(str);
+        colormap jet;
+        freezeColors;
+        
+    case 3
+        axes(handles.axes1);
+        im = imagesc(CE1);
+        set(gca, 'YDir', 'normal')
+        caxis([minCaxis,maxCaxis - val]);colorbar;
+        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        str = (strcat('one equals ',num2str(t),'minutes'));
+        xlabel(str);
+        colormap jet;
+        freezeColors;
+        
+    case 4
+        axes(handles.axes1);
+        im = imagesc(AE1);
+        set(gca, 'YDir', 'normal')
+        caxis([minCaxis,maxCaxis - val]);colorbar;
+        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        str = (strcat('one equals ',num2str(t),'minutes'));
+        xlabel(str);
+        colormap jet;
+        freezeColors;
+end
+
+
+
+% --- Executes during object creation, after setting all properties.
+function slider1_CreateFcn(hObject, eventdata, handles)%#ok<INUSD>
+% hObject    handle to slider1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in saveAsPngButton.
+function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to saveAsPngButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+try
+    [FileName,PathName] = uiputfile({'*.png'});%ouvre la boite et liste les fichiers .png
+    f = getframe(handles.axes1);%selectione la totalité de la figure courante
+    im = frame2im(f);
+    imwrite(im,fullfile(PathName, FileName),'png')%enregistre l'image dans le fichier sélectionné
+    
+catch error %#ok
+    warning('Select a folder to save picture please');
+    return;
+end
+
+
+% --- Executes on button press in saveAsTiffButton.
+function saveAsTiffButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to saveAsTiffButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+try
+    [FileName,PathName] = uiputfile({'*.tif'});%ouvre la boite et liste les fichiers .tif
+    f = getframe(handles.axes1);%selectione la totalité de la figure courante
+    im = frame2im(f);
+    imwrite(im,fullfile(PathName, FileName),'tif')%enregistre l'image dans le fichier sélectionné
+catch error%#ok
+    warning('Select a folder to save picture please');
+    return;
+end
+
+% --- Executes on button press in saveAllDataButton.
+function saveAllDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to saveAllDataButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+set(handles.saveAllDataButton,'Enable','off')
+set(handles.saveAllDataButton,'String','Wait please...')
+pause(0.01);
+   
+app = getappdata(0, 'app');
+
+ElgE1   = app.elongationImage;
+CE1     = app.curvatureImage;
+AE1     = app.verticalAngleImage;
+RE1     = app.radiusImage;
+
+    
 % To open the directory who the user want to save the data
 [fileName, pathName] = uiputfile('*.*', 'Create a directory to save your data');
 nameDir = fullfile(pathName, fileName);
@@ -587,10 +726,10 @@ save(nameData, 'app');
 
 n = length(dirPicture);
 
-pathElongation  = fullfile(nameDir, 'dataElongation.csv');
-pathAngle       = fullfile(nameDir, 'dataAngle.csv');
-pathCurvature   = fullfile(nameDir, 'dataCurvature.csv');
-pathRadius      = fullfile(nameDir, 'dataRadius.csv');
+pathElongation = fullfile(nameDir,'dataElongation.csv');
+pathAngle = fullfile(nameDir,'dataAngle.csv');
+pathCurvature = fullfile(nameDir,'dataCurvature.csv');
+pathRadius = fullfile(nameDir,'dataRadius.csv');
 
 cols = cell(n,1);
 for i = 1 : n
@@ -620,9 +759,9 @@ tabRadius = Table(RE1,'colNames',cols);
 write(tabRadius,pathRadius);
 
 disp('Saving done');
-
-set(handles.saveAllDataButton, 'Enable', 'on')
-set(handles.saveAllDataButton, 'String', 'Save all data')
+  
+set(handles.saveAllDataButton,'Enable','on')
+set(handles.saveAllDataButton,'String','Save all data')
 
 
 % --- Executes on button press in computeComposedKymographButton.
@@ -631,35 +770,8 @@ function computeComposedKymographButton_Callback(hObject, eventdata, handles)%#o
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-ElgE1 = getappdata(0,'ElgE1');
-CE1 = getappdata(0,'CE1');
-AE1 = getappdata(0,'AE1');
-RE1 = getappdata(0,'RE1');
-Elg = getappdata(0,'Elg');
-C = getappdata(0,'C');
-A = getappdata(0,'A');
-R = getappdata(0,'R');
-red= getappdata(0,'red'); 
-scale = getappdata(0,'scale');
-seuil = getappdata(0,'seuil');
-Sa  = getappdata(0,'Sa');
-t0 = getappdata(0,'t0');
-step = getappdata(0,'step');
-ws2 = getappdata(0,'ws2');
-ws = getappdata(0,'ws');
-nx = getappdata(0,'nx');
-iw = getappdata(0,'iw');
-CTVerif = getappdata(0,'CTVerif');
-SKVerif = getappdata(0,'SKVerif');
-E2 = getappdata(0,'E2');
-SK = getappdata(0,'SK');
-shift = getappdata(0,'shift');
-debut = getappdata(0,'debut');
-fin = getappdata(0,'fin');
-N = getappdata(0,'N');
-folder_name = getappdata(0,'folder_name');
-stepPicture = getappdata(0,'stepPicture');
-
+app = getappdata(0, 'app');
+    
 delete(gcf);
-StartComposedElongation(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,scale,...
-    Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
+
+StartComposedElongation(app);
