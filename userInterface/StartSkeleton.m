@@ -63,69 +63,6 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     disp('init from HypoGrowthApp');
     
     app = varargin{1};
-
-%     if strcmp(app.currentStep, 'none')
-%         % no image selected
-%         flag = 1;
-%     else
-        % images already selected
-        
-%         % extract input data
-%         col         = app.imageList;
-%         fileList    = app.imageNameList;
-%         folderName  = app.inputImagesDir;
-%         
-%         set(handles.axis1Label, 'Visible', 'on');
-%         set(handles.axis2Label, 'Visible', 'on');
-%         set(handles.axes1, 'Visible', 'on');
-%         set(handles.axes2, 'Visible', 'on');
-%         set(handles.keepAllFramesRadioButton, 'Visible', 'on');
-%         set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
-%         
-%         nImages = length(col);
-%         
-%         set(handles.framePreviewSlider, 'Value', 1);
-%         set(handles.framePreviewSlider, 'Min', 1);
-%         set(handles.framePreviewSlider, 'Max', nImages - 1);
-%         set(handles.framePreviewSlider, 'Visible', 'on');
-%         
-%         % setup slider such that 1 image is changed at a time
-%         step1 = 1 / (nImages - 1);
-%         step2 = min(10 / (nImages - 1), .5);
-%         set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
-%         
-%         set(handles.framePreviewLabel, 'Visible', 'on');
-%         
-%         % demo images
-%         mini = cell(2,1);
-%         for i = 1:2
-%             mini{i} = col{i};
-%         end
-%         
-%         % display first image
-%         axes(handles.axes1);
-%         imshow(mini{1});
-%         set(handles.axis1Label, 'String', '1');
-%         
-%         % display second image
-%         axes(handles.axes2);
-%         imshow(mini{2});
-%         set(handles.axis2Label, 'String', '2');
-%         
-%         % update globale variables
-%         setappdata(0, 'Nbimages', nb);
-%         setappdata(0, 'NomRep', fileList);
-%         setappdata(0, 'RepertoireImage', folderName);
-%         setappdata(0, 'col', col);
-%         
-%         flag = 2;
-%         
-%         string = sprintf('Select a range among the %d frames', nb);
-%         set(handles.selectFramesIndicesRadioButton, 'String', string);
-%         
-%         set(handles.selectImagesButton, 'Visible', 'on');
-%     end
-    
     app.currentStep = 'selection';
     setappdata(0, 'app', app);
     
@@ -176,19 +113,11 @@ elseif nargin == 6
     setappdata(0, 'RepertoireImage', folderName);
     setappdata(0, 'col', col);
     
-%     flag = 2;
-    
     string = sprintf('Select a range among the %d frames', nb);
     set(handles.selectFramesIndicesRadioButton, 'String', string);
     
     set(handles.selectImagesButton, 'Visible', 'on');
-
-% else 
-%     flag = 1;
 end
-
-
-% setappdata(0, 'flag', flag);
 
 % Choose default command line output for StartSkeleton
 handles.output = hObject;
@@ -406,18 +335,11 @@ function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 
 % extract global data
-% flag = 1 -> images pas encore chargees
-% flag = 2 -> images deja chargees
-% flag = getappdata(0, 'flag');
-% col = getappdata(0, 'col');
-% folderName = getappdata(0, 'RepertoireImage');
-% fileList = getappdata(0, 'NomRep');
 col         = app.imageList;
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
 
 imagesLoaded = ~isempty(col);
-
 
 % extract index of first frame to display
 val = round(get(handles.framePreviewSlider, 'Value'));
@@ -685,7 +607,7 @@ else
     end
 end
 
-set(handles.saveSelectedImagesButton, 'Enable', 'on');
+set(handles.saveSelectedImagesButton, 'Enable', 'On');
 set(handles.saveSelectedImagesButton, 'String', 'Save new pictures');
 
 guidata(hObject, handles);
@@ -817,7 +739,7 @@ else
     step = stepPicture;
 end
 
-% 
+% save indices for retrieving images
 app.firstIndex = debut;
 app.lastIndex = fin;
 app.indexStep = step;
@@ -830,7 +752,6 @@ app.pixelSize = resol;
 timeString = get(handles.timeIntervalEdit, 'String');
 time = str2double(timeString);
 app.timeInterval = time;
-
 
 delete(gcf);
     

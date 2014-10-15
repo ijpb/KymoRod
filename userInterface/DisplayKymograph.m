@@ -65,119 +65,6 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     t0      = app.timeInterval;
     ElgE1   = app.elongationImage;
     
-elseif nargin == 51
-    % Called from dialog "StartComposedElongation"
-    warning('Run DisplayKymograph using deprecated call');
-
-    ElgE1 = varargin{1};
-    CE1 = varargin{2};
-    AE1 = varargin{3};
-    RE1 = varargin{4};
-    red = varargin{5};
-    seuil = varargin{6};
-    CTVerif = varargin{7};
-    SKVerif = varargin{8};
-    scale = varargin{9};
-    Elg = varargin{10};
-    C = varargin{11};
-    A = varargin{12};
-    R = varargin{13};
-    Sa = varargin{14};
-    t0 = varargin{15};
-    step = varargin{16};
-    ws2 = varargin{17};
-    ws = varargin{18};
-    nx = varargin{19};
-    iw = varargin{20};
-    E2 = varargin{21};
-    SK = varargin{22};
-    shift = varargin{23};
-    ElgE2 = varargin{24};
-    CE2 = varargin{25};
-    AE2 = varargin{26};
-    RE2 = varargin{27};
-    EnormE = varargin{28};
-    ElgEh = varargin{29};
-    ElgEr = varargin{30};
-    EEh = varargin{31};
-    EEr = varargin{32};
-    ElgRE = varargin{33};
-    anisE = varargin{34};
-    Elg2 = varargin{35};
-    Sa2 = varargin{36};
-    Enorm2 = varargin{37};
-    Elgh2 = varargin{38};
-    Elgr = varargin{39};
-    Eh2 = varargin{40};
-    Er = varargin{41};
-    ElgR = varargin{42};
-    anis = varargin{43};
-    debut = varargin{44};
-    fin = varargin{45};
-    stepPicture = varargin{46};
-    N = varargin{47};
-    folder_name = varargin{48};
-    
-    
-    setappdata(0,'ElgE1',ElgE1);
-    setappdata(0,'CE1',CE1);
-    setappdata(0,'AE1',AE1);
-    setappdata(0,'RE1',RE1);
-    setappdata(0,'red',red);
-    setappdata(0,'seuil',seuil);
-    setappdata(0,'CTVerif',CTVerif);
-    setappdata(0,'SKVerif',SKVerif);
-    setappdata(0,'scale',scale);
-    setappdata(0,'Elg',Elg);
-    setappdata(0,'C',C);
-    setappdata(0,'A',A);
-    setappdata(0,'R',R);
-    setappdata(0,'Sa',Sa);
-    setappdata(0,'t0',t0);
-    setappdata(0,'step',step);
-    setappdata(0,'ws2',ws2);
-    setappdata(0,'ws',ws);
-    setappdata(0,'nx',nx);
-    setappdata(0,'iw',iw);
-    setappdata(0,'E2',E2);
-    setappdata(0,'SK',SK);
-    setappdata(0,'shift',shift);
-    setappdata(0,'ElgE2',ElgE2);
-    setappdata(0,'CE2',CE2);
-    setappdata(0,'AE2',AE2);
-    setappdata(0,'RE2',RE2);
-    setappdata(0,'EnormE',EnormE);
-    setappdata(0,'ElgEh',ElgEh);
-    setappdata(0,'ElgEr',ElgEr);
-    setappdata(0,'EEh',EEh);
-    setappdata(0,'EEr',EEr);
-    setappdata(0,'ElgRE',ElgRE);
-    setappdata(0,'anisE',anisE);
-    setappdata(0,'Elg2',Elg2);
-    setappdata(0,'Sa2',Sa2);
-    setappdata(0,'Enorm2',Enorm2);
-    setappdata(0,'Elgh2',Elgh2);
-    setappdata(0,'Elgr',Elgr);
-    setappdata(0,'Eh2',Eh2);
-    setappdata(0,'Er',Er);
-    setappdata(0,'ElgR',ElgR);
-    setappdata(0,'anis',anis);
-    setappdata(0,'debut',debut);
-    setappdata(0,'fin',fin);
-    setappdata(0,'stepPicture',stepPicture);
-    setappdata(0,'N',N);
-    setappdata(0,'folder_name',folder_name);
-    
-    
-   char = {'Simple Elongation'; 'Composed Elongation'; 'Simple Curvature'; 'Composed Curvature'; ...
-                'Simple Angle'; 'Composed Angle'; 'Simple Radius'; 'Composed Radius'; 'Total Displacement';...
-                'Hypocotyle''s Elongation'; 'Root''s Elongation';...
-                'Hypocotyl''s Displacement'; 'Root''s Displacement'; 'Radial Elongation'; 'Anisotropy'};
-    
-    set(handles.kymographTypePopup,'String',char);
-    
-    set(handles.computeComposedKymographButton,'Visible','off');
-    
 elseif nargin == 31
     warning('Run DisplayKymograph using deprecated call');
     
@@ -287,9 +174,6 @@ elseif nargin == 3 %  A voir pour charger les autres kymographes
         setappdata(0,'AE1',AE1);
         setappdata(0,'RE1',RE1);
         
-        
-        
-        
         if stepPicture == 1 % For open all pictures
             nb = fin - debut + 1;
             disp('Opening directory ...');
@@ -332,12 +216,9 @@ elseif nargin == 3 %  A voir pour charger les autres kymographes
         setappdata(0,'red',red);
         t0 = timeBetween2Pictures;
     end
-    
-    
 end
 
 
-            
 % To load the first kymograph, elongation
 axes(handles.axes1); 
 im = imagesc(ElgE1); 
@@ -392,15 +273,6 @@ function kymographTypePopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 app = getappdata(0, 'app');
 t = app.timeInterval;
 
-% flag = getappdata(0,'flag');
-% t = getappdata(0,'t0');
-
-% if flag == 2
-%     ElgE1 = getappdata(0, 'ElgE1');
-%     CE1 = getappdata(0, 'CE1');
-%     AE1 = getappdata(0, 'AE1');
-%     RE1 = getappdata(0, 'RE1');
-    
 ElgE1   = app.elongationImage;
 CE1     = app.curvatureImage;
 AE1     = app.verticalAngleImage;
