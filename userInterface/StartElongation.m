@@ -63,42 +63,42 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     app.currentStep = 'elongation';
     setappdata(0, 'app', app);
 
-    red     = app.imageList;
-    CT      = app.scaledContourList;
-    SK      = app.scaledSkeletonList;
-    R       = app.radiusList;
-    shift   = app.originPosition;
-    CTVerif = app.contourList;
-    SKVerif = app.skeletonList;
-    seuil   = app.thresholdValues;
-    scale   = 1000 / app.pixelSize;
-    debut   = app.firstIndex;
-    fin     = app.lastIndex;
-    step    = app.indexStep;
-    nbInit  = length(red);
-    N       = length(red);
-    folder_name = app.inputImagesDir;
+%     red     = app.imageList;
+%     CT      = app.scaledContourList;
+%     SK      = app.scaledSkeletonList;
+%     R       = app.radiusList;
+%     shift   = app.originPosition;
+%     CTVerif = app.contourList;
+%     SKVerif = app.skeletonList;
+%     seuil   = app.thresholdValues;
+%     scale   = 1000 / app.pixelSize;
+%     debut   = app.firstIndex;
+%     fin     = app.lastIndex;
+%     step    = app.indexStep;
+%     nbInit  = length(red);
+%     N       = length(red);
+%     folder_name = app.inputImagesDir;
 
     
 elseif nargin == 18 
     % if user come from ValidateSkeleton
     warning('old way of calling StartElongation');
     
-    red = varargin{1};
-    CT = varargin{2};
-    SK = varargin{3};
-    R = varargin{4};
-    shift = varargin{5};
-    CTVerif = varargin{6};
-    SKVerif = varargin{7};
-    seuil = varargin{8};
-    scale = varargin{9};
-    debut = varargin{10};
-    fin = varargin{11};
-    step = varargin{12};
-    nbInit = varargin{13};
-    N = varargin{14};
-    folder_name = varargin{15};
+%     red = varargin{1};
+%     CT = varargin{2};
+%     SK = varargin{3};
+%     R = varargin{4};
+%     shift = varargin{5};
+%     CTVerif = varargin{6};
+%     SKVerif = varargin{7};
+%     seuil = varargin{8};
+%     scale = varargin{9};
+%     debut = varargin{10};
+%     fin = varargin{11};
+%     step = varargin{12};
+%     nbInit = varargin{13};
+%     N = varargin{14};
+%     folder_name = varargin{15};
     
 elseif nargin == 3 
     % if user start the program. He must load the data
@@ -150,21 +150,21 @@ elseif nargin == 3
     end
 end
 
-setappdata(0,'red',red);
-setappdata(0,'CT',CT);
-setappdata(0,'SK',SK);
-setappdata(0,'R',R);
-setappdata(0,'CTVerif',CTVerif);
-setappdata(0,'SKVerif',SKVerif);
-setappdata(0,'seuil',seuil);
-setappdata(0,'scale',scale);
-setappdata(0,'shift',shift);
-setappdata(0,'debut',debut);
-setappdata(0,'fin',fin);
-setappdata(0,'step',step);
-setappdata(0,'nbInit',nbInit);
-setappdata(0,'N',N);
-setappdata(0,'folder_name',folder_name);
+% setappdata(0,'red',red);
+% setappdata(0,'CT',CT);
+% setappdata(0,'SK',SK);
+% setappdata(0,'R',R);
+% setappdata(0,'CTVerif',CTVerif);
+% setappdata(0,'SKVerif',SKVerif);
+% setappdata(0,'seuil',seuil);
+% setappdata(0,'scale',scale);
+% setappdata(0,'shift',shift);
+% setappdata(0,'debut',debut);
+% setappdata(0,'fin',fin);
+% setappdata(0,'step',step);
+% setappdata(0,'nbInit',nbInit);
+% setappdata(0,'N',N);
+% setappdata(0,'folder_name',folder_name);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -544,34 +544,11 @@ pause(0.01);
 % get global data
 app = getappdata(0, 'app');
 red     = app.imageList;
-% CT      = app.scaledContourList;
 SK      = app.scaledSkeletonList;
 R       = app.radiusList;
 shift   = app.originPosition;
-% CTVerif = app.contourList;
-% SKVerif = app.skeletonList;
-% seuil   = app.thresholdValues;
 scale   = 1000 ./ app.pixelSize;
-% debut   = app.firstIndex;
-% fin     = app.lastIndex;
-% stepPicture    = app.indexStep;
-% N       = length(red);
-% folderName = app.inputImagesDir;
 
-% SK      = getappdata(0, 'SK');
-% CT      = getappdata(0, 'CT');%#ok
-% red     = getappdata(0, 'red');
-% R       = getappdata(0, 'R');
-% SKVerif = getappdata(0, 'SKVerif');
-% CTVerif = getappdata(0, 'CTVerif');
-% seuil   = getappdata(0, 'seuil');
-% scale   = getappdata(0, 'scale');
-% shift   = getappdata(0, 'shift');
-% debut   = getappdata(0, 'debut');
-% fin     = getappdata(0, 'fin');
-% N       = getappdata(0, 'N');
-% folder_name = getappdata(0,'folder_name');
-% stepPicture = getappdata(0,'step');
 
 tic;
 t0 = get(handles.timeIntervalEdit, 'String');
@@ -642,7 +619,7 @@ E = displall(SK, Sa, red, scale, shift, ws, we, step);
 
 % Elongation
 disp('Elongation');
-[Elg, E2] = elgall(E, t0, step, ws2);
+[Elg, E2] = elgall(E, t0, step, ws2); %#ok<NASGU>
 
 %  Space-time mapping
 ElgE1 = reconstruct_Elg2(nx, Elg);
@@ -670,7 +647,3 @@ delete(gcf);
 
 disp('Display Kymographs');
 DisplayKymograph(app);
-% % FinalKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
-% %     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folder_name);
-% DisplayKymograph(ElgE1,CE1,AE1,RE1,red,seuil,CTVerif,SKVerif,...
-%     scale,Elg,C,A,R,Sa,t0,step,ws2,ws,nx,iw,E2,SK,shift,debut,fin,stepPicture,N,folderName);

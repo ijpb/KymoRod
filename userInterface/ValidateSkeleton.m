@@ -72,36 +72,22 @@ else
     warning('Deprecated way of calling ValidateSkeleton');
     % extract input arguments
     red = varargin{1};
-%     smooth = varargin{2};
-%     CT2 = varargin{3};
     indice = varargin{4};
-%     direction = varargin{5};
     dirInitial = varargin{6};
     thres = varargin{7};
-%     scale = varargin{8};
-%     size = varargin{9};
-%     seuil = varargin{10};
-%     debut = varargin{11};
-%     fin = varargin{12};
-%     step = varargin{13};
-%     nbInit = varargin{14};
-%     N = varargin{15};
-%     folder_name = varargin{16};
-%     SK = varargin{17};
-%     CT = varargin{18};
-%     rad = varargin{19};
     SKVerif = varargin{20};
     CTVerif = varargin{21};
-%     shift = varargin{22};
     
     app = HypoGrowthApp();
 end
 
 app.currentStep = 'skeleton';
 
-% Compute 3 skeletons that should be validated by the user
-
+set(handles.middleImageIndexSlider, 'Min', 1);
 set(handles.middleImageIndexSlider, 'Max', length(red));
+set(handles.middleImageIndexSlider, 'Value', 1);
+
+% Compute 3 skeletons that should be validated by the user
 
 
 % Show the three skeletons
@@ -169,29 +155,6 @@ switch dirInitial
 end
 
 
-
-% setappdata(0, 'red', red);
-% setappdata(0, 'Direction', direction);
-% setappdata(0, 'DirInitial', dirInitial);
-% setappdata(0, 'SK', SK);
-% setappdata(0, 'CT', CT);
-% setappdata(0, 'shift', shift);
-% setappdata(0, 'rad', rad);
-% setappdata(0, 'SKVerif', SKVerif);
-% setappdata(0, 'CTVerif', CTVerif);
-% setappdata(0, 'smooth', smooth);
-% setappdata(0, 'thres', thres);
-% setappdata(0, 'scale', scale);
-% setappdata(0, 'size', size);
-% setappdata(0, 'seuil', seuil);
-% setappdata(0, 'debut', debut);
-% setappdata(0, 'fin', fin);
-% setappdata(0, 'step', step);
-% setappdata(0, 'nbInit', nbInit);
-% setappdata(0, 'N', N);
-% setappdata(0, 'folder_name', folder_name);
-% setappdata(0, 'CT2', CT2);
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -234,12 +197,6 @@ red     = app.imageList;
 seuil   = app.thresholdValues;
 SKVerif = app.skeletonList;
 CTVerif = app.contourList;
-% scale   = app.pixelSize;
-% red     = getappdata(0, 'red');
-% seuil   = getappdata(0, 'seuil');
-% SKVerif = getappdata(0, 'SKVerif');
-% CTVerif = getappdata(0, 'CTVerif');
-% scale   = getappdata(0, 'scale');
 
 val = get(handles.middleImageIndexSlider, 'Value');
 val = ceil(val);
@@ -345,31 +302,6 @@ red     = app.imageList;
 smooth  = app.contourSmoothingSize;
 CT2     = app.contourList;
 
-% indice  = app.currentFrameIndex;
-% scale   = app.pixelSize;
-% size    = 0;
-% thres   = app.thresholdValues;
-% debut   = app.firstIndex;
-% fin     = app.lastIndex;
-% step    = app.indexStep;
-% nbInit  = length(red);
-% N       = length(red);
-% folderName = app.inputImageDirectory;
-
-% red     = getappdata(0, 'red');
-% smooth  = getappdata(0, 'smooth');
-% CT2     = getappdata(0, 'CT2');
-% indice  = getappdata(0, 'indice');
-% scale   = getappdata(0, 'scale');
-% size    = getappdata(0, 'size');
-% thres   = getappdata(0, 'thres');
-% debut   = getappdata(0, 'debut');
-% fin     = getappdata(0, 'fin');
-% step    = getappdata(0, 'step');
-% nbInit  = getappdata(0, 'nbInit');
-% N       = getappdata(0, 'N');
-% folder_name = getappdata(0, 'folder_name');
-
 % To take the first values
 val = get(handles.filterDirectionPopup, 'Value'); 
 setappdata(0, 'val', val);
@@ -401,14 +333,6 @@ hDialog = msgbox(...
 
 parfor_progress(length(red));
 for i = 1:length(red)
-%     % Smoothing
-%     if smooth ~= 0
-%         CT2{i} = smoothContour(CT2{i}, smooth);
-%     end
-%     
-%     % Skeletonization
-%     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i},dir,dirbegin);
-
     % Smooth current contour
     contour = CT2{i};
     if smooth ~= 0
@@ -480,22 +404,6 @@ nbInit  = length(red); %#ok<NASGU>
 N       = length(red); %#ok<NASGU> 
 folderName = app.inputImageDirectory; %#ok<NASGU> 
 
-% red = getappdata(0,'red');%#ok
-% CT = getappdata(0,'CT');%#ok
-% SK = getappdata(0,'SK');%#ok
-% R = getappdata(0,'rad');%#ok
-% shift = getappdata(0,'shift');%#ok
-% CTVerif = getappdata(0,'CTVerif');%#ok
-% SKVerif = getappdata(0,'SKVerif');%#ok
-% seuil = getappdata(0,'seuil');%#ok
-% scale = getappdata(0,'scale');%#ok
-% debut = getappdata(0,'debut');%#ok
-% fin = getappdata(0,'fin');%#ok
-% step = getappdata(0,'step');%#ok
-% nbInit = getappdata(0,'nbInit');%#ok
-% N = getappdata(0,'N');%#ok
-% folder_name = getappdata(0,'folder_name');%#ok
-
 % To open the directory who the user want to save the data
 [fileName, pathName] = uiputfile(); 
 
@@ -505,12 +413,13 @@ if pathName == 0
 end
 
 name = fullfile(pathName, fileName);
+save(name, 'app');
+% % save(name,'CT','SK','R','shift','CTVerif','SKVerif',...
+% %     'seuil','scale','debut','fin','step','nbInit','N','folderName');
 % save(name,'CT','SK','R','shift','CTVerif','SKVerif',...
 %     'seuil','scale','debut','fin','step','nbInit','N','folderName');
-save(name,'CT','SK','R','shift','CTVerif','SKVerif',...
-    'seuil','scale','debut','fin','step','nbInit','N','folderName');
 
-set(handles.saveSkeletonDataButton, 'Enable', 'on');
+set(handles.saveSkeletonDataButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'String', 'Save data of skeleton');
 
 
@@ -521,23 +430,8 @@ function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
-% red=getappdata(0,'red');
-% seuil = getappdata(0,'seuil');
-% scale = getappdata(0,'scale');
-% size = getappdata(0,'size');
-% debut = getappdata(0,'debut');
-% fin = getappdata(0,'fin');
-% step = getappdata(0,'step');
-% direction = getappdata(0,'direction');
-% dirInitial = getappdata(0,'dirInitial');
-% nbInit = getappdata(0,'nbInit');
-% N = getappdata(0,'N');
-% folder_name = getappdata(0,'folder_name');
-% thres = getappdata(0,'thres');
-% CT2 = getappdata(0,'CT2');
 delete (gcf);
 ValidateContour(app);
-% ValidateContour(seuil,red,scale,size,debut,fin,step,direction,dirInitial,nbInit,N,folder_name,CT2,thres);
 
 % --- Executes on button press in validateSkeletonButton.
 function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
@@ -546,40 +440,5 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
-
-% red     = app.imageList;
-% CT      = app.scaledContourList;
-% SK      = app.scaledSkeletonList;
-% R       = app.radiusList;
-% shift   = app.originPosition;
-% CTVerif = app.contourList;
-% SKVerif = app.skeletonList;
-% seuil   = app.thresholdValues;
-% scale   = 1000 ./ app.pixelSize;
-% debut   = app.firstIndex;
-% fin     = app.lastIndex;
-% step    = app.indexStep;
-% nbInit  = length(R);
-% N       = length(R);
-% folderName = app.inputImagesDir;
-
-% red = getappdata(0,'red');
-% CT = getappdata(0,'CT');
-% SK = getappdata(0,'SK');
-% R = getappdata(0,'rad');
-% shift = getappdata(0,'shift');
-% CTVerif = getappdata(0,'CTVerif');
-% SKVerif = getappdata(0,'SKVerif');
-% seuil = getappdata(0,'thres');
-% scale = getappdata(0,'scale');
-% debut = getappdata(0,'debut');
-% fin = getappdata(0,'fin');
-% step = getappdata(0,'step');
-% nbInit = getappdata(0,'nbInit');
-% N = getappdata(0,'N');
-% folder_name = getappdata(0,'folder_name');
-
 delete(gcf);
-
-% StartElongation(red,CT,SK,R,shift,CTVerif,SKVerif,seuil,scale,debut,fin,step,nbInit,N,folderName);
 StartElongation(app);

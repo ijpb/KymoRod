@@ -62,41 +62,36 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     app = varargin{1};
     
     red     = app.imageList;
-%     seuil   = app.thresholdValues;
-%     scale   = app.pixelSize;
-%     debut   = app.firstIndex;
-%     fin     = app.lastIndex;
-    
+
 else
     % Take the arguments from previous window, in long list form
     warning('deprecated way of calling ValidateContour');
-%     seuil   = varargin{1};
-    red     = varargin{2};
-    scale   = varargin{3};
-    size    = varargin{4};
-    debut   = varargin{5};
-    fin     = varargin{6};
-    step    = varargin{7};
-    direction = varargin{8};
-    dirInitial = varargin{9};
-    nbInit  = varargin{10};
-    N       = varargin{11};
-    folder_name = varargin{12};
-%     CT2     = varargin{13};
-%     thresh  = varargin{14};
-    
-    % Set the arguments to use it in the next window (Skeleton.m)
-    setappdata(0, 'red', red);
-    setappdata(0, 'scale', scale);
-    setappdata(0, 'Size', size);
-    setappdata(0, 'debut', debut);
-    setappdata(0, 'fin', fin);
-    setappdata(0, 'step', step);
-    setappdata(0, 'direction', direction);
-    setappdata(0, 'dirInitial', dirInitial);
-    setappdata(0, 'nbInit', nbInit);
-    setappdata(0, 'N', N);
-    setappdata(0, 'folder_name', folder_name);
+%     red     = varargin{2};
+%     scale   = varargin{3};
+%     size    = varargin{4};
+%     debut   = varargin{5};
+%     fin     = varargin{6};
+%     step    = varargin{7};
+%     direction = varargin{8};
+%     dirInitial = varargin{9};
+%     nbInit  = varargin{10};
+%     N       = varargin{11};
+%     folder_name = varargin{12};
+% %     CT2     = varargin{13};
+% %     thresh  = varargin{14};
+%     
+%     % Set the arguments to use it in the next window (Skeleton.m)
+%     setappdata(0, 'red', red);
+%     setappdata(0, 'scale', scale);
+%     setappdata(0, 'Size', size);
+%     setappdata(0, 'debut', debut);
+%     setappdata(0, 'fin', fin);
+%     setappdata(0, 'step', step);
+%     setappdata(0, 'direction', direction);
+%     setappdata(0, 'dirInitial', dirInitial);
+%     setappdata(0, 'nbInit', nbInit);
+%     setappdata(0, 'N', N);
+%     setappdata(0, 'folder_name', folder_name);
 end
 
 % update current process state
@@ -130,12 +125,6 @@ imshow(red{end} > thresh(end));
 hold on;
 % drawContour(CT2{end} * scale, 'r', 'LineWidth', 1.5);
 drawContour(CT2{end}, 'r', 'LineWidth', 1.5);
-
-% % To use it at the next window
-% setappdata(0, 'CT2', CT2); 
-% setappdata(0, 'indice', indice);
-% setappdata(0, 'thres', thres);
-% setappdata(0, 'seuil', seuil);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -189,12 +178,6 @@ thresh  = app.thresholdValues;
 CT2     = app.contourList;
 indice  = app.currentFrameIndex;
 red     = app.imageList;
-% scale   = app.pixelSize;
-% thres   = getappdata(0, 'seuil');
-% CT2     = getappdata(0, 'CT2');
-% indice  = getappdata(0, 'indice');
-% red     = getappdata(0, 'red');
-% scale   = getappdata(0, 'scale');
 
 % create an array of contours
 CT = cell(length(red), 1);
@@ -226,7 +209,6 @@ set(handles.smoothValueSlider, 'Enable', 'On');
 % set the smooth
 app.contourSmoothingSize = smooth;
 setappdata(0, 'app', app);
-% setappdata(0, 'smooth', smooth); 
 set(handles.smoothValueLabel, 'String', num2str(smooth));
 
 % --- Executes during object creation, after setting all properties.
@@ -250,10 +232,7 @@ function backToTresholdButton_Callback(hObject, eventdata, handles)%#ok % To bac
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
-% red = app.imageList;
-% red = getappdata(0, 'red');
 delete(gcf);
-% ValidateThres(red);
 ValidateThres(app);
 
 
@@ -271,23 +250,6 @@ app = getappdata(0, 'app');
 smooth  = app.contourSmoothingSize;
 CT2     = app.contourList;
 red     = app.imageList;
-
-% smooth  = getappdata(0, 'smooth');
-% CT2     = getappdata(0, 'CT2');
-% red     = getappdata(0, 'red');
-% indice  = getappdata(0, 'indice');
-% seuil   = getappdata(0, 'seuil');
-% thres   = getappdata(0, 'thres');
-% scale   = getappdata(0, 'scale');
-% size    = 0;
-% debut   = getappdata(0, 'debut');
-% fin     = getappdata(0, 'fin');
-% step    = getappdata(0, 'step');
-% direction   = getappdata(0, 'direction');
-% dirInitial  = getappdata(0, 'dirInitial');
-% nbInit  = getappdata(0, 'nbInit');
-% N       = getappdata(0, 'N');
-% folder_name = getappdata(0, 'folder_name');
 
 % dir = direction;
 % dirbegin = dirInitial;
@@ -348,5 +310,3 @@ delete(gcf);
 
 % Call the next window
 ValidateSkeleton(app);
-% ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres,scale,size,...
-%     seuil,debut,fin,step,nbInit,N,folderName,SK,CT,rad,SKVerif,CTVerif,shift); 

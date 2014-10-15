@@ -64,10 +64,10 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     
     app = varargin{1};
 
-    if strcmp(app.currentStep, 'none')
-        % no image selected
-        flag = 1;
-    else
+%     if strcmp(app.currentStep, 'none')
+%         % no image selected
+%         flag = 1;
+%     else
         % images already selected
         
         % extract input data
@@ -118,13 +118,13 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
         setappdata(0, 'RepertoireImage', folderName);
         setappdata(0, 'col', col);
         
-        flag = 2;
+%         flag = 2;
         
         string = sprintf('Select a range among the %d frames', nb);
         set(handles.selectFramesIndicesRadioButton, 'String', string);
         
         set(handles.selectImagesButton, 'Visible', 'on');
-    end
+%     end
     
     app.currentStep = 'selection';
     setappdata(0, 'app', app);
@@ -176,19 +176,19 @@ elseif nargin == 6
     setappdata(0, 'RepertoireImage', folderName);
     setappdata(0, 'col', col);
     
-    flag = 2;
+%     flag = 2;
     
     string = sprintf('Select a range among the %d frames', nb);
     set(handles.selectFramesIndicesRadioButton, 'String', string);
     
     set(handles.selectImagesButton, 'Visible', 'on');
 
-else 
-    flag = 1;
+% else 
+%     flag = 1;
 end
 
 
-setappdata(0, 'flag', flag);
+% setappdata(0, 'flag', flag);
 
 % Choose default command line output for StartSkeleton
 handles.output = hObject;
@@ -415,11 +415,9 @@ app = getappdata(0, 'app');
 col         = app.imageList;
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
-if isempty(col)
-    flag = 1;
-else
-    flag = 2;
-end
+
+imagesLoaded = ~isempty(col);
+
 
 % extract index of first frame to display
 val = round(get(handles.framePreviewSlider, 'Value'));
@@ -432,12 +430,10 @@ end
 
 mini2 = cell(2,1);
 for i = val:val + 1
-    if flag == 1
-        % '+1' To start at the index 1
-        mini2{i - val + 1} = imread(fullfile(folderName, fileList(i).name)); 
-    elseif flag == 2
-        % '+1' To start at the index 1
+    if imagesLoaded
         mini2{i - val + 1} = col{i};
+    else
+        mini2{i - val + 1} = imread(fullfile(folderName, fileList(i).name)); 
     end
 end
 
@@ -615,10 +611,6 @@ app = getappdata(0, 'app');
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
 nbInit = length(fileList);
-
-% nbInit = getappdata(0, 'Nbimages');
-% fileList = getappdata(0, 'NomRep');
-% folderName = getappdata(0, 'RepertoireImage');
 nb = nbInit;
 
 [fileName, pathName] = uiputfile('*.*', 'Enter a name for your new directory of pictures');
@@ -638,8 +630,6 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     debut = 1;
     fin = nb;
     
-%     setappdata(0, 'debut', debut);
-%     setappdata(0, 'fin', fin);
     app.startIndex = debut;
     app.lastIndex = fin;
     
@@ -709,13 +699,11 @@ function editImagesButton_Callback(hObject, eventdata, handles)
 
 app = getappdata(0, 'NomRep');
 fileList = app.imageNameList;
-% fileList = getappdata(0, 'NomRep');
 if isempty(fileList)
     delete(gcf);
     StartRGB();
 else
     folderName = getappdata(0, 'RepertoireImage');
-%     folderName = app.inputImagesDir;
     delete(gcf);
     StartRGB(fileList, folderName);
 end
@@ -736,9 +724,6 @@ colN        = app.imageList;
 nbInit      = length(colN);
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
-% nbInit      = getappdata(0, 'Nbimages');
-% fileList    = getappdata(0, 'NomRep');
-% folderName  = getappdata(0, 'RepertoireImage');
 
 nb = nbInit;
 if isempty(colN)
@@ -746,8 +731,6 @@ if isempty(colN)
 else
     flag = 2;
 end
-% flag = getappdata(0, 'flag');
-% colN = getappdata(0, 'col');
 
 if get(handles.keepAllFramesRadioButton, 'Value') == 1 
    % For all pictures
@@ -757,11 +740,6 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     debut = 1;
     fin = nb;
     step = 1;
-    
-% %     setappdata(0, 'debut', debut);
-% %     setappdata(0, 'fin', fin);
-%     app.startIndex = debut;
-%     app.lastIndex  = fin;
     
     disp('Opening directory ...');
     col = cell(nb, 1);
@@ -775,9 +753,6 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
         parfor_progress;
     end
     parfor_progress(0); 
-    
-%     delete (gcf);
-%     ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
     
 else
     % For pictures by step
@@ -859,5 +834,4 @@ app.timeInterval = time;
 
 delete(gcf);
     
-% ValidateThres(debut, fin, nb, col, step, nbInit, fileList, folderName);
 ValidateThres(app);

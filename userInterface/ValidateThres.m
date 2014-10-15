@@ -55,13 +55,6 @@ function ValidateThres_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for ValidateThres
 handles.output = hObject;
 
-% default is now 2 (was 0 before)
-% flag = 2;
-% setappdata(0, 'flag', flag);
-% n = 1;
-% setappdata(0, 'NumImage', n);
-% setappdata(0, 'ValeurSeuillage', 0);
-
 if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     % should be the canonical way of calling the program
     
@@ -87,17 +80,12 @@ elseif nargin == 11
     setappdata(0, 'nbInit', nbInit);
     setappdata(0, 'N', N);
     setappdata(0, 'folder_name', folder_name);
-
-%     imshow(col{1});
     
 elseif nargin == 4 
     % if user come from ValidateContour, back way
     col = varargin{1};
     app = HypoGrowthApp();
     app.imageList = col;
-%     setappdata(0, 'app', app);
-%     imshow(col{1});
-%     setappdata(0, 'col', col);
     
 else
     error('requires 11 or 4 input arguments');
@@ -201,17 +189,14 @@ function frameIndexSlider_Callback(hObject, eventdata, handles)%#ok
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 app = getappdata(0, 'app');
-% thresholdValues = getappdata(0, 'thresholdValues');
 thresholdValues = app.thresholdValues;
 
-% red = getappdata(0, 'col');
 red = app.imageList;
 frameIndex = int16(get(handles.frameIndexSlider, 'Value'));
 
 currentFrame = red{frameIndex};
 
 %TODO: specify axis...
-
 imshow(currentFrame > thresholdValues(frameIndex));
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 currentThreshold = int16(thresholdValues(frameIndex));
@@ -223,7 +208,6 @@ string = sprintf('Current Frame: %d / %d', frameIndex, imageNumber);
 set(handles.currentFrameIndexLabel, 'String', string);
 
 app.currentFrameIndex = frameIndex;
-% setappdata(0, 'NumImage', frameIndex);
 setappdata(0, 'app', app);
 
 % --- Executes during object creation, after setting all properties.
@@ -251,8 +235,6 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 red = app.imageList;
 n = app.currentFrameIndex;
-% red = getappdata(0, 'col');
-% n = getappdata(0, 'NumImage');
 
 set(handles.manualThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'off');
@@ -266,8 +248,6 @@ set(handles.autoThresholdValueEdit, 'Visible', 'on');
 set(handles.autoThresholdStartEdit, 'Visible', 'on');
 set(handles.autoThresholdFinalEdit, 'Visible', 'on');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
-
-% flag = 2;
 
 nImages = length(red);
 
@@ -283,8 +263,6 @@ set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 setappdata(0, 'app', app);
-% setappdata(0, 'thresholdValues', thresholdValues);
-% setappdata(0, 'flag', flag);
 
 % update display
 frameIndexSlider_Callback(hObject, eventdata, handles);
@@ -368,9 +346,6 @@ app     = getappdata(0, 'app');
 red     = app.imageList;
 n       = app.currentFrameIndex;
 seuil   = app.thresholdValues;
-% red     = getappdata(0, 'col');
-% n       = getappdata(0, 'NumImage');
-% seuil   = getappdata(0, 'thresholdValues');
 nb      = length(red);
 
 addThres = get(handles.autoThresholdValueEdit, 'String');
@@ -408,7 +383,6 @@ end
 set(handles.updateAutomaticThresholdButton, 'Enable', 'off');
 set(handles.updateAutomaticThresholdButton, 'String', 'Wait please...');
 pause(0.01);
-% flag = 2;
 for i = start : fin
     if graythresh(red{i}) * 255 <= 255
         seuil(i) = round(graythresh(red{i}) * 255) + addThres;
@@ -428,8 +402,6 @@ set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 app.thresholdValues = seuil;
 setappdata(0, 'app', app);
-% setappdata(0, 'thresholdValues', seuil);
-% setappdata(0, 'flag', flag);
 frameIndexSlider_Callback(hObject, eventdata, handles);
 
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
@@ -459,9 +431,6 @@ set(handles.autoThresholdStartEdit, 'Visible', 'off');
 set(handles.autoThresholdFinalEdit, 'Visible', 'off');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'off');
 
-% flag = 1;
-% setappdata(0, 'flag', flag);
-
 % --- Executes on slider movement.
 function manualThresholdSlider_Callback(hObject, eventdata, handles)%#ok % To change the value of smooth
 % hObject    handle to manualThresholdSlider (see GCBO)
@@ -477,21 +446,15 @@ val = round(get(handles.manualThresholdSlider, 'Value'));
 app = getappdata(0, 'app');
 col = app.imageList;
 n   = app.currentFrameIndex;
-% n = getappdata(0, 'NumImage');
-% col = getappdata(0, 'col');
 
 axes(handles.axes1);
 imshow(col{end} > val);
 
-% flag = 1;
-
 nImages = length(col);
 thresholdValues = ones(nImages, 1) * val;
 
-% setappdata(0, 'flag', flag);
 app.thresholdValues = thresholdValues;
 setappdata(0, 'app', app);
-% setappdata(0, 'thresholdValues', thresholdValues); 
 set(handles.manualThresholdValueLabel, 'String', num2str(thresholdValues(n)));
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 string = sprintf('Threshold for frame %d is %d', n, round(thresholdValues(n)));
@@ -603,37 +566,11 @@ function validateTresholdButton_Callback(hObject, eventdata, handles)%#ok
 
 app     = getappdata(0, 'app');
 seuil   = app.thresholdValues;
-% debut   = app.firstIndex;
-% fin     = app.lastIndex;
-% step    = app.indexStep;
 red     = app.imageList;
-% nbInit  = length(red);
-% N       = length(red);
-% folderName = app.inputImagesDir;
-% seuil   = getappdata(0, 'thresholdValues');
-% debut   = getappdata(0, 'debut');
-% fin     = getappdata(0, 'fin');
-% step    = getappdata(0, 'step');
-% red     = getappdata(0, 'col');
-% nbInit  = getappdata(0, 'nbInit');
-% N       = getappdata(0, 'N');
-% folderName = getappdata(0, 'folder_name');
-% Size    = 0;
 scale   = get(handles.pixelScaleEdit, 'String');
 
-% % To take the first value
-% val = get(handles.directionFilterPopup, 'Value');
-% % setappdata(0, 'val', val);
-% direction = get(handles.directionFilterPopup, 'String');
-
-% To take the second value
 val2 = get(handles.firstPointSkeletonPopup, 'Value'); 
-% setappdata(0, 'val2', val2);
 dirInitial = get(handles.firstPointSkeletonPopup, 'String');
-
-% direction = direction{val};
-% dirInitial = dirInitial{val2};
-% app.direction = direction{val};
 app.firstPointLocation = dirInitial{val2};
 
 scale = str2double(scale);
@@ -694,5 +631,3 @@ app.contourList = CT;
 
 delete(gcf);
 ValidateContour(app);
-% ValidateContour(seuil,red,scale,Size,debut,fin,step,direction,dirInitial, ...
-%     nbInit,N,folderName,CT2,thres);
