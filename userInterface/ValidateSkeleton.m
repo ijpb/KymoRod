@@ -179,8 +179,9 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok % To save t
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+app = getappdata(0, 'app');
 delete(gcf);
-StartProgramm();
+HypoGrowthMenu(app);
 
 
 % --- Executes on slider movement.

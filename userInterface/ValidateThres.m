@@ -173,8 +173,10 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+app = getappdata(0, 'app');
 delete(gcf);
-StartProgramm();
+HypoGrowthMenu(app);
 
 
 %% Display of current frame

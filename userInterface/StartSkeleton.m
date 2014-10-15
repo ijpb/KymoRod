@@ -52,10 +52,6 @@ function StartSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to StartSkeleton (see VARARGIN)
 
-% initialize some global variables
-setappdata(0, 'RepertoireImage', '');
-setappdata(0, 'NomRep', '');
-
 set(handles.channelSelectionPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
 
@@ -147,9 +143,10 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-delete(gcf);
-StartProgramm();
 
+app = getappdata(0, 'app');
+delete(gcf);
+HypoGrowthMenu(app);
 
 %% Input directory selection
 

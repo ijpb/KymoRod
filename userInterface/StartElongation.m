@@ -142,9 +142,10 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+app = getappdata(0, 'app');
 delete(gcf);
-StartProgramm();
-%TODO: add call with app
+HypoGrowthMenu(app);
+
 
 function timeIntervalEdit_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to timeIntervalEdit (see GCBO)

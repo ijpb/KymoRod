@@ -66,32 +66,6 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
 else
     % Take the arguments from previous window, in long list form
     warning('deprecated way of calling ValidateContour');
-%     red     = varargin{2};
-%     scale   = varargin{3};
-%     size    = varargin{4};
-%     debut   = varargin{5};
-%     fin     = varargin{6};
-%     step    = varargin{7};
-%     direction = varargin{8};
-%     dirInitial = varargin{9};
-%     nbInit  = varargin{10};
-%     N       = varargin{11};
-%     folder_name = varargin{12};
-% %     CT2     = varargin{13};
-% %     thresh  = varargin{14};
-%     
-%     % Set the arguments to use it in the next window (Skeleton.m)
-%     setappdata(0, 'red', red);
-%     setappdata(0, 'scale', scale);
-%     setappdata(0, 'Size', size);
-%     setappdata(0, 'debut', debut);
-%     setappdata(0, 'fin', fin);
-%     setappdata(0, 'step', step);
-%     setappdata(0, 'direction', direction);
-%     setappdata(0, 'dirInitial', dirInitial);
-%     setappdata(0, 'nbInit', nbInit);
-%     setappdata(0, 'N', N);
-%     setappdata(0, 'folder_name', folder_name);
 end
 
 % update current process state
@@ -152,8 +126,10 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+app = getappdata(0, 'app');
 delete(gcf);
-StartProgramm();
+HypoGrowthMenu(app);
 
 %% Widgets
 
