@@ -569,20 +569,12 @@ function validateTresholdButton_Callback(hObject, eventdata, handles)%#ok
 app     = getappdata(0, 'app');
 seuil   = app.thresholdValues;
 red     = app.imageList;
-scale   = get(handles.pixelScaleEdit, 'String');
 
-val2 = get(handles.firstPointSkeletonPopup, 'Value'); 
-dirInitial = get(handles.firstPointSkeletonPopup, 'String');
-app.firstPointLocation = dirInitial{val2};
+% val2 = get(handles.firstPointSkeletonPopup, 'Value'); 
+% dirInitial = get(handles.firstPointSkeletonPopup, 'String');
+% app.firstPointLocation = dirInitial{val2};
 
-scale = str2double(scale);
-if isempty(scale)
-    errordlg({'Please specify a valid scale.'}, ...
-        'Invalid Scale', 'modal');
-    return;
-end
-
-set(handles.validateTresholdButton, 'Enable', 'off')
+set(handles.validateTresholdButton, 'Enable', 'Off')
 set(handles.validateTresholdButton, 'String', 'Please wait...')
 pause(0.01);
 
@@ -606,7 +598,7 @@ end
 
 % allocate memory for contour array
 CT = cell(length(red), 1);
-CT2 = cell(length(red), 1);
+% CT2 = cell(length(red), 1);
 
 % Compute the contour and use the scale
 disp('Contour');
@@ -619,8 +611,8 @@ for i = 1:length(red)
     % apply threshold and compute contour
     CT{i} = cont(red{i}, thres(i));
     
-    % rescale
-    CT2{i} = setsc(CT{i}, scale);
+%     % rescale
+%     CT2{i} = setsc(CT{i}, scale);
     parfor_progress;
 end
 
@@ -632,4 +624,5 @@ end
 app.contourList = CT;
 
 delete(gcf);
+
 ValidateContour(app);

@@ -501,49 +501,48 @@ SK      = app.scaledSkeletonList;
 R       = app.radiusList;
 shift   = app.originPosition;
 scale   = 1000 ./ app.pixelSize;
-
+t0      = app.timeInterval;
 
 tic;
-t0 = get(handles.timeIntervalEdit, 'String');
 
-if get(handles.useDefaultSettingsRadioButton, 'Value') == 1
-    % default values
-    iw  = '10';
-    nx  = '500';
-    ws  = '15';
-    ws2 = '30';
-    step = '2';
-    
-elseif get(handles.changeSettingsRadioButton, 'Value') == 1
+% default values
+iw  = 10;
+nx  = 500;
+ws  = 15;
+ws2 = 30;
+step = 2;
+
+if get(handles.changeSettingsRadioButton, 'Value') == 1
     % Take the parameters given by the user
-    iw  = get(handles.smoothingLengthEdit,'String'); 
-    nx  = get(handles.pointNumberEdit,'String');
-    ws  = get(handles.correlationWindowSize1Edit,'String');
-    ws2 = get(handles.correlationWindowSize2Edit,'String');
-    step = get(handles.displacementStepEdit,'String');
+    iw  = get(handles.smoothingLengthEdit, 'String'); 
+    nx  = get(handles.pointNumberEdit, 'String');
+    ws  = get(handles.correlationWindowSize1Edit, 'String');
+    ws2 = get(handles.correlationWindowSize2Edit, 'String');
+    step = get(handles.displacementStepEdit, 'String');
+    
+    if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0 || length(t0) == 0 %#ok
+        warning('Edit must not be empty');
+        return;
+    end
+    
+    iw  = str2num(iw);%#ok
+    nx  = str2num(nx);%#ok
+    ws  = str2num(ws);%#ok
+    ws2 = str2num(ws2);%#ok
+    step = str2num(step);%#ok
+    t0  = str2num(t0);%#ok
+    
+    if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step) || isempty(t0)
+        warning('Value must be a number');
+        return;
+    end
+    
+    if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0 || t0 < 0
+        warning('Value must be positive');
+        return;
+    end
 end
 
-if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0 || length(t0) == 0 %#ok
-    warning('Edit must not be empty');
-    return;
-end
-
-iw  = str2num(iw);%#ok
-nx  = str2num(nx);%#ok
-ws  = str2num(ws);%#ok
-ws2 = str2num(ws2);%#ok
-step = str2num(step);%#ok
-t0  = str2num(t0);%#ok
-
-if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step) || isempty(t0)
-    warning('Value must be a number');
-    return;
-end
-
-if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0 || t0 < 0
-    warning('Value must be positive');
-    return;
-end
 
 % ?
 we = 1; 
