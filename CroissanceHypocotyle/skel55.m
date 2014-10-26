@@ -1,6 +1,7 @@
 function [SK, CT2, shift, R, SKVerif, CTVerif, error] = skel55(CT, dir, dir2)    
-%SKELL55 Skeletonization SK of the contour CT by voronoisaition
-%[SK CT2 shift rad error]=skel55(CT,dir,dir2)
+%SKELL55 Skeletonization of a contour by voronoisation
+%
+% [SK, CT2, shift, rad, error] = skel55(CT,dir,dir2)
 %
 % CT2 : Contour of the figure
 % dir : direction of the filters define at the begin of parstart

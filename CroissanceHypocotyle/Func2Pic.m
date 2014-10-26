@@ -1,4 +1,4 @@
-function MATfunc=Func2Pic(pic,func,scale,shift,S)
+function MATfunc = Func2Pic(pic, func, scale, shift, S)
 %FUNC2PIC Associates the curvilinear abscissa of the curve angle at each pixel of the skeleton
 %MATfunc=Func2Pic(pic,func,scale,shift,S)
 %
@@ -19,25 +19,35 @@ function MATfunc=Func2Pic(pic,func,scale,shift,S)
 
 %   HISTORY
 %   2014-04-16 : Add comments about the file
-func(:,1)=(func(:,1)+shift(1,1))*scale;
-func(:,2)=(-func(:,2)+shift(1,2))*scale;
 
+% replace the curve "func" into the image space
+func(:,1) = (func(:,1) + shift(1,1)) * scale;
+func(:,2) = (-func(:,2) + shift(1,2)) * scale;
 
-MATfunc=zeros(size(pic));
+% allocate memory
+MATfunc = zeros(size(pic));
+avg = ones(size(pic));
 
-avg=ones(size(pic));
-
-for i=1:length(func(:,1))
-    if MATfunc(round(func(i,2)),round(func(i,1)))>0
-        avg(round(func(i,2)),round(func(i,1)))=1+avg(round(func(i,2)),round(func(i,1)));
+for i = 1:length(func(:,1))
+	% compute indices in image space
+	indi = round(func(i,2));
+	indj = round(func(i,1));
+	
+	% update number of times current pixel was updated
+    if MATfunc(indi, indj) > 0
+        avg(indi, indj) = avg(indi, indj) + 1;
     end
-    MATfunc(round(func(i,2)),round(func(i,1)))=S(i)+MATfunc(round(func(i,2)),round(func(i,1)));
-    
+	
+	% add current abscissa
+    MATfunc(indi, indj) = MATfunc(indi, indj) + S(i);
+
+%    if MATfunc(round(func(i,2)), round(func(i,1))) > 0
+%        avg(round(func(i,2)),round(func(i,1))) = 1+avg(round(func(i,2)),round(func(i,1)));
+%    end
+%	
+%    MATfunc(round(func(i,2)),round(func(i,1))) = S(i)+MATfunc(round(func(i,2)),round(func(i,1)));    
 end
 
-MATfunc=MATfunc./avg;
-    
-    
-        
-        
+% normalisation
+MATfunc = MATfunc ./ avg;
 
