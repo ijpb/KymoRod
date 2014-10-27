@@ -82,10 +82,6 @@ hold on;
 plot(SKVerif{ind}(:,1)*scale,SKVerif{ind}(:,2)*scale,'b');
 colormap gray;
 freezeColors;
-% nbPoints = length(SKVerif{ind});
-% point = (nbPoints * posY) / nx ;
-% point = round(point);
-% plot(SKVerif{1}(point,1)*253,SKVerif{1}(point,2)*253,'d','Color','c','LineWidth',3);
 
 % To load the first kymograph, elongation
 axes(handles.kymographAxes); 
@@ -450,13 +446,12 @@ set(handles.saveAllDataButton, 'String', 'Wait please...')
 pause(0.01);
 
 % retrieve application data
-app = getappdata(0, 'app');
+app     = getappdata(0, 'app');
 ElgE1   = app.elongationImage;
 CE1     = app.curvatureImage;
 AE1     = app.verticalAngleImage;
 RE1     = app.radiusImage;
 
-    
 % To open the directory who the user want to save the data
 [fileName, pathName] = uiputfile('*.*', 'Create a directory to save your data');
 nameDir = fullfile(pathName, fileName);
@@ -474,38 +469,38 @@ nameData = fullfile(nameDir, fileName);
 
 save(nameData, 'app');
 
-n = length(dirPicture);
+n = length(app.imageList);
 
 pathElongation = fullfile(nameDir, 'dataElongation.csv');
 pathAngle = fullfile(nameDir, 'dataAngle.csv');
 pathCurvature = fullfile(nameDir, 'dataCurvature.csv');
 pathRadius = fullfile(nameDir, 'dataRadius.csv');
 
-cols = cell(n,1);
+colNames = cell(n,1);
 for i = 1 : n
-    cols{i} = strcat('picture', num2str(i));
+    colNames{i} = sprintf('frame%03d', i);
 end
 
-colsElongation = cell(n-2,1);
+colsElongation = cell(n-2, 1);
 for i = 2 : n-1
-    colsElongation{i - 1} = strcat('picture', num2str(i));
+    colsElongation{i - 1} = strcat('frame', num2str(i));
 end
 
 % Strtrim pour supprimer les espaces!
-cols = strtrim(cols);
+colNames = strtrim(colNames);
 colsElongation = strtrim(colsElongation);
 
 
 tabElongation = Table(ElgE1, 'colNames', colsElongation);
 write(tabElongation, pathElongation);
 
-tabAngle = Table(AE1, 'colNames', cols);
+tabAngle = Table(AE1, 'colNames', colNames);
 write(tabAngle, pathAngle);
 
-tabCurvature = Table(CE1, 'colNames', cols);
+tabCurvature = Table(CE1, 'colNames', colNames);
 write(tabCurvature ,pathCurvature);
 
-tabRadius = Table(RE1, 'colNames', cols);
+tabRadius = Table(RE1, 'colNames', colNames);
 write(tabRadius, pathRadius);
 
 disp('Saving done');
