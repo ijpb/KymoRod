@@ -567,8 +567,8 @@ function saveAllDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.saveAllDataButton,'Enable','off')
-set(handles.saveAllDataButton,'String','Wait please...')
+set(handles.saveAllDataButton, 'Enable', 'Off')
+set(handles.saveAllDataButton, 'String', 'Wait please...')
 pause(0.01);
    
 app = getappdata(0, 'app');
@@ -598,10 +598,10 @@ save(nameData, 'app');
 
 n = length(dirPicture);
 
-pathElongation = fullfile(nameDir,'dataElongation.csv');
-pathAngle = fullfile(nameDir,'dataAngle.csv');
-pathCurvature = fullfile(nameDir,'dataCurvature.csv');
-pathRadius = fullfile(nameDir,'dataRadius.csv');
+pathElongation = fullfile(nameDir, 'dataElongation.csv');
+pathAngle = fullfile(nameDir, 'dataAngle.csv');
+pathCurvature = fullfile(nameDir, 'dataCurvature.csv');
+pathRadius = fullfile(nameDir, 'dataRadius.csv');
 
 cols = cell(n,1);
 for i = 1 : n
@@ -618,22 +618,22 @@ cols = strtrim(cols);
 colsElongation = strtrim(colsElongation);
 
 
-tabElongation = Table(ElgE1,'colNames',colsElongation);
-write(tabElongation,pathElongation);
+tabElongation = Table(ElgE1, 'colNames', colsElongation);
+write(tabElongation, pathElongation);
 
-tabAngle = Table(AE1,'colNames',cols);
-write(tabAngle,pathAngle);
+tabAngle = Table(AE1, 'colNames', cols);
+write(tabAngle, pathAngle);
 
-tabCurvature = Table(CE1,'colNames',cols);
-write(tabCurvature,pathCurvature);
+tabCurvature = Table(CE1, 'colNames', cols);
+write(tabCurvature ,pathCurvature);
 
-tabRadius = Table(RE1,'colNames',cols);
-write(tabRadius,pathRadius);
+tabRadius = Table(RE1, 'colNames', cols);
+write(tabRadius, pathRadius);
 
 disp('Saving done');
   
-set(handles.saveAllDataButton,'Enable','on')
-set(handles.saveAllDataButton,'String','Save all data')
+set(handles.saveAllDataButton, 'Enable', 'On')
+set(handles.saveAllDataButton, 'String', 'Save all data')
 
 
 % --- Executes on button press in computeComposedKymographButton.
