@@ -22,7 +22,7 @@ function varargout = ValidateContour(varargin)
 
 % Edit the above text to modify the response to help ValidateContour
 
-% Last Modified by GUIDE v2.5 22-Aug-2014 13:25:32
+% Last Modified by GUIDE v2.5 27-Oct-2014 12:50:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,47 +58,41 @@ handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     disp('init from HypoGrowthAppData');
-    
     app = varargin{1};
-    
-    red     = app.imageList;
 
 else
     % Take the arguments from previous window, in long list form
-    warning('deprecated way of calling ValidateContour');
+    error('deprecated way of calling ValidateContour');
 end
 
 % update current process state
 app.currentStep = 'contour';
 setappdata(0, 'app', app);
 
-thresh = app.thresholdValues;
-CT2 = app.contourList;
+% retrieve app data
+red     = app.imageList;
+thresh  = app.thresholdValues;
+CT2     = app.contourList;
 
+% initialize smoothing value
 smooth = app.contourSmoothingSize;
 set(handles.smoothValueSlider, 'Value', smooth);
-set(handles.smoothValueLabel, 'String', num2str(smooth));
+set(handles.smoothValueEdit, 'String', num2str(smooth));
 
-% Show 3 images, begin middle and end of the red directory
-axes(handles.AxFirst);
-imshow(red{1} > thresh(1));
-hold on;
-% drawContour(CT2{1} * scale, 'r', 'LineWidth', 1.5);
-drawContour(CT2{1}, 'r', 'LineWidth', 1.5);
+index = app.currentFrameIndex;
 
-% initialize middle image to the middle of the directory
-indice = round(length(red) / 2); 
-axes(handles.AxMiddle);
-imshow(red{indice} > thresh(indice));
-hold on;
-% drawContour(CT2{indice} * scale, 'r', 'LineWidth', 1.5);
-drawContour(CT2{indice}, 'r', 'LineWidth', 1.5);
+% initialize current frame index slider
+set(handles.frameIndexSlider, 'Min', 1);
+set(handles.frameIndexSlider, 'Max', length(red));
+set(handles.frameIndexSlider, 'Value', index);
+steps = min([1 10] ./ length(red), .5);
+set(handles.frameIndexSlider, 'SliderStep', steps);
+label = sprintf('Current Frame: %d / %d', index, length(red));
+set(handles.currentFrameIndexLabel, 'String', label);
 
-axes(handles.AxEnd);
-imshow(red{end} > thresh(end));
-hold on;
-% drawContour(CT2{end} * scale, 'r', 'LineWidth', 1.5);
-drawContour(CT2{end}, 'r', 'LineWidth', 1.5);
+% Display current frame together with initial contour
+updateContourDisplay(handles);
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -116,7 +110,6 @@ function varargout = ValidateContour_OutputFcn(hObject, eventdata, handles) %#ok
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-
 
 
 %% Menu
@@ -142,50 +135,26 @@ function smoothValueSlider_Callback(hObject, eventdata, handles)%#ok % To select
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-% Take the value from the slide bar, rounded to have an integer
-smooth = round(get(handles.smoothValueSlider, 'Value')); 
-
 % disable slider to avoid multiple calls
 set(handles.smoothValueSlider, 'Enable', 'Off');
 
-% get global data
-app     = getappdata(0, 'app');
-thresh  = app.thresholdValues;
-CT2     = app.contourList;
-indice  = app.currentFrameIndex;
-red     = app.imageList;
+app  = getappdata(0, 'app');
 
-% create an array of contours
-CT = cell(length(red), 1);
+% Take the value from the slide bar, rounded to have an integer
+smooth = round(get(handles.smoothValueSlider, 'Value')); 
 
-% Compute three images with the current smoothing value
-CT{1}       = smoothContour(CT2{1}, smooth); 
-CT{indice}  = smoothContour(CT2{indice}, smooth); 
-CT{end}     = smoothContour(CT2{end}, smooth); 
+% set the smooth
+set(handles.smoothValueEdit, 'String', num2str(smooth));
 
- % Show three images with the smoothing
-axes(handles.AxFirst);
-imshow(red{1} > thresh(1));
-hold on;
-drawContour(CT{1}, 'r', 'Linewidth', 1.5);
+% update app data 
+app.contourSmoothingSize = smooth;
+setappdata(0, 'app', app);
 
-axes(handles.AxMiddle);
-imshow(red{indice} > thresh(indice));
-hold on;
-drawContour(CT{indice}, 'r', 'Linewidth', 1.5);
-
-axes(handles.AxEnd);
-imshow(red{end} > thresh(end));
-hold on;
-drawContour(CT{end}, 'r', 'Linewidth', 1.5);
+% update display
+updateContourDisplay(handles);
 
 % once processing is finished, re-enable smoothing
 set(handles.smoothValueSlider, 'Enable', 'On');
-
-% set the smooth
-app.contourSmoothingSize = smooth;
-setappdata(0, 'app', app);
-set(handles.smoothValueLabel, 'String', num2str(smooth));
 
 
 % --- Executes during object creation, after setting all properties.
@@ -198,6 +167,95 @@ function smoothValueSlider_CreateFcn(hObject, eventdata, handles)%#ok
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+
+function smoothValueEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+% hObject    handle to smoothValueEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of smoothValueEdit as text
+%        str2double(get(hObject,'String')) returns contents of smoothValueEdit as a double
+
+app  = getappdata(0, 'app');
+
+% Take the value from the slide bar, rounded to have an integer
+smooth = str2double(get(handles.smoothValueEdit, 'String')); 
+
+% set the smooth
+set(handles.smoothValueSlider, 'Value', smooth);
+
+% update app data 
+app.contourSmoothingSize = smooth;
+setappdata(0, 'app', app);
+
+% update display
+updateContourDisplay(handles);
+
+% --- Executes during object creation, after setting all properties.
+function smoothValueEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to smoothValueEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function frameIndexSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to frameIndexSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+app = getappdata(0, 'app');
+
+index = round(get(hObject, 'Value'));
+label = sprintf('Frame index: %d/%d', index, length(app.imageList));
+set(handles.currentFrameIndexLabel, 'String', label);
+
+app.currentFrameIndex = index;
+setappdata(0, 'app', app);
+
+updateContourDisplay(handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to frameIndexSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+function updateContourDisplay(handles)
+
+% get global data
+app     = getappdata(0, 'app');
+
+% retrieve current contour
+index   = app.currentFrameIndex;
+contour = app.contourList{index};
+
+% Smooth current contour
+smooth  = app.contourSmoothingSize;
+contour = smoothContour(contour, smooth); 
+
+% update display
+axes(handles.imageAxes);
+threshold = app.thresholdValues(index);
+imshow(app.imageList{index} > threshold);
+hold on;
+drawContour(contour, 'r', 'LineWidth', 1.5);
 
 
 %% Validation and Comeback buttons

@@ -742,6 +742,9 @@ app.lastIndex = fin;
 app.indexStep = step;
 app.imageList = col;
 
+% choose default initial display image
+app.currentFrameIndex = ceil(length(col) / 2);
+
 % get study calibration
 resolString = get(handles.spatialResolutionEdit, 'String');
 resol = str2double(resolString);

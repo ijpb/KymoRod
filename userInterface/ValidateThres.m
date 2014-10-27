@@ -101,9 +101,6 @@ set(handles.currentFrameIndexLabel, 'String', string);
 
 set(handles.autoThresholdFinalEdit, 'String', num2str(imageNumber));
 
-% % To show in default settings the width of the picture
-% sizePixel = size(col{end}, 1);
-
 set(handles.automaticThresholdRadioButton, 'Value', 1);
 set(handles.manualThresholdRadioButton, 'Value', 0);
 set(handles.currentFrameThresholdLabel, 'String', '');
@@ -143,10 +140,6 @@ app.currentFrameIndex = frameIndex;
 seg = col{1} > currentThreshold;
 axis(handles.axes1);
 imshow(seg);
-
-% % store variables for future use
-% setappdata(0, 'thresholdValues', thresholdValues);
-% setappdata(0, 'sizePixel', sizePixel);
 
 setappdata(0, 'app', app);
 
