@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 22-Aug-2014 16:40:05
+% Last Modified by GUIDE v2.5 27-Oct-2014 11:48:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -65,162 +65,30 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     t0      = app.timeInterval;
     ElgE1   = app.elongationImage;
     
-elseif nargin == 31
-    warning('Run DisplayKymograph using deprecated call');
-    
-    ElgE1 = varargin{1};
-    CE1 = varargin{2};
-    AE1 = varargin{3};
-    RE1 = varargin{4};
-    red = varargin{5};
-    seuil = varargin{6};
-    CTVerif = varargin{7};
-    SKVerif = varargin{8};
-    scale = varargin{9};
-    Elg = varargin{10};
-    C = varargin{11};
-    A = varargin{12};
-    R = varargin{13};
-    Sa = varargin{14};
-    t0 = varargin{15};
-    step = varargin{16};
-    ws2 = varargin{17};
-    ws = varargin{18};
-    nx = varargin{19};
-    iw = varargin{20};
-    E2 = varargin{21};
-    SK = varargin{22};
-    shift = varargin{23};
-    debut = varargin{24};
-    fin = varargin{25};
-    stepPicture = varargin{26};
-    N = varargin{27};
-    folder_name = varargin{28};
-    
-    setappdata(0,'ElgE1',ElgE1);
-    setappdata(0,'CE1',CE1);
-    setappdata(0,'AE1',AE1);
-    setappdata(0,'RE1',RE1);
-    setappdata(0,'red',red);
-    setappdata(0,'seuil',seuil);
-    setappdata(0,'CTVerif',CTVerif);
-    setappdata(0,'SKVerif',SKVerif);
-    setappdata(0,'scale',scale);
-    setappdata(0,'Elg',Elg);
-    setappdata(0,'C',C);
-    setappdata(0,'A',A);
-    setappdata(0,'R',R);
-    setappdata(0,'Sa',Sa);
-    setappdata(0,'t0',t0);
-    setappdata(0,'step',step);
-    setappdata(0,'ws2',ws2);
-    setappdata(0,'ws',ws);
-    setappdata(0,'nx',nx);
-    setappdata(0,'iw',iw);
-    setappdata(0,'E2',E2);
-    setappdata(0,'SK',SK);
-    setappdata(0,'shift',shift);
-    setappdata(0,'debut',debut);
-    setappdata(0,'fin',fin);
-    setappdata(0,'stepPicture',stepPicture);
-    setappdata(0,'N',N);
-    setappdata(0,'folder_name',folder_name);
-    
-elseif nargin == 3 %  A voir pour charger les autres kymographes
-    [FileName,PathName] = uigetfile('*.mat','Select the MATLAB code file');
-    if PathName == 0
-        warning('Select a directory please');
-    else
-        file = fullfile(PathName,FileName);
-        data = load(file);
-        
-        app = data.app;
-        setappdata(0, 'app', app);
-        
-        setappdata(0,'Elg',Elongation);
-        setappdata(0,'C',Curvature);
-        setappdata(0,'A',Angle);
-        setappdata(0,'R',Radius);
-        setappdata(0,'scale',scale);%#ok
-        setappdata(0,'seuil',thres);
-        setappdata(0,'Sa',curvilinearAbscissa);
-        setappdata(0,'t0',timeBetween2Pictures);
-        setappdata(0,'step',stepBetween2Displacement);
-        setappdata(0,'ws2',sizeOfCorrelatingWindow2);
-        setappdata(0,'ws',sizeOfCorrelatingWindow1);
-        setappdata(0,'nx',numberPointsForResample);
-        setappdata(0,'iw',lengthOfTheSmoothing );
-        setappdata(0,'SKVerif',SKVerif);%#ok
-        setappdata(0,'CTVerif',CTVerif);%#ok
-        setappdata(0,'E2',E2);%#ok
-        setappdata(0,'SK',SK);%#ok
-        setappdata(0,'shift',shift);%#ok
-        setappdata(0,'debut',debut);%#ok
-        setappdata(0,'fin',fin);%#ok
-        setappdata(0,'stepPicture',stepPicture);%#ok
-        setappdata(0,'N',N);%#ok
-        setappdata(0,'folder_name',folder_name);%#ok
-        
-        ElgE1 = reconstruct_Elg2(numberPointsForResample,Elongation);
-        
-        CE1 = reconstruct_Elg2(numberPointsForResample,Curvature,curvilinearAbscissa);
-        
-        AE1 = reconstruct_Elg2(numberPointsForResample,Angle,curvilinearAbscissa);
-        
-        RE1 = reconstruct_Elg2(numberPointsForResample,Radius,curvilinearAbscissa);
-        
-        setappdata(0,'ElgE1',ElgE1);
-        setappdata(0,'CE1',CE1);
-        setappdata(0,'AE1',AE1);
-        setappdata(0,'RE1',RE1);
-        
-        if stepPicture == 1 % For open all pictures
-            nb = fin - debut + 1;
-            disp('Opening directory ...');
-            red=cell(nb,1);
-            parfor_progress(nb);
-            for i=debut:fin
-                try
-                    red{i - debut + 1}=imread(fullfile(folder_name,N(i).name));
-                catch e%#ok
-                    disp('Pictures''s folder not found');
-                    delete(gcf);
-                    return;
-                end
-                parfor_progress;
-            end
-            parfor_progress(0);
-            
-        else
-            nb = 0;
-            disp('Opening directory ...');
-            for i = debut : stepPicture : fin
-                nb = nb + 1;
-            end
-            red = cell(nb,1);
-            parfor_progress(nb);
-            for i=0:nb - 1
-                try
-                    red{i+1} = imread(fullfile(folder_name,N(debut + stepPicture * i).name));
-                catch e%#ok
-                    disp('Pictures''s folder not found');
-                    delete(gcf);
-                    return;
-                end
-                parfor_progress;
-            end
-            parfor_progress(0);
-            
-        end
-        
-        setappdata(0,'red',red);
-        t0 = timeBetween2Pictures;
-    end
+else
+    error('Run DisplayKymograph using deprecated call');
 end
 
+% Display current image
+CTVerif = app.contourList;
+SKVerif = app.skeletonList;
+scale   = 1000 / app.pixelSize;
+axes(handles.imageAxes);
+ind = app.currentFrameIndex;
+imshow(app.imageList{ind});
+hold on;
+plot(CTVerif{ind}(:,1)*scale,CTVerif{ind}(:,2)*scale,'r');
+hold on;
+plot(SKVerif{ind}(:,1)*scale,SKVerif{ind}(:,2)*scale,'b');
+colormap gray;
+freezeColors;
+% nbPoints = length(SKVerif{ind});
+% point = (nbPoints * posY) / nx ;
+% point = round(point);
+% plot(SKVerif{1}(point,1)*253,SKVerif{1}(point,2)*253,'d','Color','c','LineWidth',3);
 
 % To load the first kymograph, elongation
-axes(handles.axes1); 
+axes(handles.kymographAxes); 
 im = imagesc(ElgE1); 
 colorbar;
 set(gca, 'YDir', 'normal')
@@ -235,10 +103,9 @@ colormap jet;
 freezeColors;
 
 % To detect clics on the pictures
-set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles}) 
-str = (strcat('one equals ', num2str(t0), 'minutes'));
+set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles}) 
+str = (strcat('one equals ', num2str(t0), ' minutes'));
 xlabel(str);
-% setappdata(0, 'flag', flag);
 setappdata(0, 'maxCaxis', maxCaxis);
 setappdata(0, 'minCaxis', minCaxis);
 
@@ -282,10 +149,10 @@ RE1     = app.radiusImage;
 valPopUp = get(handles.kymographTypePopup, 'Value');
 
 if(valPopUp==1)
-    axes(handles.axes1);
+    axes(handles.kymographAxes);
     im = imagesc(ElgE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
     str = (strcat('one equals ',num2str(t),'minutes'));
     xlabel(str);
     colormap jet;
@@ -293,10 +160,10 @@ if(valPopUp==1)
 end
 
 if(valPopUp==2)
-    axes(handles.axes1);
+    axes(handles.kymographAxes);
     im = imagesc(RE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
     str = (strcat('one equals ',num2str(t),'minutes'));
     xlabel(str);
     colormap jet;
@@ -304,10 +171,10 @@ if(valPopUp==2)
 end
 
 if(valPopUp==3)
-    axes(handles.axes1);
+    axes(handles.kymographAxes);
     im = imagesc(CE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
     str = (strcat('one equals ',num2str(t),'minutes'));
     xlabel(str);
     colormap jet;
@@ -315,10 +182,10 @@ if(valPopUp==3)
 end
 
 if(valPopUp==4)
-    axes(handles.axes1);
+    axes(handles.kymographAxes);
     im = imagesc(AE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
     str = (strcat('one equals ',num2str(t),'minutes'));
     xlabel(str);
     colormap jet;
@@ -339,8 +206,8 @@ end
 
 
 % --- Executes on mouse press over axes background.
-function axes1_ButtonDownFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to axes1 (see GCBO)
+function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to kymographAxes (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -357,12 +224,12 @@ scale   = 1000 / app.pixelSize;
 nx      = app.finalResultLength;
 
 % extract last clicked position
-pos = get(handles.axes1, 'CurrentPoint');
+pos = get(handles.kymographAxes, 'CurrentPoint');
 posX = pos(1);
 posY = pos(3);
 
 % extract min/max values of axes
-P = get(handles.axes1, 'XLim');
+P = get(handles.kymographAxes, 'XLim');
 min = P(1); 
 max = P(2); 
 
@@ -370,8 +237,8 @@ max = P(2);
 valPopUp = get(handles.kymographTypePopup, 'Value'); 
 
 if valPopUp == 1 % 1 for elongation
-    if posX < min + 0.05 % For the first image (not showing in kimograph)
-        axes(handles.axes2);
+    if posX < min + 0.05 % For the first image (not showing in kymograph)
+        axes(handles.imageAxes);
         imshow(red{1} );
         hold on;
         plot(CTVerif{1}(:,1)*scale,CTVerif{1}(:,2)*scale,'r');
@@ -384,8 +251,8 @@ if valPopUp == 1 % 1 for elongation
         point = round(point);
         plot(SKVerif{1}(point,1)*253,SKVerif{1}(point,2)*253,'d','Color','c','LineWidth',3);
         
-    elseif posX > max - 0.05 % For the last image (not showing in kimograph)
-        axes(handles.axes2);
+    elseif posX > max - 0.05 % For the last image (not showing in kymograph)
+        axes(handles.imageAxes);
         imshow(red{end} );
         hold on;
         plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
@@ -401,7 +268,7 @@ if valPopUp == 1 % 1 for elongation
     else
         for i=min - 0.5: max - 0.5 % For all the others image, showing in the kymograph
             if posX > i-0.5 && posX < i+0.5
-                axes(handles.axes2);%#ok
+                axes(handles.imageAxes);%#ok
                 imshow(red{i+1} );
                 hold on;
                 plot(CTVerif{i+1}(:,1)*scale,CTVerif{i+1}(:,2)*scale,'r');
@@ -423,7 +290,7 @@ end
 if valPopUp == 2 || valPopUp == 3 || valPopUp == 4 % For angle curvature and Radius
     for i=min - 0.5: max - 0.5
         if posX > i-0.5 && posX < i+0.5
-            axes(handles.axes2);%#ok
+            axes(handles.imageAxes);%#ok
             imshow(red{i} );
             hold on;
             plot(CTVerif{i}(:,1)*scale,CTVerif{i}(:,2)*scale,'r');
@@ -469,44 +336,44 @@ valPopUp = get(handles.kymographTypePopup, 'Value');
 
 switch valPopUp
     case 1
-        axes(handles.axes1);
+        axes(handles.kymographAxes);
         im = imagesc(ElgE1);
         set(gca, 'YDir', 'normal')
         caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
         str = (strcat('one equals ',num2str(t),'minutes'));
         xlabel(str);
         colormap jet;
         freezeColors;
         
     case 2
-        axes(handles.axes1);
+        axes(handles.kymographAxes);
         im = imagesc(RE1);
         set(gca, 'YDir', 'normal')
         caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
         str = (strcat('one equals ',num2str(t),'minutes'));
         xlabel(str);
         colormap jet;
         freezeColors;
         
     case 3
-        axes(handles.axes1);
+        axes(handles.kymographAxes);
         im = imagesc(CE1);
         set(gca, 'YDir', 'normal')
         caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
         str = (strcat('one equals ',num2str(t),'minutes'));
         xlabel(str);
         colormap jet;
         freezeColors;
         
     case 4
-        axes(handles.axes1);
+        axes(handles.kymographAxes);
         im = imagesc(AE1);
         set(gca, 'YDir', 'normal')
         caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@axes1_ButtonDownFcn,handles});
+        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
         str = (strcat('one equals ',num2str(t),'minutes'));
         xlabel(str);
         colormap jet;
@@ -534,10 +401,15 @@ function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % handles    structure with handles and user data (see GUIDATA)
 
 try
-    [FileName,PathName] = uiputfile({'*.png'});%ouvre la boite et liste les fichiers .png
-    f = getframe(handles.axes1);%selectione la totalité de la figure courante
+    % open a dialog to select a PNG file
+    [fileName, pathName] = uiputfile({'*.png'});
+    
+    % select current frame and convert to image
+    f = getframe(handles.kymographAxes);
     im = frame2im(f);
-    imwrite(im,fullfile(PathName, FileName),'png')%enregistre l'image dans le fichier sélectionné
+    
+    % save image into selected file
+    imwrite(im, fullfile(pathName, fileName), 'png');
     
 catch error %#ok
     warning('Select a folder to save picture please');
@@ -552,10 +424,16 @@ function saveAsTiffButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % handles    structure with handles and user data (see GUIDATA)
 
 try
-    [FileName,PathName] = uiputfile({'*.tif'});%ouvre la boite et liste les fichiers .tif
-    f = getframe(handles.axes1);%selectione la totalité de la figure courante
+    % open a dialog to select a PNG file
+    [fileName, pathName] = uiputfile({'*.tif'});
+    
+    % select current frame and convert to image
+    f = getframe(handles.kymographAxes);
     im = frame2im(f);
-    imwrite(im,fullfile(PathName, FileName),'tif')%enregistre l'image dans le fichier sélectionné
+    
+    % save image into selected file
+    imwrite(im, fullfile(pathName, fileName), 'tif');
+
 catch error%#ok
     warning('Select a folder to save picture please');
     return;
@@ -570,9 +448,9 @@ function saveAllDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 set(handles.saveAllDataButton, 'Enable', 'Off')
 set(handles.saveAllDataButton, 'String', 'Wait please...')
 pause(0.01);
-   
-app = getappdata(0, 'app');
 
+% retrieve application data
+app = getappdata(0, 'app');
 ElgE1   = app.elongationImage;
 CE1     = app.curvatureImage;
 AE1     = app.verticalAngleImage;
