@@ -21,10 +21,6 @@ function [A, C] = curvature(SK, S, ws)
 % vertex number
 n = length(S);
 
-% initialize empty arrays
-A = zeros(n, 1);
-C = zeros(n, 1);
-
 % Computation of the angle A according to the vertical
 A = CTangle2(SK, ws);
 
@@ -36,6 +32,7 @@ A = moving_average(A, ceil(ws/2));     %et ca
 
 % The derivation of the angle A along the curvilinear abscissa S gives the 
 % curvature C 
+C = zeros(n, 1);
 for i = ws+1:n-ws
     C(i) = (A(i+ws) - A(i-ws)) / (S(i+ws) - S(i-ws));
 end

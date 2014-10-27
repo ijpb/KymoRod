@@ -490,7 +490,7 @@ function validateSettingsButton_Callback(hObject, eventdata, handles)%#ok
 
 
 % To start the programm
-set(handles.validateSettingsButton, 'Enable', 'off')
+set(handles.validateSettingsButton, 'Enable', 'Off')
 set(handles.validateSettingsButton, 'String', 'Wait please...')
 pause(0.01);
 
@@ -520,7 +520,7 @@ if get(handles.changeSettingsRadioButton, 'Value') == 1
     ws2 = get(handles.correlationWindowSize2Edit, 'String');
     step = get(handles.displacementStepEdit, 'String');
     
-    if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0 || length(t0) == 0 %#ok
+    if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0  %#ok
         warning('Edit must not be empty');
         return;
     end
@@ -530,22 +530,19 @@ if get(handles.changeSettingsRadioButton, 'Value') == 1
     ws  = str2num(ws);%#ok
     ws2 = str2num(ws2);%#ok
     step = str2num(step);%#ok
-    t0  = str2num(t0);%#ok
     
-    if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step) || isempty(t0)
+    if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step)
         warning('Value must be a number');
         return;
     end
     
-    if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0 || t0 < 0
+    if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0
         warning('Value must be positive');
         return;
     end
 end
 
 
-% ?
-we = 1; 
 
 % store new settings in Application Data
 app.curvatureSmoothingSize = iw;
@@ -567,6 +564,8 @@ Sa = aligncurv(S, R);
 
 % Displacement
 disp('Displacement');
+% variable not used
+we = 1; 
 E = displall(SK, Sa, red, scale, shift, ws, we, step);
 
 % Elongation

@@ -1,4 +1,4 @@
-function [R_ma R_ma_ind dist2] = DirectionInitial(dist2,dir2,V,V_F,in)
+function [R_ma, R_ma_ind, dist2] = DirectionInitial(dist2,dir2,V,V_F,in)
 %On choisit le point de d�part en prenant
 %le point le plus �loign� du contour verifiant les contraintes 1 seul
 %voisin et ...

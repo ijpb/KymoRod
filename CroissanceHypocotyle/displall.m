@@ -1,5 +1,5 @@
-function E = displall(SK,S,pic,scale,shift,ws,we,step)
-% DISPLALL identifies growth areas : the displacement
+function E = displall(SK, S, pic, scale, shift, ws, we, step)
+% DISPLALL compute growth between all couples of images
 %
 % E = displall(SK, S, pic, scale, shift, ws, we, step)
 %
@@ -33,7 +33,7 @@ parfor i = 1:length(SK) - step
 	i2 = i + step;
 	
 	% check if the two skeletons are large enough
-    if length(SK{i}) > 2.*80 && length(SK{i2}) > 2.*80
+    if length(SK{i}) > 2*80 && length(SK{i2}) > 2*80
         E{i} = elong5(SK{i}, SK{i2}, S{i}, S{i2}, pic{i}, pic{i2}, ...
 			scale, shift{i}, shift{i2}, ws, we); 
 		

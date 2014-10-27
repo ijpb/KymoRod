@@ -23,25 +23,25 @@ nx = 2000;
 % allocate array for storing shift in indices
 dec = zeros(length(S), 1);
 
-% ensure abscissa start at zero
-% TODO: necessary ? (it is already the case...)
-for k = 1:length(S)
-   S{k} = S{k} - S{k}(1); 
-end
+% % ensure abscissa start at zero
+% % TODO: necessary ? (it is already the case...)
+% for k = 1:length(S)
+%    S{k} = S{k} - S{k}(1); 
+% end
 
 %parfor_progress(length(S));
+
+Smin = zeros(length(S), 1);
 
 % compare each signal with the previous one
 for k = 2:length(S)
     
-    clearvars Corr C B S0;
-	
 	% total curvilinear length of each curve
     L0 = S{k-1}(end) - S{k-1}(1);
     L1 = S{k}(end);
 	
 	% length ratio between curves
-    DL = L1 ./ L0;
+    DL = L1 / L0;
     
 	% C is the resampling of smaller curve, with nx points
 	% B is resampling of longest curve, with more points, but similar spacing
@@ -68,9 +68,10 @@ for k = 2:length(S)
         dec(k-1) = 0;
     else
 		% cross correlation of the two resampled signals
+        Corr = zeros(DL2-1, 2);
 		for j = 1:DL2-1
-			Corr(j,1) = DS * j;
-			Corr(j,2) = corr2(B(j:end-DL2+j-1), C);
+			Corr(j, 1) = DS * j;
+			Corr(j, 2) = corr2(B(j:end-DL2+j-1), C);
 		end
 		
 		% find a correlation peak

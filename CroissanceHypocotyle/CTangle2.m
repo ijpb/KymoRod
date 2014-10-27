@@ -22,7 +22,6 @@ n = length(CT);
 % allocate memory
 A = zeros(n,1);
 T = zeros(n,1);
-m = zeros(n,1);
 
 % starting index to fill the array
 i = ws + 1;
