@@ -1,5 +1,5 @@
-function setupHypocotyle(varargin)
-%SETUPHYPOCOTYLE Setup all paths required to run hypocotyl growth
+function setupHypoGrowth(varargin)
+%SETUPHYPOGROWTH Setup all paths required to run hypocotyl growth tool
 %
 %   usage:
 %   setupHypocotyle
@@ -17,10 +17,18 @@ fileName = mfilename('fullpath');
 mainDir = fileparts(fileName);
 
 disp('Installing Hypocotyl Growth Software...');
+
+% add libraries
 addpath(fullfile(mainDir, 'lib'));
 addpath(fullfile(mainDir, 'lib', 'freezeColors'));
 addpath(fullfile(mainDir, 'lib', 'parfor'));
+
+% add the core programs
+addpath(fullfile(mainDir, 'core'));
 addpath(fullfile(mainDir, 'CroissanceHypocotyle'));
+
+% add GUI software
 addpath(fullfile(mainDir, 'userInterface'));
+
 disp('Hypocotyl Growth Software installed!');
 
