@@ -56,8 +56,8 @@ function ValidateContour_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
-    disp('init from HypoGrowthApp');
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
+    disp('init from HypoGrowthAppData');
     
     app = varargin{1};
     

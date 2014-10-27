@@ -60,7 +60,7 @@ guidata(hObject, handles);
 
 % UIWAIT makes StartComposedElongation wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     % should be the canonical way of calling the program
     
     disp('Compute Composed elongation from app');

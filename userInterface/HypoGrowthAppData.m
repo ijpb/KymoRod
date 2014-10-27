@@ -1,4 +1,4 @@
-classdef HypoGrowthApp < handle
+classdef HypoGrowthAppData < handle
     % Data Class for Application "HypoGrowth"
     %   
     

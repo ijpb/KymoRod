@@ -55,7 +55,7 @@ function ValidateSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for Skeleton
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     % should be the canonical way of calling the program
     
     app = varargin{1};

@@ -56,8 +56,8 @@ function HypoGrowthMenu_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for HypoGrowthMenu
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
-    disp('Run DisplayKymograph using HypoGrowthApp class');
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
+    disp('Run DisplayKymograph using HypoGrowthAppData class');
     app = varargin{1};
 elseif nargin == 3
     app = HypoGrowthApp();

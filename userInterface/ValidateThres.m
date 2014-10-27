@@ -55,7 +55,7 @@ function ValidateThres_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for ValidateThres
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     % should be the canonical way of calling the program
     
     disp('validate threshold from app');

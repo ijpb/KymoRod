@@ -55,8 +55,8 @@ function StartSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 set(handles.channelSelectionPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
-    disp('init from HypoGrowthApp');
+if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
+    disp('init from HypoGrowthAppData');
     
     app = varargin{1};
     app.currentStep = 'selection';

@@ -16,7 +16,7 @@ function startHypoGrowth(varargin)
 % Copyright 2014 INRA - Cepia Software Platform.
 
 % create application data structure
-app = HypoGrowthApp;
+app = HypoGrowthAppData;
 
 % [path, name] = fileparts(mfilename('fullpath'));
 path = fileparts(mfilename('fullpath'));
