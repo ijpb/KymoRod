@@ -187,6 +187,7 @@ app.contourSmoothingSize = smooth;
 setappdata(0, 'app', app);
 set(handles.smoothValueLabel, 'String', num2str(smooth));
 
+
 % --- Executes during object creation, after setting all properties.
 function smoothValueSlider_CreateFcn(hObject, eventdata, handles)%#ok
 % hObject    handle to smoothValueSlider (see GCBO)
@@ -218,71 +219,6 @@ function validateContourButton_Callback(hObject, eventdata, handles)%#ok % To go
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.validateContourButton, 'Enable', 'off')
-set(handles.validateContourButton, 'String', 'Wait please...')
-pause(0.01);
-
 app = getappdata(0, 'app');
-smooth  = app.contourSmoothingSize;
-CT2     = app.contourList;
-red     = app.imageList;
-
-% dir = direction;
-% dirbegin = dirInitial;
-direction = 'boucle';
-% dirInitial = app.firstPointLocation;
-dir = direction;
-dirbegin = app.firstPointLocation;
-
-% allocate memory for result of skeletons
-CT      = cell(length(red), 1);
-SK      = cell(length(red), 1);
-shift   = cell(length(red), 1);
-rad     = cell(length(red), 1);
-CTVerif = cell(length(red), 1);
-SKVerif = cell(length(red), 1);
-
-disp('Skeletonization');
-hDialog = msgbox(...
-    {'Computing skeletons from contours,', 'please wait...'}, ...
-    'Skeletonization');
-
-parfor_progress(length(red));
-for i = 1:length(red)
-    % Smooth current contour
-    contour = CT2{i};
-    if smooth ~= 0
-        contour = smoothContour(contour, smooth);
-    end
-    
-    CTVerif{i} = contour;
-    
-    % scale contour in user unit
-    contour = contour * app.pixelSize / 1000;
-    
-    % Skeleton of current contour
-%     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i}, dir, dirbegin);
-    [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(contour, dir, dirbegin);
-%     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
-%     [SK{i}, CT{i}, shift{i}] = shiftSkeleton(SKVerif{i}, contour);
-    
-    parfor_progress;
-end
-
-parfor_progress(0);
-if ishandle(hDialog)
-    close(hDialog);
-end
-
-app.skeletonList = SKVerif;
-
-app.scaledContourList = CT;
-app.scaledSkeletonList = SK;
-app.radiusList = rad;
-app.originPosition = shift;
-setappdata(0, 'app', app); 
-
 delete(gcf);
-
-% Call the next window
 ValidateSkeleton(app);

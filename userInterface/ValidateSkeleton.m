@@ -61,34 +61,27 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthApp')
     app = varargin{1};
     setappdata(0, 'app', app);
     
-    red     = app.imageList;
-    thres   = app.thresholdValues;
-    CTVerif = app.contourList;
-    SKVerif = app.skeletonList;
-    indice  = app.currentFrameIndex;
-    dirInitial = app.firstPointLocation;
-    
 else
-    warning('Deprecated way of calling ValidateSkeleton');
-    % extract input arguments
-    red = varargin{1};
-    indice = varargin{4};
-    dirInitial = varargin{6};
-    thres = varargin{7};
-    SKVerif = varargin{20};
-    CTVerif = varargin{21};
-    
-    app = HypoGrowthApp();
+    error('Deprecated way of calling ValidateSkeleton');
 end
 
 app.currentStep = 'skeleton';
 
+red         = app.imageList;
+thres       = app.thresholdValues;
+CTVerif     = app.contourList;
+indice      = app.currentFrameIndex;
+
+% setup widgets
 set(handles.middleImageIndexSlider, 'Min', 1);
 set(handles.middleImageIndexSlider, 'Max', length(red));
-set(handles.middleImageIndexSlider, 'Value', 1);
+set(handles.middleImageIndexSlider, 'Value', indice);
 
 % Compute 3 skeletons that should be validated by the user
+computeAllSkeletons(handles);
 
+SKVerif     = app.skeletonList;
+dirInitial  = app.firstPointLocation;
 
 % Show the three skeletons
 axes(handles.AxFirst2);
@@ -111,7 +104,7 @@ plot(CTVerif{indice}(:,1), CTVerif{indice}(:,2), 'r');
 % plot(SKVerif{indice}(:,1), SKVerif{indice}(:,2), 'b');
 skeleton = SKVerif{indice} * 1000 / app.pixelSize;
 plot(skeleton(:,1), skeleton(:,2), 'b');
-set(handles.text6, 'String', strcat('Frame n°', num2str(indice)));
+set(handles.text6, 'String', strcat('Frame n° ', num2str(indice)));
 
 axes(handles.AxEnd2);
 imshow(red{end} > thres(end));
@@ -122,7 +115,7 @@ plot(CTVerif{end}(:,1), CTVerif{end}(:,2), 'r');
 % plot(SKVerif{end}(:,1), SKVerif{end}(:,2), 'b');
 skeleton = SKVerif{end} * 1000 / app.pixelSize;
 plot(skeleton(:,1), skeleton(:,2), 'b');
-set(handles.text7, 'String', strcat('Frame n°', num2str(length(red))));
+set(handles.text7, 'String', strcat('Frame n° ', num2str(length(red))));
 
 direction = 'boucle';
 switch direction
@@ -294,11 +287,32 @@ function updateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 % Update the skeleton with the new settings in popupmenu
-set(handles.updateSkeletonButton, 'Enable', 'off')
+set(handles.updateSkeletonButton, 'Enable', 'Off')
 set(handles.updateSkeletonButton, 'String', 'Wait please...')
 pause(0.01);
 
 app = getappdata(0, 'app');
+
+% parse popup containing info for starting skeleton
+val2 = get(handles.firstSkeletonPointPopup, 'Value');
+setappdata(0, 'val2', val2);
+dirInitial = get(handles.firstSkeletonPointPopup, 'String');
+dirInitial  = dirInitial{val2};
+
+app.firstPointLocation = dirInitial;
+
+% close the window and open again with the new settings
+% TODO: could simply update the widgets...
+delete(gcf);
+
+ValidateSkeleton(app);
+
+
+function computeAllSkeletons(handles)
+% compute skeletons from contours, and update widgets
+
+% get current application data
+app     = getappdata(0, 'app');
 red     = app.imageList;
 smooth  = app.contourSmoothingSize;
 CT2     = app.contourList;
@@ -344,7 +358,6 @@ for i = 1:length(red)
     contour = contour * app.pixelSize / 1000;
     
     % Skeleton of current contour
-%     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(CT2{i}, dir, dirbegin);
     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(contour, dir, dirbegin);
 %     CTVerif{i} = contour;
 %     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
@@ -358,6 +371,7 @@ if ishandle(hDialog)
     close(hDialog);
 end
 
+% store new values in app data object
 app.skeletonList = SKVerif;
 app.radiusList = rad;
 
@@ -366,14 +380,6 @@ app.scaledSkeletonList = SK;
 app.originPosition = shift;
 
 setappdata(0, 'app', app); 
-
-% close the window and open again with the new settings
-delete(gcf);
-
-ValidateSkeleton(app);
-% seuil = thres;
-% ValidateSkeleton(red,smooth,CT2,indice,direction,dirInitial,thres,...
-%     scale,size,seuil,debut,fin,step,nbInit,N,folderName,SK,CT,rad,SKVerif,CTVerif,shift);
 
 
 % --- Executes on button press in saveSkeletonDataButton.
@@ -415,10 +421,6 @@ end
 
 name = fullfile(pathName, fileName);
 save(name, 'app');
-% % save(name,'CT','SK','R','shift','CTVerif','SKVerif',...
-% %     'seuil','scale','debut','fin','step','nbInit','N','folderName');
-% save(name,'CT','SK','R','shift','CTVerif','SKVerif',...
-%     'seuil','scale','debut','fin','step','nbInit','N','folderName');
 
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'String', 'Save data of skeleton');
