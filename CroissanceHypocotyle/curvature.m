@@ -1,12 +1,13 @@
 function [A, C] = curvature(SK, S, ws)
 %CURVATURE Compute orientation and curvature of a parameterized curve
 %
-% SK : skeleton of the figure
-% S : the value of the curvilinear abscissa
-% ws is the size of the derivative window, define at the begin
+% [A, C] = curvature(SK, S, W)
+% SK    a N-by-2 array containing the coordinate of vertices
+% S     the value of the curvilinear abscissa
+% W     the size of the window used to compute local angle
 %
-% Return : the angle A with the vertical, an array of cell
-% the curvature C of the Skeleton SK, an array of cell
+% A     the angle with the vertical, in a N-by-1 array
+% C     the local curvature of the curve, in a N-by-1 array
 %
 %
 % ------
@@ -37,11 +38,11 @@ for i = ws+1:n-ws
     C(i) = (A(i+ws) - A(i-ws)) / (S(i+ws) - S(i-ws));
 end
 
-% fill the extremities odf the signal
-C(1:ws) = (1:ws).*C(ws+1)/ws; %ca de meme pour avoir les points sur laquelle on a pas de courbure
-C(n-ws:end) = (ws-(1:ws+1)).*C(end-ws-1)/ws; %et ca pour etre tranquille
+% fill the extremities of the signal
+C(1:ws) = (1:ws).*C(ws+1) / ws; %ca de meme pour avoir les points sur laquelle on a pas de courbure
+C(n-ws:end) = (ws-(1:ws+1)) .* C(end-ws-1) / ws; %et ca pour etre tranquille
 
 % keep it or not ?
-C = moving_average(C,ceil(ws/2)); % et puis on d�gagera ca aussi
+C = moving_average(C, ceil(ws/2)); % et puis on degagera ca aussi
 
 
