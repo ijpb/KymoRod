@@ -60,9 +60,6 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     app.currentStep = 'kymograph';
     setappdata(0, 'app', app);
     
-    t0      = app.timeInterval;
-    ElgE1   = app.elongationImage;
-    
 else
     error('Run DisplayKymograph using deprecated call');
 end
@@ -70,39 +67,28 @@ end
 % Display current image
 CTVerif = app.contourList;
 SKVerif = app.skeletonList;
-% scale   = 1000 / app.pixelSize;
 axes(handles.imageAxes);
 ind = app.currentFrameIndex;
 imshow(app.imageList{ind});
 hold on;
-% plot(CTVerif{ind}(:,1)*scale,CTVerif{ind}(:,2)*scale,'r');
-% plot(SKVerif{ind}(:,1)*scale,SKVerif{ind}(:,2)*scale,'b');
 drawContour(CTVerif{ind}, 'r');
 drawSkeleton(SKVerif{ind}, 'b');
 colormap gray;
 freezeColors;
 
-% To load the first kymograph, elongation
-axes(handles.kymographAxes); 
-im = imagesc(ElgE1); 
-colorbar;
-set(gca, 'YDir', 'normal')
-val = caxis;
-minCaxis = val(1);
-maxCaxis = val(2);
-set(handles.slider1, 'Max', maxCaxis);
-set(handles.slider1, 'Min', minCaxis);
-set(handles.slider1, 'Value', minCaxis);
-colormap jet;
+% compute display extent for elongation kymograph
+img = app.elongationImage;
+minCaxis = min(img(:));
+maxCaxis = max(img(:));
 
-freezeColors;
-
-% To detect clics on the pictures
-set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles}) 
-str = (strcat('one equals ', num2str(t0), ' minutes'));
-xlabel(str);
-setappdata(0, 'maxCaxis', maxCaxis);
 setappdata(0, 'minCaxis', minCaxis);
+setappdata(0, 'maxCaxis', maxCaxis);
+
+set(handles.slider1, 'Min', minCaxis);
+set(handles.slider1, 'Max', maxCaxis);
+set(handles.slider1, 'Value', minCaxis);
+
+updateKymographDisplay(handles);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -145,59 +131,29 @@ function kymographTypePopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % To select the kymograph with a popupmenu
 
 app = getappdata(0, 'app');
-t = app.timeInterval;
 
-ElgE1   = app.elongationImage;
-CE1     = app.curvatureImage;
-AE1     = app.verticalAngleImage;
-RE1     = app.radiusImage;
-
-% Take the value of popupmenu
+% Choose the kymograph to display
 valPopUp = get(handles.kymographTypePopup, 'Value');
-
-if(valPopUp==1)
-    axes(handles.kymographAxes);
-    im = imagesc(ElgE1);colorbar;freezeColors;
-    set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),' minutes'));
-    xlabel(str);
-    colormap jet;
-    freezeColors;
+switch valPopUp
+    case 1, img = app.elongationImage;
+    case 2, img = app.radiusImage;
+    case 3, img = app.curvatureImage;
+    case 4, img = app.verticalAngleImage;
 end
+minCaxis = min(img(:));
+maxCaxis = max(img(:));
 
-if(valPopUp==2)
-    axes(handles.kymographAxes);
-    im = imagesc(RE1);colorbar;freezeColors;
-    set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),' minutes'));
-    xlabel(str);
-    colormap jet;
-    freezeColors;
-end
+setappdata(0, 'minCaxis', minCaxis);
+setappdata(0, 'maxCaxis', maxCaxis);
 
-if(valPopUp==3)
-    axes(handles.kymographAxes);
-    im = imagesc(CE1);colorbar;freezeColors;
-    set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),' minutes'));
-    xlabel(str);
-    colormap jet;
-    freezeColors;
-end
+set(handles.slider1, 'Min', minCaxis);
+set(handles.slider1, 'Max', maxCaxis);
+set(handles.slider1, 'Value', minCaxis);
 
-if(valPopUp==4)
-    axes(handles.kymographAxes);
-    im = imagesc(AE1);colorbar;freezeColors;
-    set(gca, 'YDir', 'normal')
-    set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t), ' minutes'));
-    xlabel(str);
-    colormap jet;
-    freezeColors;
-end
+
+updateKymographDisplay(handles);
+
+
 
 % --- Executes during object creation, after setting all properties.
 function kymographTypePopup_CreateFcn(hObject, eventdata, handles) %#ok<*DEFNU,INUSD>
@@ -210,7 +166,6 @@ function kymographTypePopup_CreateFcn(hObject, eventdata, handles) %#ok<*DEFNU,I
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 % --- Executes on mouse press over axes background.
 function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
@@ -321,6 +276,22 @@ function slider1_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
+updateKymographDisplay(handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function slider1_CreateFcn(hObject, eventdata, handles)%#ok<INUSD>
+% hObject    handle to slider1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+function updateKymographDisplay(handles)
 
 app = getappdata(0, 'app');
 
@@ -354,18 +325,6 @@ set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 % annotate
 str = sprintf('one equals %d minutes', app.timeInterval);
 xlabel(str);
-
-
-% --- Executes during object creation, after setting all properties.
-function slider1_CreateFcn(hObject, eventdata, handles)%#ok<INUSD>
-% hObject    handle to slider1 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
 
 
 % --- Executes on button press in saveAsPngButton.
