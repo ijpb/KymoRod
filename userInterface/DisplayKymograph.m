@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 27-Oct-2014 11:48:25
+% Last Modified by GUIDE v2.5 28-Oct-2014 09:29:10
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -121,6 +121,18 @@ function varargout = DisplayKymograph_OutputFcn(hObject, eventdata, handles)%#ok
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+
+
+% --------------------------------------------------------------------
+function mainMenuMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to mainMenuMenuItem (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+app = getappdata(0, 'app');
+delete(gcf);
+HypoGrowthMenu(app);
 
 
 % --- Executes on selection change in kymographTypePopup.
@@ -498,7 +510,7 @@ tabAngle = Table(AE1, 'colNames', colNames);
 write(tabAngle, pathAngle);
 
 tabCurvature = Table(CE1, 'colNames', colNames);
-write(tabCurvature ,pathCurvature);
+write(tabCurvature, pathCurvature);
 
 tabRadius = Table(RE1, 'colNames', colNames);
 write(tabRadius, pathRadius);
@@ -509,6 +521,17 @@ set(handles.saveAllDataButton, 'Enable', 'On')
 set(handles.saveAllDataButton, 'String', 'Save all data')
 
 
+% --- Executes on button press in backToElongationButton.
+function backToElongationButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to backToElongationButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+app = getappdata(0, 'app');
+delete(gcf);
+StartElongation(app);
+
+
 % --- Executes on button press in computeComposedKymographButton.
 function computeComposedKymographButton_Callback(hObject, eventdata, handles)%#ok<INUSD>
 % hObject    handle to computeComposedKymographButton (see GCBO)
@@ -516,7 +539,6 @@ function computeComposedKymographButton_Callback(hObject, eventdata, handles)%#o
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
-    
 delete(gcf);
-
 StartComposedElongation(app);
+

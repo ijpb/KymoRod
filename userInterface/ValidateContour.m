@@ -70,24 +70,22 @@ app.currentStep = 'contour';
 setappdata(0, 'app', app);
 
 % retrieve app data
-red     = app.imageList;
-thresh  = app.thresholdValues;
-CT2     = app.contourList;
+nImages = length(app.imageList);
+smooth  = app.contourSmoothingSize;
+index   = app.currentFrameIndex;
 
 % initialize smoothing value
-smooth = app.contourSmoothingSize;
 set(handles.smoothValueSlider, 'Value', smooth);
 set(handles.smoothValueEdit, 'String', num2str(smooth));
 
-index = app.currentFrameIndex;
 
 % initialize current frame index slider
 set(handles.frameIndexSlider, 'Min', 1);
-set(handles.frameIndexSlider, 'Max', length(red));
+set(handles.frameIndexSlider, 'Max', nImages);
 set(handles.frameIndexSlider, 'Value', index);
-steps = min([1 10] ./ length(red), .5);
+steps = min([1 10] ./ nImages, .5);
 set(handles.frameIndexSlider, 'SliderStep', steps);
-label = sprintf('Current Frame: %d / %d', index, length(red));
+label = sprintf('Current Frame: %d / %d', index, nImages);
 set(handles.currentFrameIndexLabel, 'String', label);
 
 % Display current frame together with initial contour
@@ -217,7 +215,8 @@ function frameIndexSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU
 app = getappdata(0, 'app');
 
 index = round(get(hObject, 'Value'));
-label = sprintf('Frame index: %d/%d', index, length(app.imageList));
+
+label = sprintf('Frame index: %d / %d', index, length(app.imageList));
 set(handles.currentFrameIndexLabel, 'String', label);
 
 app.currentFrameIndex = index;
