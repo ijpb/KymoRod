@@ -22,7 +22,7 @@ function varargout = ValidateSkeleton(varargin)
 
 % Edit the above text to modify the response to help ValidateSkeleton
 
-% Last Modified by GUIDE v2.5 21-Aug-2014 20:01:03
+% Last Modified by GUIDE v2.5 28-Oct-2014 11:43:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -83,20 +83,7 @@ computeAllSkeletons(handles);
 SKVerif     = app.skeletonList;
 dirInitial  = app.firstPointLocation;
 
-% Show the three skeletons
-axes(handles.AxFirst2);
-imshow(red{1} > thres(1));
-hold on;
-% plot(CTVerif{1}(:,1) * scale, CTVerif{1}(:,2) * scale, 'r');
-% plot(SKVerif{1}(:,1) * scale, SKVerif{1}(:,2) * scale, 'b');
-plot(CTVerif{1}(:,1), CTVerif{1}(:,2), 'r');
-% % plot(SKVerif{1}(:,1), SKVerif{1}(:,2), 'b');
-% skeleton = SKVerif{1} * 1000 / app.pixelSize;
-skeleton = SKVerif{1};
-plot(skeleton(:,1), skeleton(:,2), 'b');
-set(handles.text5, 'String', 'Frame n° 1');
-
-axes(handles.AxMiddle2);
+axes(handles.currentFrameAxes);
 imshow(red{indice} > thres(indice));
 hold on;
 % plot(CTVerif{indice}(:,1)*scale, CTVerif{indice}(:,2)*scale, 'r');
@@ -106,19 +93,7 @@ plot(CTVerif{indice}(:,1), CTVerif{indice}(:,2), 'r');
 % skeleton = SKVerif{indice} * 1000 / app.pixelSize;
 skeleton = SKVerif{indice};
 plot(skeleton(:,1), skeleton(:,2), 'b');
-set(handles.text6, 'String', strcat('Frame n° ', num2str(indice)));
-
-axes(handles.AxEnd2);
-imshow(red{end} > thres(end));
-hold on;
-% plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
-% plot(SKVerif{end}(:,1)*scale,SKVerif{end}(:,2)*scale,'b');
-plot(CTVerif{end}(:,1), CTVerif{end}(:,2), 'r');
-% % plot(SKVerif{end}(:,1), SKVerif{end}(:,2), 'b');
-% skeleton = SKVerif{end} * 1000 / app.pixelSize;
-skeleton = SKVerif{end};
-plot(skeleton(:,1), skeleton(:,2), 'b');
-set(handles.text7, 'String', strcat('Frame n° ', num2str(length(red))));
+set(handles.currentFrameLabel, 'String', strcat('Frame n° ', num2str(indice)));
 
 direction = 'boucle';
 switch direction
@@ -206,7 +181,7 @@ end
 
 seuil = seuil(val);
 
-axes(handles.AxMiddle2);
+axes(handles.currentFrameAxes);
 imshow(red{val} > seuil);
 hold on;
 % plot(CTVerif{val}(:,1)*scale, CTVerif{val}(:,2)*scale, 'r');
@@ -218,13 +193,14 @@ skeleton = SKVerif{val};
 plot(skeleton(:,1), skeleton(:,2), 'b');
 
 % setup slider for display of current frame
-maxSlide = length(red);
-set(handles.middleImageIndexSlider, 'Max', maxSlide); 
-sliderStep = min(max([1 5] ./ (maxSlide - 1), 0.001), 1);
+nFrames = length(red);
+set(handles.middleImageIndexSlider, 'Max', nFrames); 
+sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.middleImageIndexSlider, 'SliderStep', sliderStep); 
 set(handles.middleImageIndexSlider, 'Enable', 'On');
 
-set(handles.text6, 'String', strcat('Frame n° ', num2str(val)));
+string = sprintf('Current Frame: %d / %d', val, nFrames);
+set(handles.currentFrameLabel, 'String', string);
 
 
 % --- Executes during object creation, after setting all properties.
