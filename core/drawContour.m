@@ -3,12 +3,14 @@ function varargout = drawContour(contour, varargin)
 %
 %   drawContour(CT)
 %   drawContour(CT, 'r', 'lineWidth', 2)
+%   Draws the contour CT on the current axis. CT must be a N-by-2 array
+%   containing the coordinates of the vertices.
 %
 %   Example
 %   drawContour
 %
 %   See also
-%
+%   drawSkeleton
  
 % ------
 % Author: David Legland

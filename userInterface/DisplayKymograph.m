@@ -56,8 +56,6 @@ function DisplayKymograph_OpeningFcn(hObject, eventdata, handles, varargin) %#ok
 handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
-    disp('Run DisplayKymograph using HypoGrowthAppData class');
-    
     app = varargin{1};
     app.currentStep = 'kymograph';
     setappdata(0, 'app', app);
@@ -72,14 +70,15 @@ end
 % Display current image
 CTVerif = app.contourList;
 SKVerif = app.skeletonList;
-scale   = 1000 / app.pixelSize;
+% scale   = 1000 / app.pixelSize;
 axes(handles.imageAxes);
 ind = app.currentFrameIndex;
 imshow(app.imageList{ind});
 hold on;
-plot(CTVerif{ind}(:,1)*scale,CTVerif{ind}(:,2)*scale,'r');
-hold on;
-plot(SKVerif{ind}(:,1)*scale,SKVerif{ind}(:,2)*scale,'b');
+% plot(CTVerif{ind}(:,1)*scale,CTVerif{ind}(:,2)*scale,'r');
+% plot(SKVerif{ind}(:,1)*scale,SKVerif{ind}(:,2)*scale,'b');
+drawContour(CTVerif{ind}, 'r');
+drawSkeleton(SKVerif{ind}, 'b');
 colormap gray;
 freezeColors;
 
@@ -161,7 +160,7 @@ if(valPopUp==1)
     im = imagesc(ElgE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
     set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),'minutes'));
+    str = (strcat('one equals ',num2str(t),' minutes'));
     xlabel(str);
     colormap jet;
     freezeColors;
@@ -172,7 +171,7 @@ if(valPopUp==2)
     im = imagesc(RE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
     set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),'minutes'));
+    str = (strcat('one equals ',num2str(t),' minutes'));
     xlabel(str);
     colormap jet;
     freezeColors;
@@ -183,7 +182,7 @@ if(valPopUp==3)
     im = imagesc(CE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
     set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),'minutes'));
+    str = (strcat('one equals ',num2str(t),' minutes'));
     xlabel(str);
     colormap jet;
     freezeColors;
@@ -194,7 +193,7 @@ if(valPopUp==4)
     im = imagesc(AE1);colorbar;freezeColors;
     set(gca, 'YDir', 'normal')
     set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
-    str = (strcat('one equals ',num2str(t),'minutes'));
+    str = (strcat('one equals ',num2str(t), ' minutes'));
     xlabel(str);
     colormap jet;
     freezeColors;
@@ -228,7 +227,6 @@ app     = getappdata(0, 'app');
 red     = app.imageList;
 CTVerif = app.contourList;
 SKVerif = app.skeletonList;
-scale   = 1000 / app.pixelSize;
 nx      = app.finalResultLength;
 
 % extract last clicked position
@@ -245,68 +243,73 @@ max = P(2);
 valPopUp = get(handles.kymographTypePopup, 'Value'); 
 
 if valPopUp == 1 % 1 for elongation
-    if posX < min + 0.05 % For the first image (not showing in kymograph)
+    if posX < min + 0.05 
+        % Process the first image (not shown in kymograph)
         axes(handles.imageAxes);
         imshow(red{1} );
         hold on;
-        plot(CTVerif{1}(:,1)*scale,CTVerif{1}(:,2)*scale,'r');
-        plot(SKVerif{1}(:,1)*scale,SKVerif{1}(:,2)*scale,'b');
-        
+        drawContour(CTVerif{1}, 'r');
+        drawSkeleton(SKVerif{1}, 'b');
+
         colormap gray;
         freezeColors;
         nbPoints = length(SKVerif{1});
         point = (nbPoints * posY) / nx ;
         point = round(point);
-        plot(SKVerif{1}(point,1)*253,SKVerif{1}(point,2)*253,'d','Color','c','LineWidth',3);
+        plot(SKVerif{1}(point,1),SKVerif{1}(point,2),'d','Color','c','LineWidth',3);
         
-    elseif posX > max - 0.05 % For the last image (not showing in kymograph)
+    elseif posX > max - 0.05 
+        % Process the last image (not shown in kymograph)
         axes(handles.imageAxes);
         imshow(red{end} );
         hold on;
-        plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
-        plot(SKVerif{end}(:,1)*scale,SKVerif{end}(:,2)*scale,'b');
+        drawContour(CTVerif{end}, 'r');
+        drawSkeleton(SKVerif{end}, 'b');
         colormap gray;
         freezeColors;
         nbPoints = length(SKVerif{end});
         point = (nbPoints * posY) / nx ;
         point = round(point);
-        plot(SKVerif{end}(point,1)*253,SKVerif{end}(point,2)*253,'d','Color','c','LineWidth',3);
+        plot(SKVerif{end}(point,1),SKVerif{end}(point,2),'d','Color','c','LineWidth',3);
         
     else
-        for i=min - 0.5: max - 0.5 % For all the others image, showing in the kymograph
+        for i = (min - 0.5):(max - 0.5)
+            % process all other image, shown in the kymograph
             if posX > i-0.5 && posX < i+0.5
                 axes(handles.imageAxes);%#ok
                 imshow(red{i+1} );
                 hold on;
-                plot(CTVerif{i+1}(:,1)*scale,CTVerif{i+1}(:,2)*scale,'r');
-                plot(SKVerif{i+1}(:,1)*scale,SKVerif{i+1}(:,2)*scale,'b');
+                drawContour(CTVerif{i+1}, 'r');
+                drawSkeleton(SKVerif{i+1}, 'b');
+
                 colormap gray;
                 freezeColors;
                 nbPoints = length(SKVerif{1 + i});
                 point = (nbPoints * posY) / nx ;
                 point = round(point);
-                plot(SKVerif{1 + i}(point,1)*253,SKVerif{1 + i}(point,2)*253,'d','Color','c','LineWidth',3);
+                plot(SKVerif{1 + i}(point,1),SKVerif{1 + i}(point,2),'d','Color','c','LineWidth',3);
                 
             end
         end
     end
 end
 
-
-if valPopUp == 2 || valPopUp == 3 || valPopUp == 4 % For angle curvature and Radius
-    for i=min - 0.5: max - 0.5
+% display angle, curvature or radius
+if valPopUp == 2 || valPopUp == 3 || valPopUp == 4 
+    for i = (min - 0.5):(max - 0.5)
         if posX > i-0.5 && posX < i+0.5
             axes(handles.imageAxes);%#ok
-            imshow(red{i} );
+            imshow(red{i});
             hold on;
-            plot(CTVerif{i}(:,1)*scale,CTVerif{i}(:,2)*scale,'r');
-            plot(SKVerif{i}(:,1)*scale,SKVerif{i}(:,2)*scale,'b');
+            drawContour(CTVerif{i}, 'r');
+            drawSkeleton(SKVerif{i}, 'b');
+
             colormap gray;
             freezeColors;
             nbPoints = length(SKVerif{i});
             point = (nbPoints * posY) / nx ;
             point = round(point);
-            plot(SKVerif{i}(point,1)*253,SKVerif{i}(point,2)*253,'d','Color','c','LineWidth',3);
+            plot(SKVerif{i}(point,1),SKVerif{i}(point,2),'d','Color','c','LineWidth',3);
         end
     end
 end
@@ -327,64 +330,34 @@ app = getappdata(0, 'app');
 
 minCaxis = getappdata(0, 'minCaxis');
 maxCaxis = getappdata(0, 'maxCaxis');
+
+% a value to adjust kymograph contrast
 val = get(handles.slider1, 'Value');
-
-t = app.timeInterval;
-   
-ElgE1   = app.elongationImage;
-CE1     = app.curvatureImage;
-AE1     = app.verticalAngleImage;
-RE1     = app.radiusImage;
-
-% Take the value of popupmenu
+  
+% Choose the kymograph to display
 valPopUp = get(handles.kymographTypePopup, 'Value');
-
 switch valPopUp
-    case 1
-        axes(handles.kymographAxes);
-        im = imagesc(ElgE1);
-        set(gca, 'YDir', 'normal')
-        caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
-        str = (strcat('one equals ',num2str(t),'minutes'));
-        xlabel(str);
-        colormap jet;
-        freezeColors;
-        
-    case 2
-        axes(handles.kymographAxes);
-        im = imagesc(RE1);
-        set(gca, 'YDir', 'normal')
-        caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
-        str = (strcat('one equals ',num2str(t),'minutes'));
-        xlabel(str);
-        colormap jet;
-        freezeColors;
-        
-    case 3
-        axes(handles.kymographAxes);
-        im = imagesc(CE1);
-        set(gca, 'YDir', 'normal')
-        caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
-        str = (strcat('one equals ',num2str(t),'minutes'));
-        xlabel(str);
-        colormap jet;
-        freezeColors;
-        
-    case 4
-        axes(handles.kymographAxes);
-        im = imagesc(AE1);
-        set(gca, 'YDir', 'normal')
-        caxis([minCaxis,maxCaxis - val]);colorbar;
-        set(im, 'buttondownfcn', {@kymographAxes_ButtonDownFcn,handles});
-        str = (strcat('one equals ',num2str(t),'minutes'));
-        xlabel(str);
-        colormap jet;
-        freezeColors;
+    case 1, img = app.elongationImage;
+    case 2, img = app.radiusImage;
+    case 3, img = app.curvatureImage;
+    case 4, img = app.verticalAngleImage;
 end
 
+% display current kymograph
+axes(handles.kymographAxes);
+hImg = imagesc(img);
+
+% setup display
+set(gca, 'YDir', 'normal');
+caxis([minCaxis, maxCaxis - val]); colorbar;
+colormap jet;
+freezeColors;
+
+set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
+
+% annotate
+str = sprintf('one equals %d minutes', app.timeInterval);
+xlabel(str);
 
 
 % --- Executes during object creation, after setting all properties.
