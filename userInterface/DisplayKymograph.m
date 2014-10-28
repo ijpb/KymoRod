@@ -246,7 +246,7 @@ if valPopUp == 1 % 1 for elongation
     if posX < min + 0.05 
         % Process the first image (not shown in kymograph)
         axes(handles.imageAxes);
-        imshow(red{1} );
+        imshow(red{1});
         hold on;
         drawContour(CTVerif{1}, 'r');
         drawSkeleton(SKVerif{1}, 'b');
@@ -254,41 +254,37 @@ if valPopUp == 1 % 1 for elongation
         colormap gray;
         freezeColors;
         nbPoints = length(SKVerif{1});
-        point = (nbPoints * posY) / nx ;
-        point = round(point);
-        plot(SKVerif{1}(point,1),SKVerif{1}(point,2),'d','Color','c','LineWidth',3);
+        ind = round((nbPoints * posY) / nx);
+        drawMarker(SKVerif{1}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
         
     elseif posX > max - 0.05 
         % Process the last image (not shown in kymograph)
         axes(handles.imageAxes);
-        imshow(red{end} );
+        imshow(red{end});
         hold on;
         drawContour(CTVerif{end}, 'r');
         drawSkeleton(SKVerif{end}, 'b');
         colormap gray;
         freezeColors;
         nbPoints = length(SKVerif{end});
-        point = (nbPoints * posY) / nx ;
-        point = round(point);
-        plot(SKVerif{end}(point,1),SKVerif{end}(point,2),'d','Color','c','LineWidth',3);
+        ind = round((nbPoints * posY) / nx);
+        drawMarker(SKVerif{end}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
         
     else
         for i = (min - 0.5):(max - 0.5)
             % process all other image, shown in the kymograph
             if posX > i-0.5 && posX < i+0.5
                 axes(handles.imageAxes);%#ok
-                imshow(red{i+1} );
+                imshow(red{i+1});
                 hold on;
                 drawContour(CTVerif{i+1}, 'r');
                 drawSkeleton(SKVerif{i+1}, 'b');
 
                 colormap gray;
                 freezeColors;
-                nbPoints = length(SKVerif{1 + i});
-                point = (nbPoints * posY) / nx ;
-                point = round(point);
-                plot(SKVerif{1 + i}(point,1),SKVerif{1 + i}(point,2),'d','Color','c','LineWidth',3);
-                
+                nbPoints = length(SKVerif{i+1});
+                ind = round((nbPoints * posY) / nx);
+                drawMarker(SKVerif{i+1}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
             end
         end
     end
@@ -306,10 +302,10 @@ if valPopUp == 2 || valPopUp == 3 || valPopUp == 4
 
             colormap gray;
             freezeColors;
+            
             nbPoints = length(SKVerif{i});
-            point = (nbPoints * posY) / nx ;
-            point = round(point);
-            plot(SKVerif{i}(point,1),SKVerif{i}(point,2),'d','Color','c','LineWidth',3);
+            ind = round((nbPoints * posY) / nx);
+            drawMarker(SKVerif{i}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
         end
     end
 end
