@@ -90,8 +90,9 @@ hold on;
 % plot(CTVerif{1}(:,1) * scale, CTVerif{1}(:,2) * scale, 'r');
 % plot(SKVerif{1}(:,1) * scale, SKVerif{1}(:,2) * scale, 'b');
 plot(CTVerif{1}(:,1), CTVerif{1}(:,2), 'r');
-% plot(SKVerif{1}(:,1), SKVerif{1}(:,2), 'b');
-skeleton = SKVerif{1} * 1000 / app.pixelSize;
+% % plot(SKVerif{1}(:,1), SKVerif{1}(:,2), 'b');
+% skeleton = SKVerif{1} * 1000 / app.pixelSize;
+skeleton = SKVerif{1};
 plot(skeleton(:,1), skeleton(:,2), 'b');
 set(handles.text5, 'String', 'Frame n° 1');
 
@@ -101,8 +102,9 @@ hold on;
 % plot(CTVerif{indice}(:,1)*scale, CTVerif{indice}(:,2)*scale, 'r');
 % plot(SKVerif{indice}(:,1)*scale, SKVerif{indice}(:,2)*scale, 'b');
 plot(CTVerif{indice}(:,1), CTVerif{indice}(:,2), 'r');
-% plot(SKVerif{indice}(:,1), SKVerif{indice}(:,2), 'b');
-skeleton = SKVerif{indice} * 1000 / app.pixelSize;
+% % plot(SKVerif{indice}(:,1), SKVerif{indice}(:,2), 'b');
+% skeleton = SKVerif{indice} * 1000 / app.pixelSize;
+skeleton = SKVerif{indice};
 plot(skeleton(:,1), skeleton(:,2), 'b');
 set(handles.text6, 'String', strcat('Frame n° ', num2str(indice)));
 
@@ -112,39 +114,40 @@ hold on;
 % plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
 % plot(SKVerif{end}(:,1)*scale,SKVerif{end}(:,2)*scale,'b');
 plot(CTVerif{end}(:,1), CTVerif{end}(:,2), 'r');
-% plot(SKVerif{end}(:,1), SKVerif{end}(:,2), 'b');
-skeleton = SKVerif{end} * 1000 / app.pixelSize;
+% % plot(SKVerif{end}(:,1), SKVerif{end}(:,2), 'b');
+% skeleton = SKVerif{end} * 1000 / app.pixelSize;
+skeleton = SKVerif{end};
 plot(skeleton(:,1), skeleton(:,2), 'b');
 set(handles.text7, 'String', strcat('Frame n° ', num2str(length(red))));
 
 direction = 'boucle';
 switch direction
     case 'boucle'
-        set(handles.filterDirectionPopup,'Value',1);
+        set(handles.filterDirectionPopup, 'Value', 1);
     case 'droit'
-        set(handles.filterDirectionPopup,'Value',2);
+        set(handles.filterDirectionPopup, 'Value', 2);
     case 'droit2'
-        set(handles.filterDirectionPopup,'Value',3);
+        set(handles.filterDirectionPopup, 'Value', 3);
     case 'penche'
-        set(handles.filterDirectionPopup,'Value',4);
+        set(handles.filterDirectionPopup, 'Value', 4);
     case 'penche2'
-        set(handles.filterDirectionPopup,'Value',5);
+        set(handles.filterDirectionPopup, 'Value', 5);
     case 'dep'
-        set(handles.filterDirectionPopup,'Value',6);
+        set(handles.filterDirectionPopup, 'Value', 6);
     case 'rien'
-        set(handles.filterDirectionPopup,'Value',7);
+        set(handles.filterDirectionPopup, 'Value', 7);
 end
 
 
 switch dirInitial
     case 'bottom'
-        set(handles.firstSkeletonPointPopup,'Value',1);
+        set(handles.firstSkeletonPointPopup, 'Value', 1);
     case 'left'
-        set(handles.firstSkeletonPointPopup,'Value',2);
+        set(handles.firstSkeletonPointPopup, 'Value', 2);
     case 'right'
-        set(handles.firstSkeletonPointPopup,'Value',3);
+        set(handles.firstSkeletonPointPopup, 'Value', 3);
     case 'top'
-        set(handles.firstSkeletonPointPopup,'Value',4);
+        set(handles.firstSkeletonPointPopup, 'Value', 4);
 end
 
 
@@ -209,8 +212,9 @@ hold on;
 % plot(CTVerif{val}(:,1)*scale, CTVerif{val}(:,2)*scale, 'r');
 % plot(SKVerif{val}(:,1)*scale, SKVerif{val}(:,2)*scale, 'b');
 plot(CTVerif{val}(:,1), CTVerif{val}(:,2), 'r');
-% plot(SKVerif{val}(:,1), SKVerif{val}(:,2), 'b');
-skeleton = SKVerif{val} * 1000 / app.pixelSize;
+% % plot(SKVerif{val}(:,1), SKVerif{val}(:,2), 'b');
+% skeleton = SKVerif{val} * 1000 / app.pixelSize;
+skeleton = SKVerif{val};
 plot(skeleton(:,1), skeleton(:,2), 'b');
 
 % setup slider for display of current frame
@@ -220,7 +224,7 @@ sliderStep = min(max([1 5] ./ (maxSlide - 1), 0.001), 1);
 set(handles.middleImageIndexSlider, 'SliderStep', sliderStep); 
 set(handles.middleImageIndexSlider, 'Enable', 'On');
 
-set(handles.text6, 'String', strcat('Frame n°',num2str(val)));
+set(handles.text6, 'String', strcat('Frame n° ', num2str(val)));
 
 
 % --- Executes during object creation, after setting all properties.
@@ -358,10 +362,37 @@ for i = 1:length(red)
     contour = contour * app.pixelSize / 1000;
     
     % Skeleton of current contour
-    [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(contour, dir, dirbegin);
+
+%     CTVerif{i} = contour;
+%     % to mimic old behaviour of skel55
+%     contourf = CTfilter(contour, 200, dir); 
+%     [SQ, R, order] = voronoiSkeleton(contourf);
+%     [SKVerif{i}, rad{i}] = skeletonLargestPath(SQ, order, R);
+    
+    % Compute skeleton, without changing origin and y direction
+    [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
+    CTVerif{i} = contour;
+
+    % apply translation and symmetry separately
+    % coordinates at bottom left
+    shift{i} = SKVerif{i}(1,:);
+    % For new contour, align at bottom left
+    CT{i}(:,1) = contour(:,1) - SKVerif{i}(1,1);
+    CT{i}(:,2) = -(contour(:,2) - SKVerif{i}(1,2));
+    % for new Skeleton, align at bottom left, and reverse y axis
+    SK{i}(:,1) = SKVerif{i}(:,1) - SKVerif{i}(1,1);
+    SK{i}(:,2) = -(SKVerif{i}(:,2) - SKVerif{i}(1,2));
+
+    % keep skeleton in pixel units
+    SKVerif{i} = SKVerif{i} * 1000 / app.pixelSize;
+    
+%    % old version   
 %     CTVerif{i} = contour;
 %     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
-%     [SK{i}, CT{i}, shift{i}] = shiftSkeleton(SK{i}, CT{i});
+%     CT{i} = CTVerif{i} * app.pixelSize;
+
+    % Version 0
+%     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(contour, dir, dirbegin);
 
     parfor_progress;
 end
@@ -388,28 +419,11 @@ function saveSkeletonDataButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.saveSkeletonDataButton, 'Enable', 'off');
+set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 set(handles.saveSkeletonDataButton, 'String', 'Wait please...');
 pause(0.01);
 
-app = getappdata(0, 'app');
-red     = app.imageList;
-smooth  = app.contourSmoothingSize; %#ok<NASGU>
-CTVerif = app.contourList; %#ok<NASGU>
-SKVerif = app.skeletonList; %#ok<NASGU>
-R       = app.radiusList; %#ok<NASGU>
-CT      = app.scaledContourList; %#ok<NASGU>
-SK      = app.scaledSkeletonList; %#ok<NASGU>
-shift   = app.originPosition; %#ok<NASGU> 
-seuil   = app.thresholdValues; %#ok<NASGU> 
-% scale   = app.pixelSize; %#ok<NASGU> 
-scale   = 1000 ./ app.pixelSize; %#ok<NASGU> 
-debut   = app.firstIndex; %#ok<NASGU> 
-fin     = app.lastIndex; %#ok<NASGU> 
-step    = app.indexStep; %#ok<NASGU> 
-nbInit  = length(red); %#ok<NASGU> 
-N       = length(red); %#ok<NASGU> 
-folderName = app.inputImageDirectory; %#ok<NASGU> 
+app = getappdata(0, 'app'); %#ok<NASGU>
 
 % To open the directory who the user want to save the data
 [fileName, pathName] = uiputfile(); 
