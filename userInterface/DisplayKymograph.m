@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 28-Oct-2014 09:29:10
+% Last Modified by GUIDE v2.5 28-Oct-2014 12:17:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -250,8 +250,8 @@ if valPopUp == 1 % 1 for elongation
         imshow(red{1} );
         hold on;
         plot(CTVerif{1}(:,1)*scale,CTVerif{1}(:,2)*scale,'r');
-        hold on;
         plot(SKVerif{1}(:,1)*scale,SKVerif{1}(:,2)*scale,'b');
+        
         colormap gray;
         freezeColors;
         nbPoints = length(SKVerif{1});
@@ -264,7 +264,6 @@ if valPopUp == 1 % 1 for elongation
         imshow(red{end} );
         hold on;
         plot(CTVerif{end}(:,1)*scale,CTVerif{end}(:,2)*scale,'r');
-        hold on;
         plot(SKVerif{end}(:,1)*scale,SKVerif{end}(:,2)*scale,'b');
         colormap gray;
         freezeColors;
@@ -280,7 +279,6 @@ if valPopUp == 1 % 1 for elongation
                 imshow(red{i+1} );
                 hold on;
                 plot(CTVerif{i+1}(:,1)*scale,CTVerif{i+1}(:,2)*scale,'r');
-                hold on;
                 plot(SKVerif{i+1}(:,1)*scale,SKVerif{i+1}(:,2)*scale,'b');
                 colormap gray;
                 freezeColors;
@@ -302,7 +300,6 @@ if valPopUp == 2 || valPopUp == 3 || valPopUp == 4 % For angle curvature and Rad
             imshow(red{i} );
             hold on;
             plot(CTVerif{i}(:,1)*scale,CTVerif{i}(:,2)*scale,'r');
-            hold on;
             plot(SKVerif{i}(:,1)*scale,SKVerif{i}(:,2)*scale,'b');
             colormap gray;
             freezeColors;
@@ -541,4 +538,3 @@ function computeComposedKymographButton_Callback(hObject, eventdata, handles)%#o
 app = getappdata(0, 'app');
 delete(gcf);
 StartComposedElongation(app);
-
