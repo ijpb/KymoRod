@@ -22,7 +22,7 @@ function varargout = ValidateThres(varargin)
 
 % Edit the above text to modify the response to help ValidateThres
 
-% Last Modified by GUIDE v2.5 21-Aug-2014 18:39:35
+% Last Modified by GUIDE v2.5 29-Oct-2014 10:29:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -95,8 +95,10 @@ end
 app.currentStep = 'threshold';
 setappdata(0, 'app', app);
 
+frameIndex = app.currentFrameIndex;
+
 imageNumber = length(col);
-string = sprintf('Current Frame: %d / %d', 1, imageNumber);
+string = sprintf('Current Frame: %d / %d', frameIndex, imageNumber);
 set(handles.currentFrameIndexLabel, 'String', string);
 
 set(handles.autoThresholdFinalEdit, 'String', num2str(imageNumber));
@@ -124,12 +126,12 @@ end
 app.thresholdValues = thresholdValues;
 
 % setup slider for display of current frame
+set(handles.frameIndexSlider, 'Min', 1); 
 set(handles.frameIndexSlider, 'Max', imageNumber); 
 sliderStep = min(max([1 5] ./ (imageNumber - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
 
 % get threshold of current frame
-frameIndex = 1;
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 currentThreshold = int16(thresholdValues(frameIndex));
 string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
@@ -138,7 +140,7 @@ app.currentFrameIndex = frameIndex;
 
 % compute binarised image
 seg = col{1} > currentThreshold;
-axis(handles.axes1);
+axis(handles.currentFrameAxes);
 imshow(seg);
 
 setappdata(0, 'app', app);
@@ -186,19 +188,19 @@ function frameIndexSlider_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 thresholdValues = app.thresholdValues;
 
-red = app.imageList;
-frameIndex = int16(get(handles.frameIndexSlider, 'Value'));
+frameIndex = round(get(handles.frameIndexSlider, 'Value'));
 
-currentFrame = red{frameIndex};
+% compute segmented image
+currentFrame = app.imageList{frameIndex};
+currentThreshold = thresholdValues(frameIndex);
+bin = currentFrame > currentThreshold;
 
-%TODO: specify axis...
-imshow(currentFrame > thresholdValues(frameIndex));
+imshow(handles.currentFrameAxes, bin);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-currentThreshold = int16(thresholdValues(frameIndex));
-string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
 set(handles.currentFrameThresholdLabel, 'String', string);
 
-imageNumber = length(red);
+imageNumber = length(app.imageList);
 string = sprintf('Current Frame: %d / %d', frameIndex, imageNumber);
 set(handles.currentFrameIndexLabel, 'String', string);
 
@@ -442,14 +444,15 @@ app = getappdata(0, 'app');
 col = app.imageList;
 n   = app.currentFrameIndex;
 
-axes(handles.axes1);
-imshow(col{end} > val);
+imshow(handles.currentFrameAxes, col{n} > val);
 
 nImages = length(col);
 thresholdValues = ones(nImages, 1) * val;
 
 app.thresholdValues = thresholdValues;
 setappdata(0, 'app', app);
+
+% update widgets
 set(handles.manualThresholdValueLabel, 'String', num2str(thresholdValues(n)));
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 string = sprintf('Threshold for frame %d is %d', n, round(thresholdValues(n)));
@@ -589,23 +592,20 @@ if ishandle(hDialog)
     close(hDialog);
 end
 
-% allocate memory for contour array
-CT = cell(length(red), 1);
-% CT2 = cell(length(red), 1);
-
 % Compute the contour and use the scale
 disp('Contour');
 hDialog = msgbox(...
     {'Computing contours,', 'please wait...'}, ...
     'Contour');
 
+% allocate memory for contour array
+CT = cell(length(red), 1);
+
 parfor_progress(length(red));
 for i = 1:length(red)
     % apply threshold and compute contour
     CT{i} = cont(red{i}, thres(i));
-    
-%     % rescale
-%     CT2{i} = setsc(CT{i}, scale);
+
     parfor_progress;
 end
 

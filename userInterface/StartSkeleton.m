@@ -63,6 +63,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     setappdata(0, 'app', app);
     
 elseif nargin == 6 
+    % TODO: adapt code below to the case app already contains images or settings
     col = varargin{1};
     fileList = varargin{2};
     folderName = varargin{3};
@@ -183,15 +184,8 @@ end
 
 selectedRadioButton = get(handles.channelSelectionPanel, 'SelectedObject');
 if selectedRadioButton == handles.allImagesRadioButton
-    % All images selected
-    % Requires two 'for'-loops to eliminate the first and second index: '.' & '..'
-    for i = 1 : length(fileList) - 2 
-        fileList(i) = fileList(i + 2);
-    end
-    for i = 1 : 2
-        fileList(end) = [];
-    end
-    
+    % select all images, but removes directory markers
+        
 elseif selectedRadioButton == handles.selectChannelRadioButton
     % keep only images starting with a given letter
     str = get(handles.channelPrefixEdit,'String');
@@ -348,13 +342,20 @@ if val > valmax
 end
 
 mini2 = cell(2,1);
-for i = val:val + 1
-    if imagesLoaded
-        mini2{i - val + 1} = col{i};
-    else
-        mini2{i - val + 1} = imread(fullfile(folderName, fileList(i).name)); 
-    end
+if imagesLoaded
+    mini2{1} = col{val};
+    mini2{2} = col{val + 1};
+else
+    mini2{1} = imread(fullfile(folderName, fileList(val).name));
+    mini2{2} = imread(fullfile(folderName, fileList(val + 1).name));
 end
+% for i = val:val + 1
+%     if imagesLoaded
+%         mini2{i - val + 1} = col{i};
+%     else
+%         mini2{i - val + 1} = imread(fullfile(folderName, fileList(i).name)); 
+%     end
+% end
 
 % display first frame
 axes(handles.axes1);
@@ -555,9 +556,13 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     disp('Opening directory ...');
     col = cell(nb, 1);
     for i = 1:nb
-        col{i} = imread(fullfile(folderName, fileList(i).name));
+        img = imread(fullfile(folderName, fileList(i).name));
+        if ndims(img) > 2 %#ok<ISMAT>
+            img = img(:,:,1);
+        end
+        col{i} = img;
     end
-   
+
 else
     % For pictures by step
     
@@ -583,7 +588,12 @@ else
                 for i = 1:nbstep
                     frameIndex = firstPicture + stepPicture * (i - 1);
                     fileName = fileList(frameIndex).name;
-                    col{i} = imread(fullfile(folderName, fileName));
+                    img = imread(fullfile(folderName, fileName));
+                    if ndims(img) > 2 %#ok<ISMAT>
+                        img = img(:,:,1);
+                    end
+                    col{i} = img;
+
                 end
                 
                 disp('Saving new data...');
@@ -639,16 +649,15 @@ function selectImagesButton_Callback(hObject, eventdata, handles)%#ok
 
 % extract global data
 app = getappdata(0, 'app');
-colN        = app.imageList;
-nbInit      = length(colN);
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
 
-nb = nbInit;
-if isempty(colN)
-    flag = 1;
+
+imagesLoaded = ~isempty(app.imageList);
+if imagesLoaded
+    nb = length(imageList);
 else
-    flag = 2;
+    nb = length(app.imageNameList);
 end
 
 if get(handles.keepAllFramesRadioButton, 'Value') == 1 
@@ -656,6 +665,7 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     set(handles.selectImagesButton, 'Enable', 'off')
     set(handles.selectImagesButton, 'String', 'Wait please...')
     pause(0.01);
+    
     debut = 1;
     fin = nb;
     step = 1;
@@ -664,11 +674,17 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
     col = cell(nb, 1);
     parfor_progress(length(fileList));
     for i = 1:nb
-        if flag == 1
-            col{i} = imread(fullfile(folderName, fileList(i).name));
-        elseif flag == 2
-            col{i} = colN{i};
+        if imagesLoaded 
+            img = app.imageList{i};
+        else
+            img = imread(fullfile(folderName, fileList(i).name));
         end
+        
+        if ndims(img) > 2 %#ok<ISMAT>
+            img = img(:,:,1);
+        end
+        col{i} = img;
+        
         parfor_progress;
     end
     parfor_progress(0); 
@@ -720,13 +736,20 @@ else
     disp('Opening directory ...');
     col = cell(nbstep, 1);
     parfor_progress(nbstep);
-    for i = 0:nbstep - 1
-        if flag == 1
-            fileName = fileList(firstPicture + stepPicture * i).name;
-            col{i+1} = imread(fullfile(folderName, fileName));
-        elseif flag == 2
-            col{i+1} = colN{firstPicture + stepPicture * i};
+    for i = 1:nbstep
+        fileIndex = firstPicture + stepPicture * (i - 1);
+        if imagesLoaded
+            img = app.imageList{fileIndex};
+        else
+            fileName = fileList(fileIndex).name;
+            img = imread(fullfile(folderName, fileName));
         end
+        
+        if ndims(img) > 2 %#ok<ISMAT>
+            img = img(:,:,1);
+        end
+        col{i} = img;
+
         parfor_progress;
     end
     parfor_progress(0);
