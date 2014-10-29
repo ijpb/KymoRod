@@ -369,41 +369,67 @@ mkdir(nameDir);
 fileName = 'data.mat';
 nameData = fullfile(nameDir, fileName);
 
+% save full application data
 save(nameData, 'app');
 
-n = length(app.imageList);
+% initialize row names
+nFrames = length(app.imageList);
+rowNames = cell(nFrames, 1);
+for i = 1:nFrames
+    rowNames{i} = sprintf('frame%03d', i);
+end
 
+% initialize col names: a list of values
+nPositions = app.finalResultLength;
+colNames = strtrim(cellstr(num2str((1:nPositions)', '%d'))');
+
+
+tabElongation = Table(ElgE1', 'colNames', colNames, 'rowNames', rowNames(2:end-1));
 pathElongation = fullfile(nameDir, 'dataElongation.csv');
-pathAngle = fullfile(nameDir, 'dataAngle.csv');
-pathCurvature = fullfile(nameDir, 'dataCurvature.csv');
-pathRadius = fullfile(nameDir, 'dataRadius.csv');
-
-colNames = cell(n,1);
-for i = 1 : n
-    colNames{i} = sprintf('frame%03d', i);
-end
-
-colsElongation = cell(n-2, 1);
-for i = 2 : n-1
-    colsElongation{i - 1} = strcat('frame', num2str(i));
-end
-
-% Strtrim pour supprimer les espaces!
-colNames = strtrim(colNames);
-colsElongation = strtrim(colsElongation);
-
-
-tabElongation = Table(ElgE1, 'colNames', colsElongation);
 write(tabElongation, pathElongation);
 
-tabAngle = Table(AE1, 'colNames', colNames);
+tabAngle = Table(AE1', 'colNames', colNames, 'rowNames', rowNames);
+pathAngle = fullfile(nameDir, 'dataAngle.csv');
 write(tabAngle, pathAngle);
 
-tabCurvature = Table(CE1, 'colNames', colNames);
+tabCurvature = Table(CE1', 'colNames', colNames, 'rowNames', rowNames);
+pathCurvature = fullfile(nameDir, 'dataCurvature.csv');
 write(tabCurvature, pathCurvature);
 
-tabRadius = Table(RE1, 'colNames', colNames);
+tabRadius = Table(RE1', 'colNames', colNames, 'rowNames', rowNames);
+pathRadius = fullfile(nameDir, 'dataRadius.csv');
 write(tabRadius, pathRadius);
+
+
+% n = length(app.imageList);
+
+
+% colNames = cell(n,1);
+% for i = 1 : n
+%     colNames{i} = sprintf('frame%03d', i);
+% end
+% 
+% colsElongation = cell(n-2, 1);
+% for i = 2 : n-1
+%     colsElongation{i - 1} = strcat('frame', num2str(i));
+% end
+
+% % Strtrim pour supprimer les espaces!
+% colNames = strtrim(colNames);
+% colsElongation = strtrim(colsElongation);
+
+
+% tabElongation = Table(ElgE1, 'colNames', colsElongation);
+% write(tabElongation, pathElongation);
+% 
+% tabAngle = Table(AE1, 'colNames', colNames);
+% write(tabAngle, pathAngle);
+% 
+% tabCurvature = Table(CE1, 'colNames', colNames);
+% write(tabCurvature, pathCurvature);
+% 
+% tabRadius = Table(RE1, 'colNames', colNames);
+% write(tabRadius, pathRadius);
 
 disp('Saving done');
   
