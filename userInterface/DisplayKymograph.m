@@ -90,6 +90,8 @@ set(handles.slider1, 'Value', minCaxis);
 
 updateKymographDisplay(handles);
 
+handles.kymographMarker = [];
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -150,8 +152,10 @@ set(handles.slider1, 'Min', minCaxis);
 set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
 
-
 updateKymographDisplay(handles);
+
+handles.kymographMarker = [];
+guidata(hObject, handles);
 
 
 
@@ -189,6 +193,16 @@ pos = get(handles.kymographAxes, 'CurrentPoint');
 posX = pos(1);
 posY = pos(3);
 
+if isempty(handles.kymographMarker)
+    % create new marker
+    axes(handles.kymographAxes); hold on;
+    handles.kymographMarker = plot(round(pos(1)), pos(3), ...
+        'd', 'LineWidth', 1, 'color', 'k', 'MarkerFaceColor', 'w');
+else
+    % update position of current marker
+    set(handles.kymographMarker, 'XData', round(pos(1)), 'YData', pos(3));
+end
+    
 % extract min/max values of axes
 P = get(handles.kymographAxes, 'XLim');
 min = P(1); 
@@ -265,6 +279,9 @@ if valPopUp == 2 || valPopUp == 3 || valPopUp == 4
     end
 end
 
+
+% Update handles structure
+guidata(hObject, handles);
 
 
 % --- Executes on slider movement.
