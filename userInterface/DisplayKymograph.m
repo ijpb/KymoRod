@@ -183,102 +183,50 @@ function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
 handles = guidata(hObject);
 
 app     = getappdata(0, 'app');
-red     = app.imageList;
-CTVerif = app.contourList;
-SKVerif = app.skeletonList;
 nx      = app.finalResultLength;
 
-% extract last clicked position
+% extract last clicked position, x = index of frame
 pos = get(handles.kymographAxes, 'CurrentPoint');
-posX = pos(1);
+posX = round(pos(1));
 posY = pos(3);
 
+% Display marker on kymograph image
 if isempty(handles.kymographMarker)
     % create new marker
     axes(handles.kymographAxes); hold on;
-    handles.kymographMarker = plot(round(pos(1)), pos(3), ...
+    handles.kymographMarker = plot(posX, posY, ...
         'd', 'LineWidth', 1, 'color', 'k', 'MarkerFaceColor', 'w');
 else
     % update position of current marker
-    set(handles.kymographMarker, 'XData', round(pos(1)), 'YData', pos(3));
+    set(handles.kymographMarker, 'XData', posX, 'YData', posY);
 end
-    
-% extract min/max values of axes
-P = get(handles.kymographAxes, 'XLim');
-min = P(1); 
-max = P(2); 
 
 % Take the value of pop up menu
 valPopUp = get(handles.kymographTypePopup, 'Value'); 
 
-if valPopUp == 1 % 1 for elongation
-    if posX < min + 0.05 
-        % Process the first image (not shown in kymograph)
-        axes(handles.imageAxes);
-        imshow(red{1});
-        hold on;
-        drawContour(CTVerif{1}, 'r');
-        drawSkeleton(SKVerif{1}, 'b');
-
-        colormap gray;
-        freezeColors;
-        nbPoints = length(SKVerif{1});
-        ind = round((nbPoints * posY) / nx);
-        drawMarker(SKVerif{1}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
-        
-    elseif posX > max - 0.05 
-        % Process the last image (not shown in kymograph)
-        axes(handles.imageAxes);
-        imshow(red{end});
-        hold on;
-        drawContour(CTVerif{end}, 'r');
-        drawSkeleton(SKVerif{end}, 'b');
-        colormap gray;
-        freezeColors;
-        nbPoints = length(SKVerif{end});
-        ind = round((nbPoints * posY) / nx);
-        drawMarker(SKVerif{end}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
-        
-    else
-        for i = (min - 0.5):(max - 0.5)
-            % process all other image, shown in the kymograph
-            if posX > i-0.5 && posX < i+0.5
-                axes(handles.imageAxes);%#ok
-                imshow(red{i+1});
-                hold on;
-                drawContour(CTVerif{i+1}, 'r');
-                drawSkeleton(SKVerif{i+1}, 'b');
-
-                colormap gray;
-                freezeColors;
-                nbPoints = length(SKVerif{i+1});
-                ind = round((nbPoints * posY) / nx);
-                drawMarker(SKVerif{i+1}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
-            end
-        end
-    end
+% determine index of frame corresponding to clicked point
+frameIndex = posX;
+if valPopUp == 1
+    % in case of elongation kymograph, need to add one extra image due to
+    % the removal of extremities
+    frameIndex = frameIndex + 1;
 end
 
-% display angle, curvature or radius
-if valPopUp == 2 || valPopUp == 3 || valPopUp == 4 
-    for i = (min - 0.5):(max - 0.5)
-        if posX > i-0.5 && posX < i+0.5
-            axes(handles.imageAxes);%#ok
-            imshow(red{i});
-            hold on;
-            drawContour(CTVerif{i}, 'r');
-            drawSkeleton(SKVerif{i}, 'b');
+contour = app.contourList{frameIndex};
+skeleton = app.skeletonList{frameIndex};
 
-            colormap gray;
-            freezeColors;
-            
-            nbPoints = length(SKVerif{i});
-            ind = round((nbPoints * posY) / nx);
-            drawMarker(SKVerif{i}(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
-        end
-    end
-end
+axes(handles.imageAxes);
+imshow(app.imageList{frameIndex});
+hold on;
+drawContour(contour, 'r');
+drawSkeleton(skeleton, 'b');
 
+colormap gray;
+freezeColors;
+
+nbPoints = length(skeleton);
+ind = round((nbPoints * posY) / nx);
+drawMarker(skeleton(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
 
 % Update handles structure
 guidata(hObject, handles);

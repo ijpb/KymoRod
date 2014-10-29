@@ -195,7 +195,8 @@ currentFrame = app.imageList{frameIndex};
 currentThreshold = thresholdValues(frameIndex);
 bin = currentFrame > currentThreshold;
 
-imshow(handles.currentFrameAxes, bin);
+axes(handles.currentFrameAxes)
+imshow(bin);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
 set(handles.currentFrameThresholdLabel, 'String', string);
