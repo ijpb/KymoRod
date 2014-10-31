@@ -31,6 +31,7 @@ dec = zeros(length(S), 1);
 
 %parfor_progress(length(S));
 
+% keep the min of all curvilinear abscissa
 Smin = zeros(length(S), 1);
 
 % compare each signal with the previous one
@@ -51,16 +52,16 @@ for k = 2:length(S)
     if DL > 1
 		% case of second curve with larger length
         C = resampl(nx, A{k-1}, S{k-1}-S{k-1}(1));
-        B = resampl(nx.*DL, A{k}, S{k});
-        DL2 = round(nx.*(DL-1));
-        DS = -(S{k-1}(end)-S{k-1}(1)) ./ nx;
+        B = resampl(nx * DL, A{k}, S{k});
+        DL2 = round(nx * (DL-1));
+        DS = -(S{k-1}(end) - S{k-1}(1)) / nx;
     else
 		% case of second curve with smaller length
         DL = 1./DL;
         B = resampl(nx.*DL, A{k-1}, S{k-1}-S{k-1}(1));
         C = resampl(nx, A{k}, S{k});
-        DL2 = round(nx.*(DL-1));
-        DS = S{k}(end) ./ nx;
+        DL2 = round(nx * (DL-1));
+        DS = S{k}(end) / nx;
     end
 	
     if DL2 < 2
@@ -75,9 +76,9 @@ for k = 2:length(S)
 		end
 		
 		% find a correlation peak
-        I = find(Corr(:,2) == max(Corr(:,2)));
-        if ~isempty(I)
-            dec(k-1) = Corr(I,1);
+        indPeak = find(Corr(:,2) == max(Corr(:,2)));
+        if ~isempty(indPeak)
+            dec(k-1) = Corr(indPeak, 1);
         else
             dec(k-1) = 0;
         end

@@ -150,9 +150,9 @@ switch dir2
         [R_ma,R_ma_ind]=max((1./V(:,2)).*(V_F==1).*in);
 end
 
-j=R_ma_ind;
-jp=j;
-i=1;
+j = R_ma_ind;
+jp = j;
+i = 1;
 
 %Hierarchisation of the voronoi diagram
 [SK2, R2, ordre]=branche(V,V_F,F,dist,jp,j,0,0);

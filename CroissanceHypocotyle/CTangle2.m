@@ -1,11 +1,13 @@
 function A = CTangle2(CT, ws)
 % CTANGLE2 Compute angle according to the vertical
 %
-% A = CTangle2(CT, ws)
-% CT: skeleton of the figure
-% ws: is the size of the derivative window
+% A = CTangle2(CT, WS)
+% Compute the angle with the vertical of skeleton vertices. Tangent vector
+% is obtained by finite differences of vertex coordinates  at i+/-WS. 
+% CT: skeleton of the figure, as a N-by-2 array of vertex coordinates
+% WS: is the size of the derivative window
 %
-% Return A : value of the angle A
+% Return A: value of the angle A
 % 
 % ------
 % Author: Renaud Bastien
@@ -20,8 +22,8 @@ function A = CTangle2(CT, ws)
 n = length(CT);
 
 % allocate memory
-A = zeros(n,1);
-T = zeros(n,1);
+T = zeros(n, 1); % tangent vector dx/dy
+A = zeros(n, 1);
 
 % starting index to fill the array
 i = ws + 1;
@@ -30,25 +32,27 @@ i = ws + 1;
 T(i) = (CT(i+ws,1)-CT(i-ws,1)) / (CT(i+ws,2)-CT(i-ws,2));
 A(i) = atan(T(i));
 
+% TODO: replace by a single call to atan2
+
 % compute angle of remaining points
 for i = ws+2:n-ws
 	% current angle
-    T(i) = (CT(i+ws,1)-CT(i-ws,1))/(CT(i+ws,2)-CT(i-ws,2));
+    T(i) = (CT(i+ws,1)-CT(i-ws,1)) / (CT(i+ws,2)-CT(i-ws,2));
     A(i) = atan(T(i));   
     
-	% in case of dy < 0, fix something (?)
+	% in case of dy < 0, rescale over 2*PI interval
     if CT(i+ws,2) - CT(i-ws,2) < 0
         A(i) = A(i);
         if A(i) > 0
-            A(i) = A(i)-pi;
+            A(i) = A(i) - pi;
         else
-            A(i) = A(i)+pi;
+            A(i) = A(i) + pi;
         end
     end
 end
 
 % add smoothing
-if length(A(ws+1:n-ws)) > 2*ws
+if length(A(ws+1:n-ws)) > 2 * ws
     A(ws+1:n-ws) = moving_average(A(ws+1:n-ws), ws);
 end
 

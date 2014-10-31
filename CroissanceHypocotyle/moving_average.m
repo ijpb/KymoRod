@@ -1,5 +1,6 @@
 function Y = moving_average(X,F)
 %MOVING_AVERAGE   Smooths a vector through the moving average method.
+%
 %   Y = MOVING_AVERAGE(X,F) Quickly smooths the vector X via averaging each 
 %   element with the F elements at his right and the F elements at his 
 %   left. The elements at the ends are also averaged but the extrems are
@@ -27,11 +28,13 @@ Y = boxcar_window(X,F);
 % Smooths the ends:
 Wwidth = 2*F+1;
 N = length(X);
+
 % First end:          
 Yini = cumsum(X(1:Wwidth-2));     
 Yini = Yini(:).';
 Yini = Yini(1:2:end)./(1:2:Wwidth-2);            
 Y(1:F) = Yini;
+
 % Last end:
 Yfin = cumsum(X(N:-1:N-Wwidth+3));
 Yfin = Yfin(:).';
@@ -43,7 +46,6 @@ function Y = boxcar_window(X,F)
 % Boxcar window of length 2F+1 via recursive moving average (really fast)
 %
 % nubeobscura@hotmail.com
-
 
 if F == 0
  Y = X;
@@ -57,7 +59,7 @@ Y(F+1) = sum(X(1:Wwidth));
 for n = F+2:N-F
  Y(n) = Y(n-1) + X(n+F) - X(n-F-1);   % recursive moving average
 end
-Y = Y/Wwidth;
+Y = Y / Wwidth;
 
 
 % Carlos Adri�n Vargas Aguilera. nubeobscura@hotmail.com
