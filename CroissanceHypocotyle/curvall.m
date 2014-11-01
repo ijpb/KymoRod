@@ -36,6 +36,7 @@ parfor i = 1:length(SK)
         
 		% Computation of the angle A and the curvature C
         [A{i}, C{i}] = curvature(curve, S{i}, ws);
+%        [C{i}, A{i}] = skeletonCurvature(curve, S{i}, ws);
     else
         % if the length is too small use a dummy abscissa and zeros angle
         S{i} = (1:10)';
