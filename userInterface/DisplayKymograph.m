@@ -190,8 +190,6 @@ pos = get(handles.kymographAxes, 'CurrentPoint');
 posX = round(pos(1));
 posY = pos(3);
 
-% TODO: convert y-coordinate to curvilinear abscissa
-
 % Display marker on kymograph image
 if isempty(handles.kymographMarker)
     % create new marker
@@ -226,8 +224,15 @@ drawSkeleton(skeleton, 'b');
 colormap gray;
 freezeColors;
 
-nbPoints = length(skeleton);
-ind = round((nbPoints * posY) / nx);
+% TODO: convert y-coordinate to curvilinear abscissa
+Smax = app.abscissaList{end}(end);
+Smin = 0;
+Smarker = (posY - Smin) * (Smax - Smin) / nx;
+
+S = app.abscissaList{frameIndex};
+%nbPoints = length(skeleton);
+%ind = round((nbPoints * posY) / nx);
+ind = find(Smarker > S, 1, 'first');
 drawMarker(skeleton(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
 
 % Update handles structure
@@ -367,10 +372,12 @@ end
 
 disp('Saving...');
 
+% TODO: save into several files using basename, instead of creating new dir
 mkdir(nameDir);
 fileName = 'data.mat';
 nameData = fullfile(nameDir, fileName);
 
+% TODO: transfer part of this into AppData class
 % save full application data
 save(nameData, 'app');
 
