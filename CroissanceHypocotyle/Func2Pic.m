@@ -1,12 +1,13 @@
 function MATfunc = Func2Pic(pic, func, scale, shift, S)
-%FUNC2PIC Associates the curvilinear abscissa of the curve angle at each pixel of the skeleton
-%MATfunc=Func2Pic(pic,func,scale,shift,S)
+%FUNC2PIC Create an image of the curvilinear abscissa of a skeleton
 %
-%pic  : directory of pictures (gave by openall())
-%scale : the scale, define in parstart
-%shift : Coordinates of the origin of the skeleton, bottom left
-%Func : the skeleton
-%S : curvilinear abscissa
+% MATfunc = Func2Pic(pic, func, scale, shift, S)
+%
+% pic: 		directory of pictures (gave by openall())
+% scale: 	the scale, define in parstart
+% shift: 	Coordinates of the origin of the skeleton, bottom left
+% Func: 	the skeleton
+% S: 		curvilinear abscissa
 %
 %
 % Return MATfunc, an image who say for each points who is the curvilinear abscissa
@@ -28,7 +29,7 @@ func(:,2) = (-func(:,2) + shift(1,2)) * scale;
 MATfunc = zeros(size(pic));
 avg = ones(size(pic));
 
-for i = 1:length(func(:,1))
+for i = 1:size(func, 1)
 	% compute indices in image space
 	indi = round(func(i,2));
 	indj = round(func(i,1));
@@ -40,12 +41,6 @@ for i = 1:length(func(:,1))
 	
 	% add current abscissa
     MATfunc(indi, indj) = MATfunc(indi, indj) + S(i);
-
-%    if MATfunc(round(func(i,2)), round(func(i,1))) > 0
-%        avg(round(func(i,2)),round(func(i,1))) = 1+avg(round(func(i,2)),round(func(i,1)));
-%    end
-%	
-%    MATfunc(round(func(i,2)),round(func(i,1))) = S(i)+MATfunc(round(func(i,2)),round(func(i,1)));    
 end
 
 % normalisation

@@ -1,16 +1,16 @@
 function E = displall(SK, S, pic, scale, shift, ws, we, step)
-% DISPLALL compute growth between all couples of images
+% DISPLALL compute displacement between all couples of images
 %
 % E = displall(SK, S, pic, scale, shift, ws, we, step)
 %
-% SK: 	the skeleton
-% S: 	the curvilinear abscissa 
-% pic:  directory of pictures (given by openall())
-% scale: the scale, defined in parstart
-% shift: coordinates of the origin of the skeleton, bottom left
-% ws: 	size of the correlating window
-% we: 	unnecessary in this program
-% step: step between two measurements of displacement
+% SK: 		the list of skeletons, as a cell array
+% S: 		the list of curvilinear abscissa, as a cell array
+% pic:  	the list of images
+% scale: 	the scale, in pixels/mm
+% shift: 	coordinates of the origin of the skeleton, bottom left
+% ws: 		size of the window for computing displacement
+% we: 		unnecessary in this program
+% step: 	step between two measurements of displacement
 %
 % E: a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa
 %

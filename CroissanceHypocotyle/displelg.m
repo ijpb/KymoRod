@@ -1,14 +1,17 @@
-function Elg=displelg(dep, t0, step, ws)
-%DISPLELG Compute the elongation Elg by spatial derivation of the displacement between t0*step times 
+function Elg = displelg(dep, t0, step, ws)
+%DISPLELG Compute elongation by spatial derivation of the displacement
 % 
-% Elg = displelg(dep,t0,step)
+% Elg = displelg(dep, t0, step)
 %
-% dep : a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa. But smooth by kernel smoother and whitout errors. gave by aberrant3()
-% t0 : time between two pictures (min) define at the begin of parstart
-% ws : size of the correlation window
-% step : step between two measurements of displacement
+% dep: 	a N-by-2 array containing the curvilinear abscissa and the local 
+%		displacement (difference of curvilinear abscissa with next frame)
+% t0: 	time between two pictures (min) define at the begin of parstart
+% ws: 	size of the derivative window (in number of points)
+% step: step between two measurements of displacement
 %
-% Return Elg : a vector at 2 dimensions with for each points, the displacement and the curvilinear abscissa relative at neighbors pixels
+% Return 
+% Elg: 	a N-by-2 array containing for each point, the displacement and the curvilinear abscissa relative at neighbors pixels
+%
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
@@ -23,11 +26,13 @@ function Elg=displelg(dep, t0, step, ws)
 
 Elg = zeros(size(dep));
 
+% convert into seconds
 dt = t0 * step * 60;
 
-for i = 1+ws:size(dep,1)-ws
+% compute elongation as the derivative of displacement
+for i = ws+1:size(dep,1)-ws
     Elg(i,2) = (dep(i+ws,2) - dep(i-ws,2)) / (dep(i+ws,1) - dep(i-ws,1)) / dt;
 end
 
 % copy curvilinear abscissa
-Elg(:,1) = dep(:,1);
+Elg(:, 1) = dep(:, 1);
