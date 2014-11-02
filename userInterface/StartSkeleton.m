@@ -230,17 +230,19 @@ set(handles.framePreviewSlider, 'Visible', 'on');
 
 set(handles.framePreviewLabel, 'Visible', 'on');
 
-mini = cell(2,1);
-for i = 1:2 
-    mini{i} = imread(fullfile(folderName, fileList(i).name));
-end 
+%mini = cell(2,1);
+%for i = 1:2 
+%    mini{i} = imread(fullfile(folderName, fileList(i).name));
+%end 
+mini1 = imread(fullfile(folderName, fileList(1).name));
+mini2 = imread(fullfile(folderName, fileList(2).name));
 
 axes(handles.axes1);
-imshow(mini{1});
+imshow(mini1);
 set(handles.axis1Label, 'String', sprintf('frame %d (%s)', 1, fileList(1).name));
 
 axes(handles.axes2);
-imshow(mini{2});
+imshow(mini2);
 set(handles.axis2Label, 'String', sprintf('frame %d (%s)', 2, fileList(2).name));
 
 string = sprintf('Keep All Frames (%d)', imageNumber);
@@ -252,9 +254,6 @@ set(handles.selectImagesButton,'Visible','on');
 set(handles.saveSelectedImagesButton,'Visible','on');
 
 % save user data for future use
-setappdata(0, 'Nbimages', imageNumber);
-setappdata(0, 'NomRep', fileList); 
-setappdata(0, 'RepertoireImage', folderName); 
 app.inputImagesDir = folderName;
 app.imageNameList = fileList;
 
@@ -288,7 +287,6 @@ function spatialResolutionEdit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function timeIntervalEdit_Callback(hObject, eventdata, handles)
@@ -349,13 +347,6 @@ else
     mini2{1} = imread(fullfile(folderName, fileList(val).name));
     mini2{2} = imread(fullfile(folderName, fileList(val + 1).name));
 end
-% for i = val:val + 1
-%     if imagesLoaded
-%         mini2{i - val + 1} = col{i};
-%     else
-%         mini2{i - val + 1} = imread(fullfile(folderName, fileList(i).name)); 
-%     end
-% end
 
 % display first frame
 axes(handles.axes1);

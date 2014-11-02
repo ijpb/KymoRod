@@ -67,33 +67,34 @@ end
 
 app.currentStep = 'skeleton';
 
-red         = app.imageList;
+images      = app.imageList;
 thres       = app.thresholdValues;
 CTVerif     = app.contourList;
-indice      = app.currentFrameIndex;
+frameIndex  = app.currentFrameIndex;
 
 % setup widgets
 set(handles.middleImageIndexSlider, 'Min', 1);
-set(handles.middleImageIndexSlider, 'Max', length(red));
-set(handles.middleImageIndexSlider, 'Value', indice);
+set(handles.middleImageIndexSlider, 'Max', length(images));
+set(handles.middleImageIndexSlider, 'Value', frameIndex);
 
 % Compute 3 skeletons that should be validated by the user
 computeAllSkeletons(handles);
 
-SKVerif     = app.skeletonList;
 dirInitial  = app.firstPointLocation;
 
+contour  = app.contourList{frameIndex};
+skeleton = app.skeletonList{frameIndex};
+
 axes(handles.currentFrameAxes);
-imshow(red{indice} > thres(indice));
+imshow(images{frameIndex} > thres(frameIndex));
 hold on;
-% plot(CTVerif{indice}(:,1)*scale, CTVerif{indice}(:,2)*scale, 'r');
-% plot(SKVerif{indice}(:,1)*scale, SKVerif{indice}(:,2)*scale, 'b');
-plot(CTVerif{indice}(:,1), CTVerif{indice}(:,2), 'r');
-% % plot(SKVerif{indice}(:,1), SKVerif{indice}(:,2), 'b');
-% skeleton = SKVerif{indice} * 1000 / app.pixelSize;
-skeleton = SKVerif{indice};
-plot(skeleton(:,1), skeleton(:,2), 'b');
-set(handles.currentFrameLabel, 'String', strcat('Frame n° ', num2str(indice)));
+% plot(contour(:,1), contour(:,2), 'r');
+% plot(skeleton(:,1), skeleton(:,2), 'b');
+drawContour(app.contourList{frameIndex}, 'r');
+drawSkeleton(app.skeletonList{frameIndex}, 'b');
+
+string = sprintf('Current Frame: %d / %d', frameIndex, length(images));
+set(handles.currentFrameLabel, 'String', string);
 
 direction = 'boucle';
 switch direction
@@ -165,41 +166,35 @@ function middleImageIndexSlider_Callback(hObject, eventdata, handles)%#ok
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 app = getappdata(0, 'app');
-red     = app.imageList;
-seuil   = app.thresholdValues;
-SKVerif = app.skeletonList;
-CTVerif = app.contourList;
 
-val = get(handles.middleImageIndexSlider, 'Value');
-val = ceil(val);
+frameIndex = get(handles.middleImageIndexSlider, 'Value');
+frameIndex = ceil(frameIndex);
 
 set(handles.middleImageIndexSlider, 'Enable', 'Off');
 
-if val == 0
-    val = 1;
+if frameIndex == 0
+    frameIndex = 1;
 end
 
-seuil = seuil(val);
+seuil = app.thresholdValues(frameIndex);
 
 axes(handles.currentFrameAxes);
-imshow(red{val} > seuil);
+imshow(app.imageList{frameIndex} > seuil);
 hold on;
-% plot(CTVerif{val}(:,1)*scale, CTVerif{val}(:,2)*scale, 'r');
-% plot(SKVerif{val}(:,1)*scale, SKVerif{val}(:,2)*scale, 'b');
-plot(CTVerif{val}(:,1), CTVerif{val}(:,2), 'r');
-% % plot(SKVerif{val}(:,1), SKVerif{val}(:,2), 'b');
-% skeleton = SKVerif{val} * 1000 / app.pixelSize;
-skeleton = SKVerif{val};
-plot(skeleton(:,1), skeleton(:,2), 'b');
+%plot(CTVerif{frameIndex}(:,1), CTVerif{frameIndex}(:,2), 'r');
+%skeleton = SKVerif{frameIndex};
+%plot(skeleton(:,1), skeleton(:,2), 'b');
+drawContour(app.contourList{frameIndex}, 'r');
+drawSkeleton(app.skeletonList{frameIndex}, 'b');
 
 % setup slider for display of current frame
-nFrames = length(red);
+nFrames = length(app.imageList);
 set(handles.middleImageIndexSlider, 'Max', nFrames); 
 sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.middleImageIndexSlider, 'SliderStep', sliderStep); 
 set(handles.middleImageIndexSlider, 'Enable', 'On');
 
-string = sprintf('Current Frame: %d / %d', val, nFrames);
+string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
 

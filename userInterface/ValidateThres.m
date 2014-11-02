@@ -563,17 +563,14 @@ function validateTresholdButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-app     = getappdata(0, 'app');
-seuil   = app.thresholdValues;
-red     = app.imageList;
-
-% val2 = get(handles.firstPointSkeletonPopup, 'Value'); 
-% dirInitial = get(handles.firstPointSkeletonPopup, 'String');
-% app.firstPointLocation = dirInitial{val2};
-
 set(handles.validateTresholdButton, 'Enable', 'Off')
 set(handles.validateTresholdButton, 'String', 'Please wait...')
 pause(0.01);
+
+% retrieve application data
+app     = getappdata(0, 'app');
+seuil   = app.thresholdValues;
+images  = app.imageList;
 
 disp('Binarisation...');
 hDialog = msgbox(...
@@ -582,10 +579,12 @@ hDialog = msgbox(...
 
 thres = seuil;
 
+nImages = length(images);
+
 % add black border around each image
-parfor_progress(length(red));
-for k = 1:length(red)
-    red{k} = imAddBlackBorder(red{k});
+parfor_progress(nImages);
+for k = 1:nImages
+    images{k} = imAddBlackBorder(images{k});
     parfor_progress;
 end
 parfor_progress(0);
@@ -593,20 +592,19 @@ if ishandle(hDialog)
     close(hDialog);
 end
 
-% Compute the contour and use the scale
+% Compute the contour
 disp('Contour');
 hDialog = msgbox(...
     {'Computing contours,', 'please wait...'}, ...
     'Contour');
 
 % allocate memory for contour array
-CT = cell(length(red), 1);
+contours = cell(nImages, 1);
 
-parfor_progress(length(red));
-for i = 1:length(red)
-    % apply threshold and compute contour
-    CT{i} = cont(red{i}, thres(i));
-
+% compute contours from gray scale images
+parfor_progress(nImages);
+for i = 1:nImages
+    contours{i} = cont(images{i}, thres(i));
     parfor_progress;
 end
 
@@ -615,7 +613,7 @@ if ishandle(hDialog)
     close(hDialog);
 end
 
-app.contourList = CT;
+app.contourList = contours;
 
 delete(gcf);
 
