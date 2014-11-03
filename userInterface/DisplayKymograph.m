@@ -224,7 +224,7 @@ drawSkeleton(skeleton, 'b');
 colormap gray;
 freezeColors;
 
-% TODO: convert y-coordinate to curvilinear abscissa
+% convert y-coordinate to curvilinear abscissa
 Smax = app.abscissaList{end}(end);
 Smin = 0;
 Smarker = (posY - Smin) * (Smax - Smin) / nx;
@@ -232,7 +232,11 @@ Smarker = (posY - Smin) * (Smax - Smin) / nx;
 S = app.abscissaList{frameIndex};
 %nbPoints = length(skeleton);
 %ind = round((nbPoints * posY) / nx);
-ind = find(Smarker > S, 1, 'first');
+ind = find(Smarker <= S, 1, 'first');
+ind = max(ind, 1);
+if isempty(ind)
+    ind = size(skeleton, 1);
+end
 drawMarker(skeleton(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
 
 % Update handles structure

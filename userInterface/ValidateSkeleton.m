@@ -69,7 +69,6 @@ app.currentStep = 'skeleton';
 
 images      = app.imageList;
 thres       = app.thresholdValues;
-CTVerif     = app.contourList;
 frameIndex  = app.currentFrameIndex;
 
 % setup widgets
@@ -82,14 +81,9 @@ computeAllSkeletons(handles);
 
 dirInitial  = app.firstPointLocation;
 
-contour  = app.contourList{frameIndex};
-skeleton = app.skeletonList{frameIndex};
-
 axes(handles.currentFrameAxes);
 imshow(images{frameIndex} > thres(frameIndex));
 hold on;
-% plot(contour(:,1), contour(:,2), 'r');
-% plot(skeleton(:,1), skeleton(:,2), 'b');
 drawContour(app.contourList{frameIndex}, 'r');
 drawSkeleton(app.skeletonList{frameIndex}, 'b');
 
