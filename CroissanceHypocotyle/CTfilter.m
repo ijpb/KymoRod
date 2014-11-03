@@ -87,15 +87,17 @@ switch sym
         %dim = 0;
 end
 
-
+% additional filtering
+CTf = zeros(size(CT));
 for k = 1:2
 	% filtering in the frequency domain
+    X = zeros(size(CTsym));
     X(:,k) = fft(CTsym(:,k));
     X(:,k) = X(:,k).* Hshift(:,k);
-    x(:,k) = real(ifft(X(:,k)));
+    xk = real(ifft(X(:,k)));
 
 	% additional filtering
-    CTf(:,k) = x(N2+1:end-N2+un,k);
+    CTf(:,k) = xk(N2+1:end-N2+un);
     CTf(:,k) = moving_average(CTf(:,k), 10);
 end
 
