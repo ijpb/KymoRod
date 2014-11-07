@@ -3,9 +3,9 @@ function MATfunc = Func2Pic(pic, func, scale, shift, S)
 %
 % MATfunc = Func2Pic(pic, func, scale, shift, S)
 %
-% pic: 		directory of pictures (gave by openall())
-% scale: 	the scale, define in parstart
-% shift: 	Coordinates of the origin of the skeleton, bottom left
+% pic: 		list of gray level images
+% scale: 	the scale, in pixels by millimeter
+% shift: 	Coordinates of the origin of the skeleton, in millimeter
 % Func: 	the skeleton
 % S: 		curvilinear abscissa
 %
