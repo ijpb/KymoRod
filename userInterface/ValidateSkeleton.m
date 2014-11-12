@@ -22,7 +22,7 @@ function varargout = ValidateSkeleton(varargin)
 
 % Edit the above text to modify the response to help ValidateSkeleton
 
-% Last Modified by GUIDE v2.5 28-Oct-2014 11:43:21
+% Last Modified by GUIDE v2.5 12-Nov-2014 13:53:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -67,27 +67,25 @@ end
 
 app.currentStep = 'skeleton';
 
-images      = app.imageList;
-thres       = app.thresholdValues;
 frameIndex  = app.currentFrameIndex;
+nFrames     = length(app.imageList);
 
 % setup widgets
-set(handles.middleImageIndexSlider, 'Min', 1);
-set(handles.middleImageIndexSlider, 'Max', length(images));
-set(handles.middleImageIndexSlider, 'Value', frameIndex);
+set(handles.currentFrameSlider, 'Min', 1);
+set(handles.currentFrameSlider, 'Max', nFrames);
+set(handles.currentFrameSlider, 'Value', frameIndex);
+sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
+set(handles.currentFrameSlider, 'SliderStep', sliderStep); 
 
-% Compute 3 skeletons that should be validated by the user
+% Compute skeletons that should be validated by the user
 computeAllSkeletons(handles);
 
 dirInitial  = app.firstPointLocation;
 
-axes(handles.currentFrameAxes);
-imshow(images{frameIndex} > thres(frameIndex));
-hold on;
-drawContour(app.contourList{frameIndex}, 'r');
-drawSkeleton(app.skeletonList{frameIndex}, 'b');
+% update display
+displayCurrentSkeleton(handles);
 
-string = sprintf('Current Frame: %d / %d', frameIndex, length(images));
+string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
 direction = 'boucle';
@@ -151,50 +149,40 @@ HypoGrowthMenu(app);
 
 
 % --- Executes on slider movement.
-function middleImageIndexSlider_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to middleImageIndexSlider (see GCBO)
+function currentFrameSlider_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to currentFrameSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'Value') retkurns position osf slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
+% disable slider to avoid multiple calls
+set(handles.currentFrameSlider, 'Enable', 'Off');
+
 app = getappdata(0, 'app');
 
-frameIndex = get(handles.middleImageIndexSlider, 'Value');
-frameIndex = ceil(frameIndex);
+% update frame index value
+frameIndex = get(handles.currentFrameSlider, 'Value');
+frameIndex = max(ceil(frameIndex), 1);
 
-set(handles.middleImageIndexSlider, 'Enable', 'Off');
+app.currentFrameIndex = frameIndex;
 
-if frameIndex == 0
-    frameIndex = 1;
-end
+% update display
+displayCurrentSkeleton(handles);
 
-seuil = app.thresholdValues(frameIndex);
-
-axes(handles.currentFrameAxes);
-imshow(app.imageList{frameIndex} > seuil);
-hold on;
-%plot(CTVerif{frameIndex}(:,1), CTVerif{frameIndex}(:,2), 'r');
-%skeleton = SKVerif{frameIndex};
-%plot(skeleton(:,1), skeleton(:,2), 'b');
-drawContour(app.contourList{frameIndex}, 'r');
-drawSkeleton(app.skeletonList{frameIndex}, 'b');
-
-% setup slider for display of current frame
+% update display of current frame index
 nFrames = length(app.imageList);
-set(handles.middleImageIndexSlider, 'Max', nFrames); 
-sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
-set(handles.middleImageIndexSlider, 'SliderStep', sliderStep); 
-set(handles.middleImageIndexSlider, 'Enable', 'On');
-
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
+% re-enable slider
+set(handles.currentFrameSlider, 'Enable', 'On');
+
 
 % --- Executes during object creation, after setting all properties.
-function middleImageIndexSlider_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to middleImageIndexSlider (see GCBO)
+function currentFrameSlider_CreateFcn(hObject, eventdata, handles)%#ok
+% hObject    handle to currentFrameSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -276,47 +264,64 @@ delete(gcf);
 
 ValidateSkeleton(app);
 
+function displayCurrentSkeleton(handles)
+
+app = getappdata(0, 'app');
+
+frameIndex = app.currentFrameIndex;
+
+% compute current segmented image
+seuil = app.thresholdValues(frameIndex);
+segmentedImage = app.imageList{frameIndex} > seuil;
+
+% display current frame (image, contour, skeleton)
+axes(handles.currentFrameAxes);
+imshow(segmentedImage);
+hold on;
+drawContour(app.contourList{frameIndex}, 'r');
+drawSkeleton(app.skeletonList{frameIndex}, 'b');
+drawMarker(app.skeletonList{frameIndex}(1,:), 'bo');
+
 
 function computeAllSkeletons(handles)
 % compute skeletons from contours, and update widgets
 
 % get current application data
 app     = getappdata(0, 'app');
-red     = app.imageList;
 smooth  = app.contourSmoothingSize;
 CT2     = app.contourList;
 
 % To take the first values
 val = get(handles.filterDirectionPopup, 'Value'); 
-setappdata(0, 'val', val);
-direction = get(handles.filterDirectionPopup, 'String');
+directionList = get(handles.filterDirectionPopup, 'String');
+direction = directionList{val};
 
 % To take the second value
 val2 = get(handles.firstSkeletonPointPopup, 'Value');
-setappdata(0, 'val2' ,val2);
-dirInitial = get(handles.firstSkeletonPointPopup, 'String');
-
-direction   = direction{val};
-dirInitial  = dirInitial{val2};
+stringList = get(handles.firstSkeletonPointPopup, 'String');
+dirInitial = stringList{val2};
 
 dir = direction;
 dirbegin = dirInitial;
 
-% initialize result arrays
-CT      = cell(length(red), 1);
-SK      = cell(length(red), 1);
-shift   = cell(length(red), 1);
-rad     = cell(length(red), 1);
-CTVerif = cell(length(red), 1);
-SKVerif = cell(length(red), 1);
+% number of images
+nImages = length(CT2);
+
+% allocate memory for results
+CT      = cell(nImages, 1);
+SK      = cell(nImages, 1);
+shift   = cell(nImages, 1);
+rad     = cell(nImages, 1);
+CTVerif = cell(nImages, 1);
+SKVerif = cell(nImages, 1);
 
 disp('Skeletonization');
 hDialog = msgbox(...
     {'Computing skeletons from contours,', 'please wait...'}, ...
     'Skeletonization');
 
-parfor_progress(length(red));
-for i = 1:length(red)
+parfor_progress(nImages);
+for i = 1:nImages
     % Smooth current contour
     contour = CT2{i};
     if smooth ~= 0
@@ -391,18 +396,19 @@ pause(0.01);
 app = getappdata(0, 'app'); %#ok<NASGU>
 
 % To open the directory who the user want to save the data
-[fileName, pathName] = uiputfile(); 
+[fileName, pathName] = uiputfile('*.mat', 'Save App Data', 'appData.mat'); 
 
 if pathName == 0
     warning('Select a file please');
     return;
 end
 
+% save app data as .mat file
 name = fullfile(pathName, fileName);
 save(name, 'app');
 
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
-set(handles.saveSkeletonDataButton, 'String', 'Save data of skeleton');
+set(handles.saveSkeletonDataButton, 'String', 'Save Skeleton Data');
 
 
 % --- Executes on button press in BackToContourButton.
