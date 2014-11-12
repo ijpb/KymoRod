@@ -212,9 +212,11 @@ if valPopUp == 1
     frameIndex = frameIndex + 1;
 end
 
+% extract data for current frame
 contour = app.contourList{frameIndex};
 skeleton = app.skeletonList{frameIndex};
 
+% update display
 axes(handles.imageAxes);
 imshow(app.imageList{frameIndex});
 hold on;
@@ -230,8 +232,6 @@ Smin = 0;
 Smarker = (posY - Smin) * (Smax - Smin) / nx;
 
 S = app.abscissaList{frameIndex};
-%nbPoints = length(skeleton);
-%ind = round((nbPoints * posY) / nx);
 ind = find(Smarker <= S, 1, 'first');
 ind = max(ind, 1);
 if isempty(ind)
@@ -354,20 +354,14 @@ function saveAllDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% disable save button to avoid multiple clicks
 set(handles.saveAllDataButton, 'Enable', 'Off')
 set(handles.saveAllDataButton, 'String', 'Wait please...')
 pause(0.01);
 
-% retrieve application data
-app     = getappdata(0, 'app');
-ElgE1   = app.elongationImage;
-CE1     = app.curvatureImage;
-AE1     = app.verticalAngleImage;
-RE1     = app.radiusImage;
-
 % To open the directory who the user want to save the data
-[fileName, pathName] = uiputfile('*.*', 'Create a directory to save your data');
-nameDir = fullfile(pathName, fileName);
+[fileName, pathName] = uiputfile('*.mat', ...
+    'Save Kymographs');
 
 if pathName == 0
     warning('Select a file please');
@@ -376,14 +370,17 @@ end
 
 disp('Saving...');
 
-% TODO: save into several files using basename, instead of creating new dir
-mkdir(nameDir);
-fileName = 'data.mat';
-nameData = fullfile(nameDir, fileName);
+% retrieve application data
+app     = getappdata(0, 'app');
+ElgE1   = app.elongationImage;
+CE1     = app.curvatureImage;
+AE1     = app.verticalAngleImage;
+RE1     = app.radiusImage;
 
-% TODO: transfer part of this into AppData class
-% save full application data
-save(nameData, 'app');
+% save full application data as mat file
+[emptyPath, baseName, ext] = fileparts(fileName); %#ok<NASGU,ASGLU>
+filePath = fullfile(pathName, [baseName '.mat']);
+save(filePath, 'app');
 
 nFrames = length(app.imageList);
 
@@ -407,28 +404,22 @@ end
 nPositions = app.finalResultLength;
 colNames = strtrim(cellstr(num2str((1:nPositions)', '%d'))');
 
-% tabElongation = Table(ElgE1', 'colNames', colNames, 'rowNames', rowNames(2:end-1));
-pathElongation = fullfile(nameDir, 'dataElongation.csv');
-% write(tabElongation, pathElongation);
-writeTable(ElgE1', colNames, rowNames(2:end-1), pathElongation);
+% Save each data file as tab separated values
+filePath = fullfile(pathName, [baseName '-radius.csv']);
+writeTable(RE1', colNames, rowNames, filePath);
 
-% tabAngle = Table(AE1', 'colNames', colNames, 'rowNames', rowNames);
-pathAngle = fullfile(nameDir, 'dataAngle.csv');
-% write(tabAngle, pathAngle);
-writeTable(AE1', colNames, rowNames, pathAngle);
+filePath = fullfile(pathName, [baseName '-angle.csv']);
+writeTable(AE1', colNames, rowNames, filePath);
 
-% tabCurvature = Table(CE1', 'colNames', colNames, 'rowNames', rowNames);
-pathCurvature = fullfile(nameDir, 'dataCurvature.csv');
-% write(tabCurvature, pathCurvature);
-writeTable(CE1', colNames, rowNames, pathCurvature);
+filePath = fullfile(pathName, [baseName '-curvature.csv']);
+writeTable(CE1', colNames, rowNames, filePath);
 
-% tabRadius = Table(RE1', 'colNames', colNames, 'rowNames', rowNames);
-pathRadius = fullfile(nameDir, 'dataRadius.csv');
-% write(tabRadius, pathRadius);
-writeTable(RE1', colNames, rowNames, pathRadius);
+filePath = fullfile(pathName, [baseName '-elongation.csv']);
+writeTable(ElgE1', colNames, rowNames(2:end-1), filePath);
 
 disp('Saving done');
-  
+
+% re-enable save button
 set(handles.saveAllDataButton, 'Enable', 'On')
 set(handles.saveAllDataButton, 'String', 'Save all data')
 
