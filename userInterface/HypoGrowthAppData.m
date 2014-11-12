@@ -126,6 +126,33 @@ classdef HypoGrowthAppData < handle
                 image = this.imageList{index};
             end
         end
+        
+        function readAllImages(this)
+            % load all images based on settings
+            % refresh imageList and imageNameList
+            
+            fileList = dir(fullfile(this.inputImagesDir, this.inputImagesFilePattern));
+            fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
+            
+            fileList = fileList(fileIndices);
+            nImages = length(fileList);
+            
+            this.imageList = cell(nImages, 1);
+            this.imageNameList = cell(nImages, 1);
+            
+            for i = 1:length(nImages)
+                fileName = fileList(i).name;
+                this.imageNameList{i} = fileName;
+                img = imread(fullfile(this.inputImagesDir, fileName));
+                
+                % keep only the red channel of color images
+                if ndims(img) > 2 %#ok<ISMAT>
+                    img = img(:,:,1);
+                end
+                this.imageList{i} = img;
+            end
+            
+        end
     end
     
     
