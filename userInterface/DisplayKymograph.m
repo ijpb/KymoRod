@@ -382,9 +382,12 @@ RE1     = app.radiusImage;
 filePath = fullfile(pathName, [baseName '.mat']);
 save(filePath, 'app');
 
-nFrames = length(app.imageList);
+% save settings of application, to retrieve them easily
+filePath = fullfile(pathName, [baseName '-settings.txt']);
+saveSettings(app, filePath);
 
 % initialize row names
+nFrames = length(app.imageList);
 rowNames = cell(nFrames, 1);
 if isstruct(app.imageNameList)
 	for i = 1:nFrames

@@ -94,6 +94,11 @@ elseif nargin == 6
     set(handles.selectImagesButton, 'Visible', 'On');
 end
 
+
+app.pixelSize = 3.9526;
+app.pixelSizeUnit = 'µm';
+setappdata(0, 'app', app);
+
 % Choose default command line output for SelectInputImagesDialog
 handles.output = hObject;
 
@@ -136,12 +141,18 @@ function chooseInputImagesButton_Callback(hObject, eventdata, handles)%#ok
 % extract app data
 app = getappdata(0, 'app');
 
-% folderName = getappdata(0, 'RepertoireImage');
 folderName = app.inputImagesDir;
-folderName = uigetdir(folderName);
-
+% folderName = uigetdir(folderName);
+[fileName, folderName] = uigetfile(...
+    {'*.jpg;*.tif;*.png;*.gif', 'All Image Files';...
+    '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
+    '*.jpg;', 'JPEG images (*.jpg)';...
+    '*.*','All Files' }, ...
+    'Select Input Folder', ...
+    fullfile(folderName, '*.*'));
+      
 % check if cancel button was selected
-if folderName == 0;
+if fileName == 0;
     return;
 end
 
@@ -185,16 +196,6 @@ set(handles.frameSelectionPanel, 'Visible', 'On');
 set(handles.currentFrameLabel, 'Visible', 'On');
 set(handles.currentFrameAxes, 'Visible', 'On');
 
-set(handles.framePreviewSlider, 'Visible', 'Off');
-set(handles.framePreviewSlider, 'Value', 1);
-set(handles.framePreviewSlider, 'Min', 1);
-set(handles.framePreviewSlider, 'Max', frameNumber);
-% setup slider such that 1 image is changed at a time
-step1 = 1 / frameNumber;
-step2 = min(10 / frameNumber, .5);
-set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
-set(handles.framePreviewSlider, 'Visible', 'On');
-
 string = sprintf('Keep All Frames (%d)', frameNumber);
 set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', frameNumber);
@@ -210,6 +211,7 @@ app.firstIndex = 1;
 app.lastIndex = frameNumber;
 app.indexStep = 1;
 
+updateFrameSliderBounds(handles);
 updateFramePreview(handles);
 
 guidata(hObject, handles);
@@ -543,128 +545,9 @@ function selectImagesButton_Callback(hObject, eventdata, handles)
 
 % extract global data
 app = getappdata(0, 'app');
-% folderName  = app.inputImagesDir;
-% fileList    = app.imageNameList;
-% imageNames  = app.imageNameList;
 
-% imagesLoaded = ~isempty(app.imageList);
-% if imagesLoaded
-%     nb = length(imageList);
-% else
-%     nb = length(app.imageNameList);
-% end
-
-% if get(handles.keepAllFramesRadioButton, 'Value') == 1 
-%    % For all pictures
-%     set(handles.selectImagesButton, 'Enable', 'Off')
-%     set(handles.selectImagesButton, 'String', 'Wait please...')
-%     pause(0.01);
-%     
-%     debut = 1;
-%     fin = nb;
-%     step = 1;
-%     
-%     disp('Opening directory ...');
-%     col = cell(nb, 1);
-%     parfor_progress(length(fileList));
-%     for i = 1:nb
-%         if imagesLoaded 
-%             img = app.imageList{i};
-%         else
-%             img = imread(fullfile(folderName, imageNames{i}));
-%         end
-%         
-%         if ndims(img) > 2 %#ok<ISMAT>
-%             img = img(:,:,1);
-%         end
-%         col{i} = img;
-%         
-%         parfor_progress;
-%     end
-%     parfor_progress(0); 
-%     
-% else
-%     % For pictures by step
-%     
-%     % To take the range of pictures
-%     firstPicture = get(handles.firstFrameIndexEdit, 'String');
-%     lastPicture = get(handles.lastFrameIndexEdit, 'String');
-%     stepPicture = get(handles.frameIndexStepEdit, 'String');
-%     
-%     % set some widget to waiting state
-%     set(handles.selectImagesButton, 'Enable', 'Off')
-%     set(handles.selectImagesButton, 'String', 'Wait please...')
-%     pause(0.01);
-%     
-%     if length(firstPicture) ~= 0   %#ok isempty does'nt work i dont know why
-%         firstPicture = str2num(firstPicture);%#ok I want [] if it's a string and not NaN to test it
-%     elseif length(firstPicture) == 0%#ok
-%         firstPicture = 1;
-%     end
-%     if length(lastPicture) ~= 0%#ok
-%         lastPicture = str2double(lastPicture);
-%     elseif length(lastPicture) == 0%#ok
-%         lastPicture = nb;
-%     end
-%     if length(stepPicture) ~=0 %#ok
-%         stepPicture = str2double(stepPicture);
-%     elseif length(stepPicture) == 0 %#ok
-%         stepPicture = 1;
-%     end
-%     
-%     % check input validity
-%     if isempty(firstPicture) || isempty(lastPicture) || isempty(stepPicture)
-%         errordlg({'Please set a numeric value for the first, the last,', ...
-%             'and the step indices'}, ...
-%             'Wrong indices', 'modal')
-%         return;
-%     end
-%     
-%     % compute number of images after selection
-%     selectedIndices = firstPicture:stepPicture:lastPicture;
-%     nbstep = length(selectedIndices);
-%     
-%     % re-load necessary images
-%     disp('Opening directory ...');
-%     col = cell(nbstep, 1);
-%     parfor_progress(nbstep);
-%     for i = 1:nbstep
-%         fileIndex = firstPicture + stepPicture * (i - 1);
-%         if imagesLoaded
-%             img = app.imageList{fileIndex};
-%         else
-%             fileName = imageNames{fileIndex};
-%             img = imread(fullfile(folderName, fileName));
-%         end
-%         
-%         if ndims(img) > 2 %#ok<ISMAT>
-%             img = img(:,:,1);
-%         end
-%         col{i} = img;
-% 
-%         parfor_progress;
-%     end
-%     parfor_progress(0);
-%     
-%     debut = firstPicture;
-%     fin = lastPicture;
-%     step = stepPicture;
-%     app.imageNameList = imageNames(selectedIndices);
-% end
-
-% % save indices for retrieving images
-% app.firstIndex = debut;
-% app.lastIndex = fin;
-% app.indexStep = step;
+% read images
 app.readAllImages();
-
-% % get study calibration
-% resolString = get(handles.spatialResolutionEdit, 'String');
-% resol = str2double(resolString);
-% app.pixelSize = resol;
-% timeString = get(handles.timeIntervalEdit, 'String');
-% time = str2double(timeString);
-% app.timeInterval = time;
 
 delete(gcf);
 

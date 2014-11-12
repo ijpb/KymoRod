@@ -140,7 +140,7 @@ classdef HypoGrowthAppData < handle
             this.imageList = cell(nImages, 1);
             this.imageNameList = cell(nImages, 1);
             
-            for i = 1:length(nImages)
+            for i = 1:nImages
                 fileName = fileList(i).name;
                 this.imageNameList{i} = fileName;
                 img = imread(fullfile(this.inputImagesDir, fileName));
