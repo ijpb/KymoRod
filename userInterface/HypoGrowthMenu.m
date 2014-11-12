@@ -60,7 +60,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     disp('Run DisplayKymograph using HypoGrowthAppData class');
     app = varargin{1};
 elseif nargin == 3
-    app = HypoGrowthApp();
+    app = HypoGrowthAppData();
 end
 
 setappdata(0, 'app', app);

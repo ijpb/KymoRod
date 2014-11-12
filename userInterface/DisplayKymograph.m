@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 28-Oct-2014 12:17:22
+% Last Modified by GUIDE v2.5 12-Nov-2014 17:36:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -438,12 +438,16 @@ delete(gcf);
 StartElongation(app);
 
 
-% --- Executes on button press in computeComposedKymographButton.
-function computeComposedKymographButton_Callback(hObject, eventdata, handles)%#ok<INUSD>
-% hObject    handle to computeComposedKymographButton (see GCBO)
+% --- Executes on button press in quitButton.
+function quitButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to quitButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% app = getappdata(0, 'app');
-% delete(gcf);
-% StartComposedElongation(app);
+button = questdlg({'This will quit the program', 'Are you sure ?'}, ...
+    'Quit Confirmation', ... 
+    'Yes', 'No', 'No');
+
+if strcmp(button, 'Yes')
+    delete(gcf);
+end
