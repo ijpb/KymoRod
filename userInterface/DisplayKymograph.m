@@ -407,22 +407,25 @@ end
 nPositions = app.finalResultLength;
 colNames = strtrim(cellstr(num2str((1:nPositions)', '%d'))');
 
-
-tabElongation = Table(ElgE1', 'colNames', colNames, 'rowNames', rowNames(2:end-1));
+% tabElongation = Table(ElgE1', 'colNames', colNames, 'rowNames', rowNames(2:end-1));
 pathElongation = fullfile(nameDir, 'dataElongation.csv');
-write(tabElongation, pathElongation);
+% write(tabElongation, pathElongation);
+writeTable(ElgE1', colNames, rowNames(2:end-1), pathElongation);
 
-tabAngle = Table(AE1', 'colNames', colNames, 'rowNames', rowNames);
+% tabAngle = Table(AE1', 'colNames', colNames, 'rowNames', rowNames);
 pathAngle = fullfile(nameDir, 'dataAngle.csv');
-write(tabAngle, pathAngle);
+% write(tabAngle, pathAngle);
+writeTable(AE1', colNames, rowNames, pathAngle);
 
-tabCurvature = Table(CE1', 'colNames', colNames, 'rowNames', rowNames);
+% tabCurvature = Table(CE1', 'colNames', colNames, 'rowNames', rowNames);
 pathCurvature = fullfile(nameDir, 'dataCurvature.csv');
-write(tabCurvature, pathCurvature);
+% write(tabCurvature, pathCurvature);
+writeTable(CE1', colNames, rowNames, pathCurvature);
 
-tabRadius = Table(RE1', 'colNames', colNames, 'rowNames', rowNames);
+% tabRadius = Table(RE1', 'colNames', colNames, 'rowNames', rowNames);
 pathRadius = fullfile(nameDir, 'dataRadius.csv');
-write(tabRadius, pathRadius);
+% write(tabRadius, pathRadius);
+writeTable(RE1', colNames, rowNames, pathRadius);
 
 disp('Saving done');
   
@@ -447,6 +450,6 @@ function computeComposedKymographButton_Callback(hObject, eventdata, handles)%#o
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-app = getappdata(0, 'app');
-delete(gcf);
-StartComposedElongation(app);
+% app = getappdata(0, 'app');
+% delete(gcf);
+% StartComposedElongation(app);

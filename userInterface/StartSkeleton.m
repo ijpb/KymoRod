@@ -721,5 +721,5 @@ time = str2double(timeString);
 app.timeInterval = time;
 
 delete(gcf);
-    
+
 ValidateThres(app);
