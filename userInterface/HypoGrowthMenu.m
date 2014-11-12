@@ -236,7 +236,7 @@ if get(handles.frameEditButton, 'Value') == 1
     
 elseif get(handles.imagesSelectionButton, 'Value') == 1
     delete(gcf);
-    StartSkeleton(app);
+    SelectInputImagesDialog(app);
     
 elseif get(handles.validateThresholdButton, 'Value') == 1
     delete(gcf);

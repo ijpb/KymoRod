@@ -549,7 +549,7 @@ function backToSelectionButton_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 delete(gcf);
-StartSkeleton(app);
+SelectInputImagesDialog(app);
 
 
 % --- Executes on button press in validateTresholdButton.

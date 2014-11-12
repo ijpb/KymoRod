@@ -26,4 +26,4 @@ path = fileparts(mfilename('fullpath'));
 app.inputImagesDir = fullfile(path, '..', '..', 'sampleImages', '01');
 
 % open first dialog of application
-StartSkeleton(app);
+SelectInputImagesDialog(app);
