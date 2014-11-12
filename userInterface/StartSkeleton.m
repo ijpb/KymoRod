@@ -149,8 +149,21 @@ set(handles.directoryNameEdit, 'String', folderName);
 setappdata(0, 'RepertoireImage', folderName);
 app.inputImagesDir = folderName;
 
+
+filePattern = '*.*';
+if get(handles.selectChannelRadioButton, 'Value') == 1;
+    % keep only images starting with a given letter
+    str = get(handles.channelPrefixEdit, 'String');
+    if isempty(str)
+        warning('Text area is empty');
+        return;
+    end
+   
+    filePattern = strcat(str, '*.*');
+end
+
 % list files in chosen directory
-fileList = dir(fullfile(folderName, '*.*'));
+fileList = dir(fullfile(folderName, filePattern));
 fileList = fileList(~[fileList.isdir]);
 
 if isempty(fileList)
@@ -160,32 +173,12 @@ if isempty(fileList)
     return;
 end
 
-selectedRadioButton = get(handles.channelSelectionPanel, 'SelectedObject');
-if selectedRadioButton == handles.allImagesRadioButton
-    % select all images, but removes directory markers
-        
-elseif selectedRadioButton == handles.selectChannelRadioButton
-    % keep only images starting with a given letter
-    str = get(handles.channelPrefixEdit,'String');
-    if isempty(str)
-        warning('Text area is empty');
-        return;
-    end
-   
-    str = strcat(str, '*.*');
-    rep = fullfile(folderName, str);
-    fileList = dir(rep);
-    fileList = fileList(~[fileList.isdir]);
-
-    if isempty(fileList)
-        errordlg({'The chosen directory contains no file.', ...
-            'Please choose another one'}, ...
-            'Empty Directory Error', 'modal')
-        return;
-    end
-end
-
 imageNumber = length(fileList);
+
+imageNames = cell(imageNumber, 1);
+for i = 1:imageNumber
+    imageNames{i} = fileList(i).name;
+end
 
 set(handles.channelSelectionPanel, 'Visible', 'On');
 set(handles.calibrationPanel, 'Visible', 'On');
@@ -213,12 +206,12 @@ set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', imageNumber);
 set(handles.selectFramesIndicesRadioButton, 'String', string);
 
-set(handles.selectImagesButton,'Visible','On');
-set(handles.saveSelectedImagesButton,'Visible','On');
+set(handles.selectImagesButton, 'Visible', 'On');
+set(handles.saveSelectedImagesButton, 'Visible', 'On');
 
 % save user data for future use
 app.inputImagesDir = folderName;
-app.imageNameList = fileList;
+app.imageNameList = imageNames;
 
 updateFramePreview(handles);
 
@@ -306,7 +299,8 @@ app = getappdata(0, 'app');
 
 % extract global data
 folderName  = app.inputImagesDir;
-fileList    = app.imageNameList;
+% fileList    = app.imageNameList;
+imageNames  = app.imageNameList;
 
 % extract index of first frame to display
 val = round(get(handles.framePreviewSlider, 'Value'));
@@ -317,21 +311,21 @@ if val > valmax
     val = valmax ;
 end
 
-% TODO: replace filelist by image file name
-mini1 = imread(fullfile(folderName, fileList(val).name));
-mini2 = imread(fullfile(folderName, fileList(val+1).name));
+% read sample images
+mini1 = imread(fullfile(folderName, imageNames{val}));
+mini2 = imread(fullfile(folderName, imageNames{val+1}));
 
 % display first frame
 axes(handles.axes1);
 imshow(mini1);
 set(handles.axis1Label, 'String', val);
-string = sprintf('frame %d (%s)', val, fileList(val).name);
+string = sprintf('frame %d (%s)', val, imageNames{val});
 set(handles.axis1Label, 'String', string);
 
 % display second frame
 axes(handles.axes2);
 imshow(mini2);
-string = sprintf('frame %d (%s)', val + 1, fileList(val + 1).name);
+string = sprintf('frame %d (%s)', val + 1, imageNames{val + 1});
 set(handles.axis2Label, 'String', string);
 
 
@@ -602,7 +596,7 @@ function selectImagesButton_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 folderName  = app.inputImagesDir;
 fileList    = app.imageNameList;
-
+imageNames  = app.imageNameList;
 
 imagesLoaded = ~isempty(app.imageList);
 if imagesLoaded
@@ -628,7 +622,7 @@ if get(handles.keepAllFramesRadioButton, 'Value') == 1
         if imagesLoaded 
             img = app.imageList{i};
         else
-            img = imread(fullfile(folderName, fileList(i).name));
+            img = imread(fullfile(folderName, imageNames{i}));
         end
         
         if ndims(img) > 2 %#ok<ISMAT>
@@ -678,12 +672,10 @@ else
     end
     
     % compute number of images after selection
-    nbstep = 0;
-    for i = firstPicture:stepPicture:lastPicture
-        nbstep = nbstep + 1;
-    end
+    selectedIndices = firstPicture:stepPicture:lastPicture;
+    nbstep = length(selectedIndices);
     
-    % 
+    % re-load necessary images
     disp('Opening directory ...');
     col = cell(nbstep, 1);
     parfor_progress(nbstep);
@@ -692,7 +684,7 @@ else
         if imagesLoaded
             img = app.imageList{fileIndex};
         else
-            fileName = fileList(fileIndex).name;
+            fileName = imageNames{fileIndex};
             img = imread(fullfile(folderName, fileName));
         end
         
@@ -708,6 +700,7 @@ else
     debut = firstPicture;
     fin = lastPicture;
     step = stepPicture;
+    app.imageNameList = imageNames(selectedIndices);
 end
 
 % save indices for retrieving images
