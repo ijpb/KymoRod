@@ -65,55 +65,33 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
 elseif nargin == 6 
     % TODO: adapt code below to the case app already contains images or settings
     col = varargin{1};
-    fileList = varargin{2};
-    folderName = varargin{3};
-    set(handles.axis1Label, 'Visible', 'on');
-    set(handles.axis2Label, 'Visible', 'on');
-    set(handles.axes1, 'Visible', 'on');
-    set(handles.axes2, 'Visible', 'on');
-    set(handles.keepAllFramesRadioButton, 'Visible', 'on');
-    set(handles.selectFramesIndicesRadioButton, 'Visible', 'on');
+    set(handles.axis1Label, 'Visible', 'On');
+    set(handles.axis2Label, 'Visible', 'On');
+    set(handles.axes1, 'Visible', 'On');
+    set(handles.axes2, 'Visible', 'On');
+    set(handles.keepAllFramesRadioButton, 'Visible', 'On');
+    set(handles.selectFramesIndicesRadioButton, 'Visible', 'On');
     
     nImages = length(col);
     
     set(handles.framePreviewSlider, 'Value', 1);
     set(handles.framePreviewSlider, 'Min', 1);
     set(handles.framePreviewSlider, 'Max', nImages - 1);
-    set(handles.framePreviewSlider, 'Visible', 'on');
+    set(handles.framePreviewSlider, 'Visible', 'On');
     
     % setup slider such that 1 image is changed at a time
     step1 = 1 / (nImages - 1);
     step2 = min(10 / (nImages - 1), .5);
     set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
     
-    set(handles.framePreviewLabel, 'Visible', 'on');
+    set(handles.framePreviewLabel, 'Visible', 'On');
 
-    % demo images
-    mini = cell(2,1);
-    for i = 1:2
-        mini{i} = col{i};
-    end
-    
-    % display first image
-    axes(handles.axes1);
-    imshow(mini{1});
-    set(handles.axis1Label, 'String', '1');
-    
-    % display second image
-    axes(handles.axes2);
-    imshow(mini{2});
-    set(handles.axis2Label, 'String', '2');
-    
-    % update globale variables
-    setappdata(0, 'Nbimages', nb);
-    setappdata(0, 'NomRep', fileList);
-    setappdata(0, 'RepertoireImage', folderName);
-    setappdata(0, 'col', col);
-    
+    updateFramePreview(handles);
+
     string = sprintf('Select a range among the %d frames', nb);
     set(handles.selectFramesIndicesRadioButton, 'String', string);
     
-    set(handles.selectImagesButton, 'Visible', 'on');
+    set(handles.selectImagesButton, 'Visible', 'On');
 end
 
 % Choose default command line output for StartSkeleton
@@ -209,16 +187,16 @@ end
 
 imageNumber = length(fileList);
 
-set(handles.channelSelectionPanel, 'Visible', 'on');
-set(handles.calibrationPanel, 'Visible', 'on');
-set(handles.frameSelectionPanel, 'Visible', 'on');
+set(handles.channelSelectionPanel, 'Visible', 'On');
+set(handles.calibrationPanel, 'Visible', 'On');
+set(handles.frameSelectionPanel, 'Visible', 'On');
 
-set(handles.axis1Label, 'Visible', 'on');
-set(handles.axis2Label, 'Visible', 'on');
-set(handles.axes1, 'Visible', 'on');
-set(handles.axes2, 'Visible', 'on');
+set(handles.axis1Label, 'Visible', 'On');
+set(handles.axis2Label, 'Visible', 'On');
+set(handles.axes1, 'Visible', 'On');
+set(handles.axes2, 'Visible', 'On');
 
-set(handles.framePreviewSlider, 'Visible', 'off');
+set(handles.framePreviewSlider, 'Visible', 'Off');
 set(handles.framePreviewSlider, 'Value', 1);
 set(handles.framePreviewSlider, 'Min', 1);
 set(handles.framePreviewSlider, 'Max', imageNumber - 1);
@@ -226,36 +204,23 @@ set(handles.framePreviewSlider, 'Max', imageNumber - 1);
 step1 = 1 / (imageNumber - 1);
 step2 = min(10 / (imageNumber - 1), .5);
 set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
-set(handles.framePreviewSlider, 'Visible', 'on');
+set(handles.framePreviewSlider, 'Visible', 'On');
 
-set(handles.framePreviewLabel, 'Visible', 'on');
-
-%mini = cell(2,1);
-%for i = 1:2 
-%    mini{i} = imread(fullfile(folderName, fileList(i).name));
-%end 
-mini1 = imread(fullfile(folderName, fileList(1).name));
-mini2 = imread(fullfile(folderName, fileList(2).name));
-
-axes(handles.axes1);
-imshow(mini1);
-set(handles.axis1Label, 'String', sprintf('frame %d (%s)', 1, fileList(1).name));
-
-axes(handles.axes2);
-imshow(mini2);
-set(handles.axis2Label, 'String', sprintf('frame %d (%s)', 2, fileList(2).name));
+set(handles.framePreviewLabel, 'Visible', 'On');
 
 string = sprintf('Keep All Frames (%d)', imageNumber);
 set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', imageNumber);
 set(handles.selectFramesIndicesRadioButton, 'String', string);
 
-set(handles.selectImagesButton,'Visible','on');
-set(handles.saveSelectedImagesButton,'Visible','on');
+set(handles.selectImagesButton,'Visible','On');
+set(handles.saveSelectedImagesButton,'Visible','On');
 
 % save user data for future use
 app.inputImagesDir = folderName;
 app.imageNameList = fileList;
+
+updateFramePreview(handles);
 
 guidata(hObject, handles);
 
@@ -320,48 +285,8 @@ function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-% extract app data
-app = getappdata(0, 'app');
+updateFramePreview(handles);
 
-% extract global data
-col         = app.imageList;
-folderName  = app.inputImagesDir;
-fileList    = app.imageNameList;
-
-imagesLoaded = ~isempty(col);
-
-% extract index of first frame to display
-val = round(get(handles.framePreviewSlider, 'Value'));
-
-% ensure value is between bounds
-valmax = get(handles.framePreviewSlider, 'Max');
-if val > valmax
-    val = valmax ;
-end
-
-mini2 = cell(2,1);
-if imagesLoaded
-    mini2{1} = col{val};
-    mini2{2} = col{val + 1};
-else
-    mini2{1} = imread(fullfile(folderName, fileList(val).name));
-    mini2{2} = imread(fullfile(folderName, fileList(val + 1).name));
-end
-
-% display first frame
-axes(handles.axes1);
-imshow(mini2{1});
-set(handles.axis1Label, 'String', val);
-string = sprintf('frame %d (%s)', val, fileList(val).name);
-set(handles.axis1Label, 'String', string);
-
-% display second frame
-axes(handles.axes2);
-imshow(mini2{2});
-string = sprintf('frame %d (%s)', val + 1, fileList(val + 1).name);
-set(handles.axis2Label, 'String', string);
-
-guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function framePreviewSlider_CreateFcn(hObject, eventdata, handles) %#ok<*INUSD,*DEFNU>
@@ -373,6 +298,41 @@ function framePreviewSlider_CreateFcn(hObject, eventdata, handles) %#ok<*INUSD,*
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+function updateFramePreview(handles)
+
+% extract app data
+app = getappdata(0, 'app');
+
+% extract global data
+folderName  = app.inputImagesDir;
+fileList    = app.imageNameList;
+
+% extract index of first frame to display
+val = round(get(handles.framePreviewSlider, 'Value'));
+
+% ensure value is between bounds
+valmax = get(handles.framePreviewSlider, 'Max');
+if val > valmax
+    val = valmax ;
+end
+
+% TODO: replace filelist by image file name
+mini1 = imread(fullfile(folderName, fileList(val).name));
+mini2 = imread(fullfile(folderName, fileList(val+1).name));
+
+% display first frame
+axes(handles.axes1);
+imshow(mini1);
+set(handles.axis1Label, 'String', val);
+string = sprintf('frame %d (%s)', val, fileList(val).name);
+set(handles.axis1Label, 'String', string);
+
+% display second frame
+axes(handles.axes2);
+imshow(mini2);
+string = sprintf('frame %d (%s)', val + 1, fileList(val + 1).name);
+set(handles.axis2Label, 'String', string);
 
 
 function firstFrameIndexEdit_Callback(hObject, eventdata, handles)
@@ -449,17 +409,17 @@ function keepAllFramesRadioButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of keepAllFramesRadioButton
-set(handles.selectImagesButton,'Visible','on');
-set(handles.saveSelectedImagesButton,'Visible','on');
-set(handles.firstFrameIndexLabel,'Visible','off');
-set(handles.lastFrameIndexLabel,'Visible','off');
-set(handles.frameIndexStepLabel,'Visible','off');
-set(handles.firstFrameIndexEdit,'Visible','off');
-set(handles.lastFrameIndexEdit,'Visible','off');
-set(handles.frameIndexStepEdit,'Visible','off');
+set(handles.selectImagesButton,'Visible','On');
+set(handles.saveSelectedImagesButton,'Visible','On');
+set(handles.firstFrameIndexLabel,'Visible','Off');
+set(handles.lastFrameIndexLabel,'Visible','Off');
+set(handles.frameIndexStepLabel,'Visible','Off');
+set(handles.firstFrameIndexEdit,'Visible','Off');
+set(handles.lastFrameIndexEdit,'Visible','Off');
+set(handles.frameIndexStepEdit,'Visible','Off');
 set(handles.keepAllFramesRadioButton,'Value',1);
 set(handles.selectFramesIndicesRadioButton,'Value',0);
-set(handles.channelPrefixEdit,'Visible','off');
+set(handles.channelPrefixEdit,'Visible','Off');
 
 guidata(hObject, handles);
 
@@ -470,17 +430,17 @@ function selectFramesIndicesRadioButton_Callback(hObject, eventdata, handles)%#o
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of selectFramesIndicesRadioButton
-set(handles.selectImagesButton,'Visible','on');
-set(handles.saveSelectedImagesButton,'Visible','on');
-set(handles.firstFrameIndexLabel, 'Visible', 'on');
-set(handles.lastFrameIndexLabel, 'Visible', 'on');
-set(handles.frameIndexStepLabel, 'Visible', 'on');
-set(handles.firstFrameIndexEdit, 'Visible', 'on');
-set(handles.lastFrameIndexEdit, 'Visible', 'on');
-set(handles.frameIndexStepEdit, 'Visible', 'on');
+set(handles.selectImagesButton,'Visible','On');
+set(handles.saveSelectedImagesButton,'Visible','On');
+set(handles.firstFrameIndexLabel, 'Visible', 'On');
+set(handles.lastFrameIndexLabel, 'Visible', 'On');
+set(handles.frameIndexStepLabel, 'Visible', 'On');
+set(handles.firstFrameIndexEdit, 'Visible', 'On');
+set(handles.lastFrameIndexEdit, 'Visible', 'On');
+set(handles.frameIndexStepEdit, 'Visible', 'On');
 set(handles.keepAllFramesRadioButton,'Value', 0);
 set(handles.selectFramesIndicesRadioButton, 'Value', 1);
-set(handles.channelPrefixEdit, 'Visible', 'off');
+set(handles.channelPrefixEdit, 'Visible', 'Off');
 
 guidata(hObject, handles);
 
@@ -513,7 +473,7 @@ function saveSelectedImagesButton_Callback(hObject, eventdata, handles)%#ok % To
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-set(handles.saveSelectedImagesButton, 'Enable', 'off');
+set(handles.saveSelectedImagesButton, 'Enable', 'Off');
 set(handles.saveSelectedImagesButton, 'String', 'Wait please...');
 pause(0.01);
 
@@ -528,7 +488,7 @@ nb = nbInit;
 
 % check if dialog was canceled
 if pathName == 0;
-    set(handles.saveSelectedImagesButton, 'Enable', 'on');
+    set(handles.saveSelectedImagesButton, 'Enable', 'On');
     set(handles.saveSelectedImagesButton, 'String', 'Save new pictures');
     return;
 end
@@ -617,16 +577,16 @@ function editImagesButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-app = getappdata(0, 'NomRep');
-fileList = app.imageNameList;
-if isempty(fileList)
-    delete(gcf);
-    StartRGB();
-else
-    folderName = getappdata(0, 'RepertoireImage');
-    delete(gcf);
-    StartRGB(fileList, folderName);
-end
+% app = getappdata(0, 'app');
+% fileList = app.imageNameList;
+% if isempty(fileList)
+%     delete(gcf);
+%     StartRGB();
+% else
+%     folderName = getappdata(0, 'RepertoireImage');
+%     delete(gcf);
+%     StartRGB(fileList, folderName);
+% end
 
 
 %% Validate images and continue
@@ -653,7 +613,7 @@ end
 
 if get(handles.keepAllFramesRadioButton, 'Value') == 1 
    % For all pictures
-    set(handles.selectImagesButton, 'Enable', 'off')
+    set(handles.selectImagesButton, 'Enable', 'Off')
     set(handles.selectImagesButton, 'String', 'Wait please...')
     pause(0.01);
     
@@ -689,7 +649,7 @@ else
     stepPicture = get(handles.frameIndexStepEdit, 'String');
     
     % set some widget to waiting state
-    set(handles.selectImagesButton, 'Enable', 'off')
+    set(handles.selectImagesButton, 'Enable', 'Off')
     set(handles.selectImagesButton, 'String', 'Wait please...')
     pause(0.01);
     
