@@ -65,7 +65,7 @@ classdef HypoGrowthAppData < handle
         skeletonList = {};
         
         % list of skeletons after rescaling, and translation wrt first
-        % point of skeleton (olf SK).
+        % point of skeleton (old 'SK').
         scaledSkeletonList = {};
         
         % list of radius values (old 'rad')
@@ -85,14 +85,20 @@ classdef HypoGrowthAppData < handle
         % length of displacement (in pixels)
         displacementStep = 2;
         
+        % the number of points used to discretize signal on each skeleton
         finalResultLength = 500;
         
+        % the curvilinear abscissa of each skeleton, in a cell array
         abscissaList;
         
+        % the angle with the vertical of each point of each skeleton, in a
+        % cell array 
         verticalAngleList;
         
+        % the curvature of each point of each skeleton, in a cell array 
         curvatureList;
         
+        % the displacement of a point to the next similar point
         displacementList;
         
         smoothedDisplacementList;
@@ -101,10 +107,13 @@ classdef HypoGrowthAppData < handle
         
         elongationImage;
         
+        % reconstructed image of curvature in absissa and time
         curvatureImage;
         
+        % reconstructed image of angle with vertical in absissa and time
         verticalAngleImage;
         
+        % reconstructed image of skeleton radius in absissa and time
         radiusImage;
     end
     
@@ -131,15 +140,22 @@ classdef HypoGrowthAppData < handle
             % load all images based on settings
             % refresh imageList and imageNameList
             
+            % read all files in specified directory
             fileList = dir(fullfile(this.inputImagesDir, this.inputImagesFilePattern));
-            fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
             
+            % ensure no directory is load (can happen under linux)
+            fileList = fileList(~[fileList.isdir]);
+
+            % select images corresponding to indices selection
+            fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
             fileList = fileList(fileIndices);
             nImages = length(fileList);
             
+            % allocate memory
             this.imageList = cell(nImages, 1);
             this.imageNameList = cell(nImages, 1);
             
+            % read each image
             for i = 1:nImages
                 fileName = fileList(i).name;
                 this.imageNameList{i} = fileName;

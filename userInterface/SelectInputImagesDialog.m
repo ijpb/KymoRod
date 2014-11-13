@@ -201,6 +201,10 @@ set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', frameNumber);
 set(handles.selectFramesIndicesRadioButton, 'String', string);
 
+set(handles.firstFrameIndexEdit, 'String', '1');
+set(handles.lastFrameIndexEdit, 'String', num2str(frameNumber));
+set(handles.frameIndexStepEdit, 'String', '1');
+
 set(handles.selectImagesButton, 'Visible', 'On');
 
 % save user data for future use
@@ -523,7 +527,7 @@ frameNumber = length(indices);
 % extract index of first frame to display
 frameIndex = min(app.currentFrameIndex, length(indices));
 
-% read sample images
+% read sample image
 fileIndex = indices(frameIndex);
 img = imread(fullfile(folderName, imageNames{fileIndex}));
 
@@ -542,13 +546,61 @@ function selectImagesButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+readAllImages();
 
 % extract global data
 app = getappdata(0, 'app');
 
-% read images
-app.readAllImages();
+% % read images
+% app.readAllImages();
 
 delete(gcf);
 
 ValidateThres(app);
+
+
+function readAllImages(handles)
+% load all images based on settings
+% refresh imageList and imageNameList
+
+% extract global data
+app = getappdata(0, 'app');
+
+% read all files in specified directory
+inputDir = app.inputImagesDir;
+fileList = dir(fullfile(inputDir, app.inputImagesFilePattern));
+
+% ensure no directory is load (can happen under linux)
+fileList = fileList(~[fileList.isdir]);
+
+% select images corresponding to indices selection
+fileIndices = app.firstIndex:app.indexStep:app.lastIndex;
+fileList = fileList(fileIndices);
+nFrames = length(fileList);
+
+% allocate memory for local variables
+imageList = cell(nFrames, 1);
+imageNameList = cell(nFrames, 1);
+
+disp('Read input images...');
+parfor_progress(nFrames);
+
+% read each image
+parfor i = 1:nFrames
+    fileName = fileList(i).name;
+    imageNameList{i} = fileName;
+    img = imread(fullfile(inputDir, fileName));
+
+    % keep only the red channel of color images
+    if ndims(img) > 2 %#ok<ISMAT>
+        img = img(:,:,1);
+    end
+    imageList{i} = img;
+    
+    parfor_progress;
+end
+
+parfor_progress(0);
+
+app.imageList = imageList;
+app.imageNameList = imageNameList;
