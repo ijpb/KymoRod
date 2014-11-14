@@ -234,6 +234,7 @@ function filePatternEdit_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of filePatternEdit as text
 %        str2double(get(hObject,'String')) returns contents of filePatternEdit as a double
 
+dis
 
 % --- Executes during object creation, after setting all properties.
 function filePatternEdit_CreateFcn(hObject, eventdata, handles)

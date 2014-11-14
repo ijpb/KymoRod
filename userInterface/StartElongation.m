@@ -496,11 +496,8 @@ pause(0.01);
 
 % get global data
 app = getappdata(0, 'app');
-red     = app.imageList;
 SK      = app.scaledSkeletonList;
 R       = app.radiusList;
-shift   = app.originPosition;
-scale   = 1000 ./ app.pixelSize;
 t0      = app.timeInterval;
 
 tic;
@@ -564,9 +561,7 @@ Sa = aligncurv(S, R);
 
 % Displacement
 disp('Displacement');
-% variable not used
-we = 1; 
-E = displall(SK, Sa, red, scale, shift, ws, we, step);
+E = computeDisplacementPxAll(app.skeletonList, Sa, app.imageList, ws, step);
 
 % Elongation
 disp('Elongation');

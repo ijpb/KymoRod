@@ -30,7 +30,8 @@ Elg = zeros(size(dep));
 dt = t0 * step * 60;
 
 % compute elongation as the derivative of displacement
-for i = ws+1:size(dep,1)-ws
+% for i = ws+1:size(dep,1)-ws
+for i = 1+ws:size(dep,1)-ws
     Elg(i,2) = (dep(i+ws,2) - dep(i-ws,2)) / (dep(i+ws,1) - dep(i-ws,1)) / dt;
 end
 
