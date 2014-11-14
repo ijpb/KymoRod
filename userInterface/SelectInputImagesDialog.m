@@ -344,6 +344,9 @@ function firstFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 string = strtrim(get(hObject, 'String'));
 val = parseValue(string);
 
+% ensure value has valid bounds
+val = max(val, 1);
+
 app = getappdata(0, 'app');
 app.firstIndex = val;
 
@@ -375,6 +378,10 @@ function lastFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 string = strtrim(get(hObject, 'String'));
 val = parseValue(string);
+
+app = getappdata(0, 'app');
+nFiles = length(app.imageNameList);
+val = min(val, nFiles);
 
 app = getappdata(0, 'app');
 app.lastIndex = val;
@@ -503,13 +510,15 @@ frameIndex = min(app.currentFrameIndex, frameNumber);
 set(handles.framePreviewSlider, 'Visible', 'Off');
 set(handles.framePreviewSlider, 'Value', frameIndex);
 set(handles.framePreviewSlider, 'Min', 1);
-set(handles.framePreviewSlider, 'Max', frameNumber);
+set(handles.framePreviewSlider, 'Max', max(frameNumber, 1));
 % setup slider such that 1 image is changed at a time
-step1 = 1 / frameNumber;
+step1 = 1 / max(frameNumber, 1);
 step2 = min(10 / frameNumber, .5);
 set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
-set(handles.framePreviewSlider, 'Visible', 'On');
 
+if frameNumber > 1
+    set(handles.framePreviewSlider, 'Visible', 'On');
+end
 
 function updateFramePreview(handles)
 % Determine the current frame from widgets, and display it
@@ -529,7 +538,11 @@ frameNumber = length(indices);
 frameIndex = min(app.currentFrameIndex, length(indices));
 
 % read sample image
-fileIndex = indices(frameIndex);
+if frameIndex > 0
+    fileIndex = indices(frameIndex);
+else
+    fileIndex = 1;
+end
 img = imread(fullfile(folderName, imageNames{fileIndex}));
 
 % display first frame
@@ -552,9 +565,8 @@ readAllImages();
 % extract global data
 app = getappdata(0, 'app');
 
-% % read images
-% app.readAllImages();
-
+nFrames = length(app.firstIndex:app.indexStep:app.lastIndex);
+app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
 ValidateThres(app);
