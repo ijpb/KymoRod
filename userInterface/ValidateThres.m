@@ -604,7 +604,8 @@ contours = cell(nImages, 1);
 % compute contours from gray scale images
 parfor_progress(nImages);
 for i = 1:nImages
-    contours{i} = cont(images{i}, thres(i));
+%     contours{i} = cont(images{i}, thres(i));
+    contours{i} = segmentContour(images{i}, thres(i));
     parfor_progress;
 end
 
