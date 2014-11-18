@@ -340,18 +340,24 @@ for i = 1:nImages
 %     [SKVerif{i}, rad{i}] = skeletonLargestPath(SQ, order, R);
     
     % Compute skeleton, without changing origin and y direction
-    [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
+%     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
+    contour2 = filterContour(contour, 200, dir);
+    [SKVerif{i}, rad{i}] = contourSkeleton(contour2, dirbegin);
     CTVerif{i} = contour;
 
     % apply translation and symmetry separately
+    
     % coordinates at bottom left
-    shift{i} = SKVerif{i}(1,:);
+    origin = SKVerif{i}(1,:);
+    shift{i} = origin;
+    
     % For new contour, align at bottom left
-    CT{i}(:,1) = contour(:,1) - SKVerif{i}(1,1);
-    CT{i}(:,2) = -(contour(:,2) - SKVerif{i}(1,2));
+    CT{i}(:,1) = contour(:,1) - origin(1);
+    CT{i}(:,2) = -(contour(:,2) - origin(2));
+    
     % for new Skeleton, align at bottom left, and reverse y axis
-    SK{i}(:,1) = SKVerif{i}(:,1) - SKVerif{i}(1,1);
-    SK{i}(:,2) = -(SKVerif{i}(:,2) - SKVerif{i}(1,2));
+    SK{i}(:,1) = SKVerif{i}(:,1) - origin(1);
+    SK{i}(:,2) = -(SKVerif{i}(:,2) - origin(2));
 
     % keep skeleton in pixel units
     SKVerif{i} = SKVerif{i} * 1000 / app.pixelSize;
