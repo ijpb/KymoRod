@@ -132,8 +132,11 @@ j = R_ma_ind;
 jp = j;
 
 % Hierarchisation of the voronoi diagram
-[SK2, R2, ordre] = branche(V, degrees, neighbors, dist, jp, j, 0, 0);
+[SK, R, order] = skeletonBranches(V, degrees, neighbors, dist, jp, j, 0, 0);
+
+% % Hierarchisation of the voronoi diagram
+% [SK2, R2, ordre] = branche(V, degrees, neighbors, dist, jp, j, 0, 0);
 
 % the skeleton SK is the largest branch of the diagram
-[SK, R] = bigbranche(SK2, ordre, R2);
-
+% [SK, R] = bigbranche(SK2, order, R2);
+[SK, R] = skeletonLargestPath(SK, order, R);
