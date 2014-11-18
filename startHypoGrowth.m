@@ -1,9 +1,7 @@
 function startHypoGrowth(varargin)
-%STARTHYPOGROWTH  One-line description here, please.
+%STARTHYPOGROWTH  Run the 'hypogrowth' GUI
 %
-%   output = startHypoGrowth(input)
-%
-%   Example
+%   Usage:
 %   startHypoGrowth
 %
 %   See also
@@ -14,9 +12,6 @@ function startHypoGrowth(varargin)
 % e-mail: david.legland@grignon.inra.fr
 % Created: 2014-10-13,    using Matlab 8.3.0.532 (R2014a)
 % Copyright 2014 INRA - Cepia Software Platform.
-
-% first add necessary libraries
-setupHypoGrowth;
 
 % create application data structure
 app = HypoGrowthAppData;
