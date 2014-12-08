@@ -3,15 +3,14 @@ function CT = segmentContour(img, thres)
 %
 % CT = segmentContour(IMG, THRESH)
 % (rewritten from function 'cont')
+% Computes the isovalue contour lines in gray level image IMG, and keep the
+% largest one. Return the resulting contour in a N-by-2 array containing
+% vertex coordinates. 
 %
+% Input arguments
 % IMG: 		a grey level image
 % THRESH: 	the treshold value
 %
-% Return the contour CT of the largest connected component, given by a
-% N-by-2 array containing vertex coordinates.
-%
-% The contours touching the border of the image are not returned.
-% 
 
 % ------
 % Author: Renaud Bastien
@@ -20,105 +19,45 @@ function CT = segmentContour(img, thres)
 % Copyright 2012 INRA - Cepia Software Platform.
 
 %   HISTORY
-%   2014-04-16 : Add comments about the file
+%   2014-04-16 Add comments about the file
+%   2014-12-08 rewrite using less memory and avoiding code duplication
 
-% extract image size
-[s1, s2] = size(img);
+% Compute all contours at isovalue given by threshold
+C = contour(img, [thres, thres]);
 
-% ????
-Sm = max(size(img));
-if thres < Sm
-	img = double(img) + Sm;
-	thres = thres + Sm;
+% size of the contour matrix array
+nCoords = size(C, 2);
+
+% Compute the number of contours, by jumping from 'contour header' to
+% 'contour header', and compute their size (as number of vertices).
+nContours = 0;
+offset = 1;
+while offset < nCoords
+    nContours = nContours + 1;
+    offset = offset + C(2, offset) + 1;
 end
 
-% All the contours C are computed
-C = contour(img, [thres thres]);
-
-
-% find indices of contour data
-u = find(C(1,:) == thres);
-
-% initialize vertex indices in coordinate array
-Cmin = 0; 
-Cmax = 0;
-
-% initialize length of largest contour
-lmax = 0;
-    
-% iterate over the contour set to compute number of vertices of each contour
-for j = 2:length(u)
-	lt = u(j) - u(j-1);
-	if lt > lmax
-        Cmin = u(j-1);
-        Cmax = u(j);
-        lmax = lt;
-	end
+% compute the length and the offset of each individual contour
+contourLength = zeros(nContours, 1);
+contourOffset = zeros(nContours, 1);
+offset = 1;
+for iContour = 1:nContours
+    nv = C(2, offset);
+    contourLength(iContour) = nv;
+    contourOffset(iContour) = offset;
+    offset = offset + nv + 1;
 end
 
-% length of the last contour
-if length(u) > 1
-	lt = length(C)-u(j);
-else
-	lt = length(C)-u(1);
-	j = 1;
-end
+% identify largest contour
+[lengthMax, indMax] = max(contourLength);
 
-% check if the last contour is the largest
-if lt > lmax
-    Cmin = u(j);
-	Cmax = length(C);
-	lmax = lt;
-end
+% allocate memory for contour
+CT = zeros(lengthMax, 2);
 
-% initial contour, as a N-by-2 array of vertex coordinates
-nu = [C(1,Cmin+1:Cmax-1) ; C(2,Cmin+1:Cmax-1)];
+% extract coordinates of largest contour
+offset = contourOffset(indMax);
+CT(:,1) = C(1, (1:lengthMax) + offset);
+CT(:,2) = C(2, (1:lengthMax) + offset);
 
 % remove double vertices in contour
-CT = removeDoubleVertices(nu');
- 
-% TODO: remove duplicate code!
-
-% If the contour to compute is over the lower and upper border of the image
-if min(CT(:,2)) < 2 && max(CT(:,2)) > s1-2
-	L = (1:s2).*0;
-	img = [L;img;L];
-	Sm = max(size(img));
-	if thres < Sm
-        img = double(img) + Sm;
-        thres = thres + Sm;
-	end
-    % All the contours C are computed
-	C = contour(img, [thres thres]);
-	u = find(C(1,:) == thres);
-    
-	% Keep the largest contour
-	Cmin = 0;Cmax = 0;lmax = 0;
-	for j = 2:length(u)
-        lt = u(j) - u(j-1);
-		
-        if lt > lmax
-            Cmin = u(j-1);
-            Cmax = u(j);
-            lmax = lt;
-        end
-	end
-	
-    if length(u) > 1
-        lt = length(C) - u(j);
-    else
-        lt = length(C) - u(1);
-        j = 1;
-    end
-	
-    if lt > lmax
-        Cmin = u(j);
-        Cmax = length(C);
-        lmax = lt;
-    end
-    nu = [C(1,Cmin+1:Cmax-1);C(2,Cmin+1:Cmax-1)];
-	
-    % The double points of the contour are cleaned
-    CT = removeDoubleVertices(nu');
-    CT(:,2) = CT(:,2)-1;
-end
+CT = removeDoubleVertices(CT);
