@@ -22,7 +22,7 @@ function varargout = SelectInputImagesDialog(varargin)
 
 % Edit the above text to modify the response to help SelectInputImagesDialog
 
-% Last Modified by GUIDE v2.5 12-Nov-2014 14:37:52
+% Last Modified by GUIDE v2.5 10-Dec-2014 16:58:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,52 +52,51 @@ function SelectInputImagesDialog_OpeningFcn(hObject, eventdata, handles, varargi
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to SelectInputImagesDialog (see VARARGIN)
 
+% check input validity
+if nargin ~= 4 || ~isa(varargin{1}, 'HypoGrowthAppData')
+    error('Requires an HypoGrowthAppData object as input argument');
+end
+
+% some gui listener adjustments
 set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
-    disp('init from HypoGrowthAppData');
-    
-    app = varargin{1};
-    app.currentStep = 'selection';
-    setappdata(0, 'app', app);
-    
-elseif nargin == 6 
-    % TODO: adapt code below to the case app already contains images or settings
-    col = varargin{1};
-    set(handles.currentFrameLabel, 'Visible', 'On');
-    set(handles.axis2Label, 'Visible', 'On');
-    set(handles.currentFrameAxes, 'Visible', 'On');
-    set(handles.axes2, 'Visible', 'On');
-    set(handles.keepAllFramesRadioButton, 'Visible', 'On');
-    set(handles.selectFramesIndicesRadioButton, 'Visible', 'On');
-    
-    nImages = length(col);
-    
-    set(handles.framePreviewSlider, 'Value', 1);
-    set(handles.framePreviewSlider, 'Min', 1);
-    set(handles.framePreviewSlider, 'Max', nImages - 1);
-    set(handles.framePreviewSlider, 'Visible', 'On');
-    
-    % setup slider such that 1 image is changed at a time
-    step1 = 1 / (nImages - 1);
-    step2 = min(10 / (nImages - 1), .5);
-    set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
-    
-    set(handles.framePreviewLabel, 'Visible', 'On');
 
-    updateFramePreview(handles);
+app = varargin{1};
 
-    string = sprintf('Select a range among the %d frames', nb);
-    set(handles.selectFramesIndicesRadioButton, 'String', string);
-    
-    set(handles.selectImagesButton, 'Visible', 'On');
+switch app.currentStep
+    case 'none'
+        % initialisation for new application
+        app.pixelSize = 3.9526;
+        app.pixelSizeUnit = 'µm';
+
+    otherwise
+        % some data are already initialized
+        
+        % need to refresh image list from file information
+        folderName  = app.inputImagesDir;
+        filePattern = app.inputImagesFilePattern;
+        fileList = dir(fullfile(folderName, filePattern));
+        
+        % read the list of image names
+        nFrames = length(fileList);
+        imageNameList = cell(nFrames, 1);
+        parfor i = 1:nFrames
+            fileName = fileList(i).name;
+            imageNameList{i} = fileName;
+        end
+        app.imageNameList = imageNameList;
+        
+        % update visibility and content of widgets
+        makeAllWidgetsVisible(handles);
+        updateFrameSliderBounds(handles);
+        updateFramePreview(handles);
+
 end
 
-
-app.pixelSize = 3.9526;
-app.pixelSizeUnit = 'µm';
+app.currentStep = 'selection';
 setappdata(0, 'app', app);
+
 
 % Choose default command line output for SelectInputImagesDialog
 handles.output = hObject;
@@ -144,7 +143,7 @@ app = getappdata(0, 'app');
 folderName = app.inputImagesDir;
 % folderName = uigetdir(folderName);
 [fileName, folderName] = uigetfile(...
-    {'*.jpg;*.tif;*.png;*.gif', 'All Image Files';...
+    {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
     '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
     '*.jpg;', 'JPEG images (*.jpg)';...
     '*.*','All Files' }, ...
@@ -189,25 +188,7 @@ for i = 1:frameNumber
     imageNames{i} = fileList(i).name;
 end
 
-set(handles.inputImagesPanel, 'Visible', 'On');
-set(handles.calibrationPanel, 'Visible', 'On');
-set(handles.frameSelectionPanel, 'Visible', 'On');
-
-set(handles.currentFrameLabel, 'Visible', 'On');
-set(handles.currentFrameAxes, 'Visible', 'On');
-
-string = sprintf('Keep All Frames (%d)', frameNumber);
-set(handles.keepAllFramesRadioButton, 'String', string);
-string = sprintf('Select a range among the %d frames', frameNumber);
-set(handles.selectFramesIndicesRadioButton, 'String', string);
-
-set(handles.firstFrameIndexEdit, 'String', '1');
-set(handles.lastFrameIndexEdit, 'String', num2str(frameNumber));
-set(handles.frameIndexStepEdit, 'String', '1');
-
-set(handles.selectImagesButton, 'Visible', 'On');
-
-% save user data for future use
+% init image selection indices
 app.inputImagesDir = folderName;
 app.inputImagesFilePattern = filePattern;
 app.imageNameList = imageNames;
@@ -215,10 +196,44 @@ app.firstIndex = 1;
 app.lastIndex = frameNumber;
 app.indexStep = 1;
 
+makeAllWidgetsVisible(handles);
+
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);
 
 guidata(hObject, handles);
+
+
+function makeAllWidgetsVisible(handles)
+
+set(handles.inputImagesPanel, 'Visible', 'On');
+set(handles.calibrationPanel, 'Visible', 'On');
+set(handles.frameSelectionPanel, 'Visible', 'On');
+
+set(handles.currentFrameLabel, 'Visible', 'On');
+set(handles.currentFrameAxes, 'Visible', 'On');
+
+app = getappdata(0, 'app');
+frameNumber = length(app.imageNameList);
+if app.firstIndex == 1 && app.lastIndex == frameNumber && app.indexStep == 1
+    set(handles.keepAllFramesRadioButton, 'Value', 1);
+    set(handles.selectFrameIndicesRadioButton, 'Value', 0);
+else
+    set(handles.keepAllFramesRadioButton, 'Value', 0);
+    set(handles.selectFrameIndicesRadioButton, 'Value', 1);
+end
+
+string = sprintf('Keep All Frames (%d)', frameNumber);
+set(handles.keepAllFramesRadioButton, 'String', string);
+string = sprintf('Select a range among the %d frames', frameNumber);
+set(handles.selectFrameIndicesRadioButton, 'String', string);
+
+set(handles.firstFrameIndexEdit, 'String', num2str(app.firstIndex));
+set(handles.lastFrameIndexEdit, 'String', num2str(app.lastIndex));
+set(handles.frameIndexStepEdit, 'String', num2str(app.indexStep));
+
+set(handles.selectImagesButton, 'Visible', 'On');
+
 
 
 % --- Executes on button change in channelSelectionPanel
@@ -234,7 +249,6 @@ function filePatternEdit_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of filePatternEdit as text
 %        str2double(get(hObject,'String')) returns contents of filePatternEdit as a double
 
-dis
 
 % --- Executes during object creation, after setting all properties.
 function filePatternEdit_CreateFcn(hObject, eventdata, handles)
@@ -305,32 +319,51 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on slider movement.
-function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to framePreviewSlider (see GCBO)
+% --- Executes on button press in keepAllFramesRadioButton.
+function keepAllFramesRadioButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to keepAllFramesRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+% Hint: get(hObject,'Value') returns toggle state of keepAllFramesRadioButton
+set(handles.selectImagesButton, 'Visible', 'On');
 
-app = getappdata(0, 'app');
-frameIndex = round(get(handles.framePreviewSlider, 'Value'));
-app.currentFrameIndex = frameIndex;
+% make file selection widgets invisible
+set(handles.firstFrameIndexLabel, 'Visible', 'Off');
+set(handles.lastFrameIndexLabel, 'Visible', 'Off');
+set(handles.frameIndexStepLabel, 'Visible', 'Off');
+set(handles.firstFrameIndexEdit, 'Visible', 'Off');
+set(handles.lastFrameIndexEdit, 'Visible', 'Off');
+set(handles.frameIndexStepEdit, 'Visible', 'Off');
 
-updateFramePreview(handles);
+% select appropriate radio button
+set(handles.keepAllFramesRadioButton, 'Value', 1);
+set(handles.selectFrameIndicesRadioButton, 'Value', 0);
 
+guidata(hObject, handles);
 
-% --- Executes during object creation, after setting all properties.
-function framePreviewSlider_CreateFcn(hObject, eventdata, handles) %#ok<*INUSD,*DEFNU>
-% hObject    handle to framePreviewSlider (see GCBO)
+% --- Executes on button press in selectFrameIndicesRadioButton.
+function selectFrameIndicesRadioButton_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to selectFrameIndicesRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+% handles    structure with handles and user data (see GUIDATA)
 
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
+% Hint: get(hObject,'Value') returns toggle state of selectFrameIndicesRadioButton
+set(handles.selectImagesButton, 'Visible', 'On');
+
+% make file selection widgets visible
+set(handles.firstFrameIndexLabel, 'Visible', 'On');
+set(handles.lastFrameIndexLabel, 'Visible', 'On');
+set(handles.frameIndexStepLabel, 'Visible', 'On');
+set(handles.firstFrameIndexEdit, 'Visible', 'On');
+set(handles.lastFrameIndexEdit, 'Visible', 'On');
+set(handles.frameIndexStepEdit, 'Visible', 'On');
+
+% select appropriate radio button
+set(handles.keepAllFramesRadioButton,'Value', 0);
+set(handles.selectFrameIndicesRadioButton, 'Value', 1);
+
+guidata(hObject, handles);
 
 
 function firstFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
@@ -434,7 +467,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 function val = parseValue(string)
 
 if isempty(string)
@@ -449,52 +481,71 @@ if isnan(val)
 end
 
 
-% --- Executes on button press in keepAllFramesRadioButton.
-function keepAllFramesRadioButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
-% hObject    handle to keepAllFramesRadioButton (see GCBO)
+
+function updateFramePreview(handles)
+% Determine the current frame from widgets, and display it
+
+% extract app data
+app = getappdata(0, 'app');
+
+% extract global data
+folderName  = app.inputImagesDir;
+fileList = dir(fullfile(folderName, app.inputImagesFilePattern));
+
+% ensure no directory is load (can happen under linux)
+fileList = fileList(~[fileList.isdir]);
+
+% determine indices of files to read
+indices = app.firstIndex:app.indexStep:app.lastIndex;
+frameNumber = length(indices);
+
+% extract index of first frame to display
+frameIndex = min(app.currentFrameIndex, length(indices));
+
+% read sample image
+if frameIndex > 0
+    fileIndex = indices(frameIndex);
+else
+    fileIndex = 1;
+end
+% img = imread(fullfile(folderName, imageNames{fileIndex}));
+
+currentImageName = fileList(fileIndex).name;
+img = imread(fullfile(folderName, currentImageName));
+
+% display first frame
+axes(handles.currentFrameAxes);
+imshow(img);
+string = sprintf('frame %d / %d (%s)', frameIndex, frameNumber, currentImageName);
+set(handles.currentFrameLabel, 'String', string);
+
+
+% --- Executes on slider movement.
+function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
+% hObject    handle to framePreviewSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of keepAllFramesRadioButton
-set(handles.selectImagesButton, 'Visible', 'On');
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
-% make file selection widgets invisible
-set(handles.firstFrameIndexLabel, 'Visible', 'Off');
-set(handles.lastFrameIndexLabel, 'Visible', 'Off');
-set(handles.frameIndexStepLabel, 'Visible', 'Off');
-set(handles.firstFrameIndexEdit, 'Visible', 'Off');
-set(handles.lastFrameIndexEdit, 'Visible', 'Off');
-set(handles.frameIndexStepEdit, 'Visible', 'Off');
+app = getappdata(0, 'app');
+frameIndex = round(get(handles.framePreviewSlider, 'Value'));
+app.currentFrameIndex = frameIndex;
 
-% select appropriate radio button
-set(handles.keepAllFramesRadioButton, 'Value', 1);
-set(handles.selectFramesIndicesRadioButton, 'Value', 0);
+updateFramePreview(handles);
 
-guidata(hObject, handles);
 
-% --- Executes on button press in selectFramesIndicesRadioButton.
-function selectFramesIndicesRadioButton_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to selectFramesIndicesRadioButton (see GCBO)
+% --- Executes during object creation, after setting all properties.
+function framePreviewSlider_CreateFcn(hObject, eventdata, handles) %#ok<*INUSD,*DEFNU>
+% hObject    handle to framePreviewSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% handles    empty - handles not created until after all CreateFcns called
 
-% Hint: get(hObject,'Value') returns toggle state of selectFramesIndicesRadioButton
-set(handles.selectImagesButton, 'Visible', 'On');
-
-% make file selection widgets visible
-set(handles.firstFrameIndexLabel, 'Visible', 'On');
-set(handles.lastFrameIndexLabel, 'Visible', 'On');
-set(handles.frameIndexStepLabel, 'Visible', 'On');
-set(handles.firstFrameIndexEdit, 'Visible', 'On');
-set(handles.lastFrameIndexEdit, 'Visible', 'On');
-set(handles.frameIndexStepEdit, 'Visible', 'On');
-
-% select appropriate radio button
-set(handles.keepAllFramesRadioButton,'Value', 0);
-set(handles.selectFramesIndicesRadioButton, 'Value', 1);
-
-guidata(hObject, handles);
-
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
 
 function updateFrameSliderBounds(handles)
 
@@ -519,38 +570,6 @@ set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
 if frameNumber > 1
     set(handles.framePreviewSlider, 'Visible', 'On');
 end
-
-function updateFramePreview(handles)
-% Determine the current frame from widgets, and display it
-
-% extract app data
-app = getappdata(0, 'app');
-
-% extract global data
-folderName  = app.inputImagesDir;
-imageNames  = app.imageNameList;
-
-% determine indices of files to read
-indices = app.firstIndex:app.indexStep:app.lastIndex;
-frameNumber = length(indices);
-
-% extract index of first frame to display
-frameIndex = min(app.currentFrameIndex, length(indices));
-
-% read sample image
-if frameIndex > 0
-    fileIndex = indices(frameIndex);
-else
-    fileIndex = 1;
-end
-img = imread(fullfile(folderName, imageNames{fileIndex}));
-
-% display first frame
-axes(handles.currentFrameAxes);
-imshow(img);
-string = sprintf('frame %d / %d (%s)', frameIndex, frameNumber, imageNames{fileIndex});
-set(handles.currentFrameLabel, 'String', string);
-
 
 %% Validate images and continue
 
