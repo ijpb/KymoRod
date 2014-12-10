@@ -22,7 +22,7 @@ function varargout = SelectInputImagesDialog(varargin)
 
 % Edit the above text to modify the response to help SelectInputImagesDialog
 
-% Last Modified by GUIDE v2.5 10-Dec-2014 16:58:57
+% Last Modified by GUIDE v2.5 10-Dec-2014 18:19:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -76,16 +76,7 @@ switch app.currentStep
         % need to refresh image list from file information
         folderName  = app.inputImagesDir;
         filePattern = app.inputImagesFilePattern;
-        fileList = dir(fullfile(folderName, filePattern));
-        
-        % read the list of image names
-        nFrames = length(fileList);
-        imageNameList = cell(nFrames, 1);
-        parfor i = 1:nFrames
-            fileName = fileList(i).name;
-            imageNameList{i} = fileName;
-        end
-        app.imageNameList = imageNameList;
+        app.imageNameList = readImageNameList(folderName, filePattern);
         
         % update visibility and content of widgets
         makeAllWidgetsVisible(handles);
@@ -140,8 +131,8 @@ function chooseInputImagesButton_Callback(hObject, eventdata, handles)%#ok
 % extract app data
 app = getappdata(0, 'app');
 
+% open a dialog to select input image folder, restricting type to images
 folderName = app.inputImagesDir;
-% folderName = uigetdir(folderName);
 [fileName, folderName] = uigetfile(...
     {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
     '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
@@ -155,43 +146,26 @@ if fileName == 0;
     return;
 end
 
-set(handles.directoryNameEdit, 'String', folderName);
+% update inner variables and GUI
+set(handles.inputImageFolderEdit, 'String', folderName);
 app.inputImagesDir = folderName;
 
-filePattern = '*.*';
-if get(handles.selectChannelRadioButton, 'Value') == 1;
-    % keep only images starting with a given letter
-    str = get(handles.filePatternEdit, 'String');
-    if isempty(str)
-        warning('Text area is empty');
-        return;
-    end
-   
-    filePattern = strcat(str, '*.*');
-end
+% read the list of image names
+filePattern = app.inputImagesFilePattern;
+imageNames = readImageNameList(folderName, filePattern);
 
-% list files in chosen directory
-fileList = dir(fullfile(folderName, filePattern));
-fileList = fileList(~[fileList.isdir]);
-
-if isempty(fileList)
+if isempty(imageNames)
     errordlg({'The chosen directory contains no file.', ...
         'Please choose another one'}, ...
         'Empty Directory Error', 'modal')
     return;
 end
 
-frameNumber = length(fileList);
-
-imageNames = cell(frameNumber, 1);
-for i = 1:frameNumber
-    imageNames{i} = fileList(i).name;
-end
+app.imageNameList = imageNames;
+frameNumber = length(imageNames);
 
 % init image selection indices
-app.inputImagesDir = folderName;
 app.inputImagesFilePattern = filePattern;
-app.imageNameList = imageNames;
 app.firstIndex = 1;
 app.lastIndex = frameNumber;
 app.indexStep = 1;
@@ -203,6 +177,23 @@ updateFramePreview(handles);
 
 guidata(hObject, handles);
 
+function imageNames = readImageNameList(folderName, filePattern)
+    
+% list files in chosen directory
+fileList = dir(fullfile(folderName, filePattern));
+fileList = fileList(~[fileList.isdir]);
+
+if isempty(fileList)
+    imageNames = {};
+    return;
+end
+
+frameNumber = length(fileList);
+imageNames = cell(frameNumber, 1);
+parfor i = 1:frameNumber
+    imageNames{i} = fileList(i).name;
+end
+
 
 function makeAllWidgetsVisible(handles)
 
@@ -210,17 +201,37 @@ set(handles.inputImagesPanel, 'Visible', 'On');
 set(handles.calibrationPanel, 'Visible', 'On');
 set(handles.frameSelectionPanel, 'Visible', 'On');
 
+app = getappdata(0, 'app');
+set(handles.inputImageFolderEdit, 'String', app.inputImagesDir);
+set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
+
 set(handles.currentFrameLabel, 'Visible', 'On');
 set(handles.currentFrameAxes, 'Visible', 'On');
 
-app = getappdata(0, 'app');
 frameNumber = length(app.imageNameList);
 if app.firstIndex == 1 && app.lastIndex == frameNumber && app.indexStep == 1
     set(handles.keepAllFramesRadioButton, 'Value', 1);
     set(handles.selectFrameIndicesRadioButton, 'Value', 0);
+    
+    % make file selection widgets visible
+    set(handles.firstFrameIndexLabel, 'Visible', 'Off');
+    set(handles.lastFrameIndexLabel, 'Visible', 'Off');
+    set(handles.frameIndexStepLabel, 'Visible', 'Off');
+    set(handles.firstFrameIndexEdit, 'Visible', 'Off');
+    set(handles.lastFrameIndexEdit, 'Visible', 'Off');
+    set(handles.frameIndexStepEdit, 'Visible', 'Off');
+
 else
     set(handles.keepAllFramesRadioButton, 'Value', 0);
     set(handles.selectFrameIndicesRadioButton, 'Value', 1);
+    
+    % make file selection widgets visible
+    set(handles.firstFrameIndexLabel, 'Visible', 'On');
+    set(handles.lastFrameIndexLabel, 'Visible', 'On');
+    set(handles.frameIndexStepLabel, 'Visible', 'On');
+    set(handles.firstFrameIndexEdit, 'Visible', 'On');
+    set(handles.lastFrameIndexEdit, 'Visible', 'On');
+    set(handles.frameIndexStepEdit, 'Visible', 'On');
 end
 
 string = sprintf('Keep All Frames (%d)', frameNumber);
@@ -508,7 +519,6 @@ if frameIndex > 0
 else
     fileIndex = 1;
 end
-% img = imread(fullfile(folderName, imageNames{fileIndex}));
 
 currentImageName = fileList(fileIndex).name;
 img = imread(fullfile(folderName, currentImageName));
