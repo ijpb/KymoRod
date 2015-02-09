@@ -287,11 +287,13 @@ switch valPopUp
 end
 
 % display current kymograph
+xdata = (1:size(img, 2)) * app.timeInterval;
+ydata = 1:size(img, 1);
 axes(handles.kymographAxes);
-hImg = imagesc(img);
+hImg = imagesc(xdata, ydata, img);
 
 % setup display
-set(gca, 'YDir', 'normal');
+set(gca, 'YDir', 'normal', 'YTick', []);
 caxis([minCaxis, maxCaxis - val]); colorbar;
 colormap jet;
 freezeColors;
@@ -299,7 +301,7 @@ freezeColors;
 set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 
 % annotate
-str = sprintf('one equals %d minutes', app.timeInterval);
+str = sprintf('Time (%s)', app.timeIntervalUnit);
 xlabel(str);
 
 
