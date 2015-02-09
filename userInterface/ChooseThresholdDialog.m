@@ -1,35 +1,35 @@
-function varargout = ValidateThres(varargin)
-% VALIDATETHRES MATLAB code for ValidateThres.fig
-%      VALIDATETHRES, by itself, creates a new VALIDATETHRES or raises the existing
+function varargout = ChooseThresholdDialog(varargin)
+% CHOOSETHRESHOLDDIALOG MATLAB code for ChooseThresholdDialog.fig
+%      CHOOSETHRESHOLDDIALOG, by itself, creates a new CHOOSETHRESHOLDDIALOG or raises the existing
 %      singleton*.
 %
-%      H = VALIDATETHRES returns the handle to a new VALIDATETHRES or the handle to
+%      H = CHOOSETHRESHOLDDIALOG returns the handle to a new CHOOSETHRESHOLDDIALOG or the handle to
 %      the existing singleton*.
 %
-%      VALIDATETHRES('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in VALIDATETHRES.M with the given input arguments.
+%      CHOOSETHRESHOLDDIALOG('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in CHOOSETHRESHOLDDIALOG.M with the given input arguments.
 %
-%      VALIDATETHRES('Property','Value',...) creates a new VALIDATETHRES or raises the
+%      CHOOSETHRESHOLDDIALOG('Property','Value',...) creates a new CHOOSETHRESHOLDDIALOG or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ValidateThres_OpeningFcn gets called.  An
+%      applied to the GUI before ChooseThresholdDialog_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ValidateThres_OpeningFcn via varargin.
+%      stop.  All inputs are passed to ChooseThresholdDialog_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ValidateThres
+% Edit the above text to modify the response to help ChooseThresholdDialog
 
-% Last Modified by GUIDE v2.5 29-Oct-2014 10:29:21
+% Last Modified by GUIDE v2.5 09-Feb-2015 17:11:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ValidateThres_OpeningFcn, ...
-                   'gui_OutputFcn',  @ValidateThres_OutputFcn, ...
+                   'gui_OpeningFcn', @ChooseThresholdDialog_OpeningFcn, ...
+                   'gui_OutputFcn',  @ChooseThresholdDialog_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,15 +44,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before ValidateThres is made visible.
-function ValidateThres_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
+% --- Executes just before ChooseThresholdDialog is made visible.
+function ChooseThresholdDialog_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ValidateThres (see VARARGIN)
+% varargin   command line arguments to ChooseThresholdDialog (see VARARGIN)
 
-% Choose default command line output for ValidateThres
+% Choose default command line output for ChooseThresholdDialog
 handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
@@ -64,7 +64,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     
 elseif nargin == 11 
     % if user come from StartSkeleton
-    warning('deprecated way of calling ValidateThresh');
+    warning('deprecated way of calling ChooseThresholdDialog');
     
     col = varargin{4};
     fin = varargin{2};
@@ -147,12 +147,12 @@ setappdata(0, 'app', app);
 
 guidata(hObject, handles);
 
-% UIWAIT makes ValidateThres wait for user response (see UIRESUME)
+% UIWAIT makes ChooseThresholdDialog wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ValidateThres_OutputFcn(hObject, eventdata, handles) %#ok
+function varargout = ChooseThresholdDialog_OutputFcn(hObject, eventdata, handles) %#ok
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB

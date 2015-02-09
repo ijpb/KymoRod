@@ -266,7 +266,7 @@ function backToTresholdButton_Callback(hObject, eventdata, handles)%#ok % To bac
 
 app = getappdata(0, 'app');
 delete(gcf);
-ValidateThres(app);
+ChooseThresholdDialog(app);
 
 
 % --- Executes on button press in validateContourButton.

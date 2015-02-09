@@ -57,7 +57,7 @@ function HypoGrowthMenu_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
-    disp('Run DisplayKymograph using HypoGrowthAppData class');
+    disp('Run HypoGrowthMenu using HypoGrowthAppData class');
     app = varargin{1};
 elseif nargin == 3
     app = HypoGrowthAppData();
@@ -240,7 +240,7 @@ elseif get(handles.imagesSelectionButton, 'Value') == 1
     
 elseif get(handles.validateThresholdButton, 'Value') == 1
     delete(gcf);
-    ValidateThres(app);
+    ChooseThresholdDialog(app);
     
 elseif get(handles.validateContourButton, 'Value') == 1
     delete(gcf);

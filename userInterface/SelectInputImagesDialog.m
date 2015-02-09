@@ -605,7 +605,7 @@ nFrames = length(app.firstIndex:app.indexStep:app.lastIndex);
 app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
-ValidateThres(app);
+ChooseThresholdDialog(app);
 
 
 function readAllImages(handles)
