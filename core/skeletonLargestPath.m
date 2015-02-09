@@ -47,12 +47,15 @@ I = find(L2 == max(L2));
 SQ2 = SQ{1};
 R2 = R{1}';
 
-% Case of two curves (can it happen ?)
+% Case of several curves with max length
 if length(I) > 1
-    for Ik = I
-        IL = length(order{Ik});
+    IL = zeros(1, length(I));
+    for k = 1:length(I)
+        IL(k) = length(order{I(k)});
     end
-    I = Ik(IL == max(IL));
+    ind = find(IL == max(IL));
+    ind = ind(1);
+    I = I(ind);
 end
 
 % concatenate the succession of vertices
