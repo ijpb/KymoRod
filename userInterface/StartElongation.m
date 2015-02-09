@@ -22,7 +22,7 @@ function varargout = StartElongation(varargin)
 
 % Edit the above text to modify the response to help StartElongation
 
-% Last Modified by GUIDE v2.5 22-Aug-2014 16:14:10
+% Last Modified by GUIDE v2.5 09-Feb-2015 16:30:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -63,59 +63,9 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
     app.currentStep = 'elongation';
     setappdata(0, 'app', app);
  
-elseif nargin == 18 
+else
     % if user come from ValidateSkeleton
-    warning('old way of calling StartElongation');
-    
-elseif nargin == 3 
-    % if user start the program. He must load the data
-    [FileName, PathName] = uigetfile('*.mat', 'Select the MATLAB code file');
-    if PathName == 0
-        warning('Select a directory please');
-        return;
-    end
-    
-    file = fullfile(PathName,FileName);
-    load(file);
-    if step == 1 
-        % For open all pictures
-        nb = fin - debut + 1; 
-        disp('Opening directory ...');
-        red = cell(nb,1);
-        parfor_progress(nb);
-        for i = debut:fin
-            try
-                red{i - debut + 1} = imread(fullfile(folder_name,N(i).name)); 
-            catch e%#ok
-                disp('Pictures''s folder not found');
-                delete(gcf);
-                return;
-            end
-            parfor_progress;
-        end
-        parfor_progress(0);
-        
-    else
-        nb = 0;
-        disp('Opening directory ...');
-        for i = debut : step : fin
-            nb = nb + 1;
-        end
-        red = cell(nb,1);
-        parfor_progress(nb);
-        for i = 0:nb - 1
-            try
-                red{i+1} = imread(fullfile(folder_name,N(debut + step * i).name)); 
-            catch ex %#ok<NASGU>
-                disp('Pictures''s folder not found');
-                delete(gcf);
-                return;
-            end
-            parfor_progress;
-        end
-        parfor_progress(0);
-        
-    end
+    error('StartElongation should be called with an HypoGrowthAppData object');
 end
 
 % Update handles structure
@@ -145,74 +95,6 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 delete(gcf);
 HypoGrowthMenu(app);
-
-
-function timeIntervalEdit_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to timeIntervalEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of timeIntervalEdit as text
-%        str2double(get(hObject,'String')) returns contents of timeIntervalEdit as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to timeIntervalEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in useDefaultSettingsRadioButton.
-function useDefaultSettingsRadioButton_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to useDefaultSettingsRadioButton (see GCBO)%#ok
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of useDefaultSettingsRadioButton
-set(handles.changeSettingsRadioButton,'Value',0);
-set(handles.useDefaultSettingsRadioButton,'Value',1);
-set(handles.smoothingLengthEdit,'Visible','off');
-set(handles.pointNumberEdit,'Visible','off');
-set(handles.correlationWindowSize1Edit,'Visible','off');
-set(handles.correlationWindowSize2Edit,'Visible','off');
-set(handles.displacementStepEdit,'Visible','off');
-set(handles.smoothingLengthLabel,'Visible','off');
-set(handles.pointNumberLabel,'Visible','off');
-set(handles.correlationWindowSize1Label,'Visible','off');
-set(handles.correlationWindowSize2Label,'Visible','off');
-set(handles.displacementStepLabel,'Visible','off');
-
-set(handles.validateSettingsButton,'Visible','on');
-
-
-% --- Executes on button press in changeSettingsRadioButton.
-function changeSettingsRadioButton_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to changeSettingsRadioButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of changeSettingsRadioButton
-set(handles.useDefaultSettingsRadioButton,'Value',0);
-set(handles.changeSettingsRadioButton,'Value',1);
-set(handles.smoothingLengthEdit,'Visible','on');
-set(handles.pointNumberEdit,'Visible','on');
-set(handles.correlationWindowSize1Edit,'Visible','on');
-set(handles.correlationWindowSize2Edit,'Visible','on');
-set(handles.displacementStepEdit,'Visible','on');
-set(handles.smoothingLengthLabel,'Visible','on');
-set(handles.pointNumberLabel,'Visible','on');
-set(handles.correlationWindowSize1Label,'Visible','on');
-set(handles.correlationWindowSize2Label,'Visible','on');
-set(handles.displacementStepLabel,'Visible','on');
-
-set(handles.validateSettingsButton,'Visible','on');
 
 
 function smoothingLengthEdit_Callback(hObject, eventdata, handles)%#ok
@@ -326,6 +208,21 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+
+% --- Executes on button press in defaultSettingsButton.
+function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to defaultSettingsButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Reset the defulat parameters
+set(handles.smoothingLengthEdit,        'String', num2str(10));
+set(handles.pointNumberEdit,            'String', num2str(500));
+set(handles.correlationWindowSize1Edit, 'String', num2str(15));
+set(handles.correlationWindowSize2Edit, 'String', num2str(30));
+set(handles.displacementStepEdit,       'String', num2str(2));
+
+
         
 % --- Executes on button press in changeDirectoryCheckBox.
 function changeDirectoryCheckBox_Callback(hObject, eventdata, handles)%#ok
@@ -334,19 +231,19 @@ function changeDirectoryCheckBox_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of changeDirectoryCheckBox
-if get(handles.changeDirectoryCheckBox,'Value') == 1
-    set(handles.keepAllFramesCheckBox,'Visible','on');
-    set(handles.choosePrefixRadioButton,'Visible','on');
-    set(handles.fileNamePrefixEdit,'Visible','on');
-    set(handles.changeInputDirectoryButton,'Visible','on');
-    set(handles.changeDirectoryCheckBox,'Value',1);
+if get(handles.changeDirectoryCheckBox,     'Value') == 1
+    set(handles.keepAllFramesCheckBox,      'Visible', 'on');
+    set(handles.choosePrefixRadioButton,    'Visible', 'on');
+    set(handles.fileNamePrefixEdit,         'Visible', 'on');
+    set(handles.changeInputDirectoryButton, 'Visible', 'on');
+    set(handles.changeDirectoryCheckBox,    'Value', 1);
     
-elseif get(handles.changeDirectoryCheckBox,'Value') == 0
-    set(handles.keepAllFramesCheckBox,'Visible','off');
-    set(handles.choosePrefixRadioButton,'Visible','off');
-    set(handles.fileNamePrefixEdit,'Visible','off');
-    set(handles.changeInputDirectoryButton,'Visible','off');
-    set(handles.changeDirectoryCheckBox,'Value',0);
+elseif get(handles.changeDirectoryCheckBox, 'Value') == 0
+    set(handles.keepAllFramesCheckBox,      'Visible', 'off');
+    set(handles.choosePrefixRadioButton,    'Visible', 'off');
+    set(handles.fileNamePrefixEdit,         'Visible', 'off');
+    set(handles.changeInputDirectoryButton, 'Visible', 'off');
+    set(handles.changeDirectoryCheckBox,    'Value', 0);
     
 end
 
@@ -502,43 +399,33 @@ t0      = app.timeInterval;
 
 tic;
 
-% default values
-iw  = 10;
-nx  = 500;
-ws  = 15;
-ws2 = 30;
-step = 2;
+% Take the parameters given by the user
+iw  = get(handles.smoothingLengthEdit, 'String');
+nx  = get(handles.pointNumberEdit, 'String');
+ws  = get(handles.correlationWindowSize1Edit, 'String');
+ws2 = get(handles.correlationWindowSize2Edit, 'String');
+step = get(handles.displacementStepEdit, 'String');
 
-if get(handles.changeSettingsRadioButton, 'Value') == 1
-    % Take the parameters given by the user
-    iw  = get(handles.smoothingLengthEdit, 'String'); 
-    nx  = get(handles.pointNumberEdit, 'String');
-    ws  = get(handles.correlationWindowSize1Edit, 'String');
-    ws2 = get(handles.correlationWindowSize2Edit, 'String');
-    step = get(handles.displacementStepEdit, 'String');
-    
-    if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0  %#ok
-        warning('Edit must not be empty');
-        return;
-    end
-    
-    iw  = str2num(iw);%#ok
-    nx  = str2num(nx);%#ok
-    ws  = str2num(ws);%#ok
-    ws2 = str2num(ws2);%#ok
-    step = str2num(step);%#ok
-    
-    if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step)
-        warning('Value must be a number');
-        return;
-    end
-    
-    if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0
-        warning('Value must be positive');
-        return;
-    end
+if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0  %#ok
+    warning('Edit must not be empty');
+    return;
 end
 
+iw  = str2num(iw);%#ok
+nx  = str2num(nx);%#ok
+ws  = str2num(ws);%#ok
+ws2 = str2num(ws2);%#ok
+step = str2num(step);%#ok
+
+if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step)
+    warning('Value must be a number');
+    return;
+end
+
+if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0
+    warning('Value must be positive');
+    return;
+end
 
 
 % store new settings in Application Data
@@ -573,7 +460,8 @@ CE1 = reconstruct_Elg2(nx, C, Sa);
 AE1 = reconstruct_Elg2(nx, A, Sa);
 RE1 = reconstruct_Elg2(nx, R, Sa);
 
-toc;
+dt = toc;
+disp(sprintf('Computation of elongation took %f mn', dt / 60)); %#ok<DSPS>
 
 % store results in Application Data
 app.abscissaList        = Sa;
