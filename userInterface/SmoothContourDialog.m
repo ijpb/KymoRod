@@ -1,35 +1,35 @@
-function varargout = ValidateContour(varargin)
-% VALIDATECONTOUR MATLAB code for ValidateContour.fig
-%      VALIDATECONTOUR, by itself, creates a new VALIDATECONTOUR or raises the existing
+function varargout = SmoothContourDialog(varargin)
+% SMOOTHCONTOURDIALOG MATLAB code for SmoothContourDialog.fig
+%      SMOOTHCONTOURDIALOG, by itself, creates a new SMOOTHCONTOURDIALOG or raises the existing
 %      singleton*.
 %
-%      H = VALIDATECONTOUR returns the handle to a new VALIDATECONTOUR or the handle to
+%      H = SMOOTHCONTOURDIALOG returns the handle to a new SMOOTHCONTOURDIALOG or the handle to
 %      the existing singleton*.
 %
-%      VALIDATECONTOUR('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in VALIDATECONTOUR.M with the given input arguments.
+%      SMOOTHCONTOURDIALOG('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in SMOOTHCONTOURDIALOG.M with the given input arguments.
 %
-%      VALIDATECONTOUR('Property','Value',...) creates a new VALIDATECONTOUR or raises the
+%      SMOOTHCONTOURDIALOG('Property','Value',...) creates a new SMOOTHCONTOURDIALOG or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ValidateContour_OpeningFcn gets called.  An
+%      applied to the GUI before SmoothContourDialog_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ValidateContour_OpeningFcn via varargin.
+%      stop.  All inputs are passed to SmoothContourDialog_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ValidateContour
+% Edit the above text to modify the response to help SmoothContourDialog
 
-% Last Modified by GUIDE v2.5 27-Oct-2014 12:50:35
+% Last Modified by GUIDE v2.5 09-Feb-2015 17:34:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ValidateContour_OpeningFcn, ...
-                   'gui_OutputFcn',  @ValidateContour_OutputFcn, ...
+                   'gui_OpeningFcn', @SmoothContourDialog_OpeningFcn, ...
+                   'gui_OutputFcn',  @SmoothContourDialog_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,15 +44,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before ValidateContour is made visible.
-function ValidateContour_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
+% --- Executes just before SmoothContourDialog is made visible.
+function SmoothContourDialog_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ValidateContour (see VARARGIN)
+% varargin   command line arguments to SmoothContourDialog (see VARARGIN)
 
-% Choose default command line output for ValidateContour
+% Choose default command line output for SmoothContourDialog
 
 handles.output = hObject;
 
@@ -61,7 +61,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
 
 else
     % Take the arguments from previous window, in long list form
-    error('deprecated way of calling ValidateContour');
+    error('deprecated way of calling SmoothContourDialog');
 end
 
 % update current process state
@@ -94,12 +94,12 @@ updateContourDisplay(handles);
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes ValidateContour wait for user response (see UIRESUME)
+% UIWAIT makes SmoothContourDialog wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 %
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ValidateContour_OutputFcn(hObject, eventdata, handles) %#ok
+function varargout = SmoothContourDialog_OutputFcn(hObject, eventdata, handles) %#ok
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB

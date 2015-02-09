@@ -425,7 +425,7 @@ function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 delete (gcf);
-ValidateContour(app);
+SmoothContourDialog(app);
 
 % --- Executes on button press in validateSkeletonButton.
 function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok

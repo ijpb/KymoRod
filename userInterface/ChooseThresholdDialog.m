@@ -618,4 +618,4 @@ app.contourList = contours;
 
 delete(gcf);
 
-ValidateContour(app);
+SmoothContourDialog(app);

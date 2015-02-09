@@ -240,7 +240,7 @@ elseif get(handles.validateThresholdButton, 'Value') == 1
     
 elseif get(handles.validateContourButton, 'Value') == 1
     delete(gcf);
-    ValidateContour(app);
+    SmoothContourDialog(app);
     
 elseif get(handles.validateSkeletonButton, 'Value') == 1
     delete(gcf);
