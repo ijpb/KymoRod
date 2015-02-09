@@ -230,11 +230,7 @@ function validationButton_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 
-if get(handles.frameEditButton, 'Value') == 1
-    delete(gcf);
-    StartRGB();
-    
-elseif get(handles.imagesSelectionButton, 'Value') == 1
+if get(handles.imagesSelectionButton, 'Value') == 1
     delete(gcf);
     SelectInputImagesDialog(app);
     
