@@ -64,15 +64,20 @@ else
     error('Run DisplayKymograph using deprecated call');
 end
 
-% Display current image
-CTVerif = app.contourList;
-SKVerif = app.skeletonList;
-axes(handles.imageAxes);
 ind = app.currentFrameIndex;
+% CTVerif = app.contourList;
+% SKVerif = app.skeletonList;
+contour     = app.contourList{ind};
+skeleton    = app.skeletonList{ind};
+
+% Display current image
+axes(handles.imageAxes);
 imshow(app.imageList{ind});
 hold on;
-drawContour(CTVerif{ind}, 'r');
-drawSkeleton(SKVerif{ind}, 'b');
+% drawContour(CTVerif{ind}, 'r');
+% drawSkeleton(SKVerif{ind}, 'b');
+drawContour(contour, 'r');
+drawSkeleton(skeleton, 'b');
 colormap gray;
 freezeColors;
 
@@ -187,7 +192,7 @@ nx      = app.finalResultLength;
 
 % extract last clicked position, x = index of frame
 pos = get(handles.kymographAxes, 'CurrentPoint');
-posX = round(pos(1));
+posX = pos(1);
 posY = pos(3);
 
 % Display marker on kymograph image
@@ -205,7 +210,7 @@ end
 valPopUp = get(handles.kymographTypePopup, 'Value'); 
 
 % determine index of frame corresponding to clicked point
-frameIndex = posX;
+frameIndex = round(posX / (app.timeInterval * app.indexStep));
 if valPopUp == 1
     % in case of elongation kymograph, need to add one extra image due to
     % the removal of extremities
@@ -213,8 +218,8 @@ if valPopUp == 1
 end
 
 % extract data for current frame
-contour = app.contourList{frameIndex};
-skeleton = app.skeletonList{frameIndex};
+contour     = app.contourList{frameIndex};
+skeleton    = app.skeletonList{frameIndex};
 
 % update display
 axes(handles.imageAxes);
@@ -287,7 +292,7 @@ switch valPopUp
 end
 
 % display current kymograph
-xdata = (1:size(img, 2)) * app.timeInterval;
+xdata = (1:size(img, 2)) * app.timeInterval * app.indexStep;
 ydata = 1:size(img, 1);
 axes(handles.kymographAxes);
 hImg = imagesc(xdata, ydata, img);
@@ -380,7 +385,7 @@ AE1     = app.verticalAngleImage;
 RE1     = app.radiusImage;
 
 % save full application data as mat file
-[emptyPath, baseName, ext] = fileparts(fileName); %#ok<NASGU,ASGLU>
+[emptyPath, baseName, ext] = fileparts(fileName); %#ok<ASGLU>
 filePath = fullfile(pathName, [baseName '.mat']);
 save(filePath, 'app');
 

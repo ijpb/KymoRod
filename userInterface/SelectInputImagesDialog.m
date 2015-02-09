@@ -69,6 +69,8 @@ switch app.currentStep
         % initialisation for new application
         app.pixelSize = 3.9526;
         app.pixelSizeUnit = 'µm';
+        app.timeInterval = 10;
+        app.timeIntervalUnit = 'min';
 
     otherwise
         % some data are already initialized
@@ -197,13 +199,18 @@ end
 
 function makeAllWidgetsVisible(handles)
 
+% show all panels
 set(handles.inputImagesPanel, 'Visible', 'On');
 set(handles.calibrationPanel, 'Visible', 'On');
 set(handles.frameSelectionPanel, 'Visible', 'On');
 
+% update widgets with app information
 app = getappdata(0, 'app');
 set(handles.inputImageFolderEdit, 'String', app.inputImagesDir);
 set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
+set(handles.spatialResolutionEdit, 'String', num2str(app.pixelSize));
+set(handles.timeIntervalEdit, 'String', num2str(app.timeInterval));
+
 
 set(handles.currentFrameLabel, 'Visible', 'On');
 set(handles.currentFrameAxes, 'Visible', 'On');
@@ -574,7 +581,7 @@ set(handles.framePreviewSlider, 'Min', 1);
 set(handles.framePreviewSlider, 'Max', max(frameNumber, 1));
 % setup slider such that 1 image is changed at a time
 step1 = 1 / max(frameNumber, 1);
-step2 = min(10 / frameNumber, .5);
+step2 = max(min(10 / frameNumber, .5), step1);
 set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
 
 if frameNumber > 1
