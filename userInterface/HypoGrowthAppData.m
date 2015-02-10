@@ -44,9 +44,17 @@ classdef HypoGrowthAppData < handle
         timeInterval = 10;
         timeIntervalUnit = 'min';
         
+        % the method for computing threshold on each image
+        % Can be one of {'maxEntropy'}, 'Otsu'.
+        thresholdMethod = 'maxEntropy';
+        
         % the list of threshold values used to segment images
         thresholdValues = [];
         
+        % the list of threshold values computed automatically, without
+        % manual correction
+        baseThresholdValues = [];
+
         % length of window for smoothing coutours
         contourSmoothingSize = 20;
         

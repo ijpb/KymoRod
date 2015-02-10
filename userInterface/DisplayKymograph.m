@@ -64,9 +64,8 @@ else
     error('Run DisplayKymograph using deprecated call');
 end
 
+% extract data for display
 ind = app.currentFrameIndex;
-% CTVerif = app.contourList;
-% SKVerif = app.skeletonList;
 contour     = app.contourList{ind};
 skeleton    = app.skeletonList{ind};
 
@@ -74,8 +73,6 @@ skeleton    = app.skeletonList{ind};
 axes(handles.imageAxes);
 imshow(app.imageList{ind});
 hold on;
-% drawContour(CTVerif{ind}, 'r');
-% drawSkeleton(SKVerif{ind}, 'b');
 drawContour(contour, 'r');
 drawSkeleton(skeleton, 'b');
 colormap gray;

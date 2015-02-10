@@ -22,7 +22,7 @@ function varargout = ChooseThresholdDialog(varargin)
 
 % Edit the above text to modify the response to help ChooseThresholdDialog
 
-% Last Modified by GUIDE v2.5 09-Feb-2015 17:11:38
+% Last Modified by GUIDE v2.5 10-Feb-2015 13:00:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -119,11 +119,7 @@ set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
 set(handles.manualThresholdSlider, 'Visible', 'off');
 
 % pre-compute threshold values
-thresholdValues = zeros(length(col), 1);
-for i = 1 : length(col)
-    thresholdValues(i) = round(graythresh(col{i}) * 255);
-end
-app.thresholdValues = thresholdValues;
+computeThresholdValues(app);
 
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Min', 1); 
@@ -132,14 +128,13 @@ sliderStep = min(max([1 5] ./ (imageNumber - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
 
 % get threshold of current frame
-set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-currentThreshold = int16(thresholdValues(frameIndex));
+set(handles.currentFrameThresholdLabel, 'Visible', 'On');
+currentThreshold = int16(app.thresholdValues(frameIndex));
 string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
-app.currentFrameIndex = frameIndex;
 
 % compute binarised image
-seg = col{1} > currentThreshold;
+seg = app.imageList{frameIndex} > currentThreshold;
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -186,13 +181,12 @@ function frameIndexSlider_Callback(hObject, eventdata, handles)%#ok
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 app = getappdata(0, 'app');
-thresholdValues = app.thresholdValues;
 
 frameIndex = round(get(handles.frameIndexSlider, 'Value'));
 
 % compute segmented image
 currentFrame = app.imageList{frameIndex};
-currentThreshold = thresholdValues(frameIndex);
+currentThreshold = app.thresholdValues(frameIndex);
 bin = currentFrame > currentThreshold;
 
 axes(handles.currentFrameAxes)
@@ -207,6 +201,7 @@ set(handles.currentFrameIndexLabel, 'String', string);
 
 app.currentFrameIndex = frameIndex;
 setappdata(0, 'app', app);
+
 
 % --- Executes during object creation, after setting all properties.
 function frameIndexSlider_CreateFcn(hObject, eventdata, handles)%#ok
@@ -231,8 +226,7 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok
 % Hint: get(hObject,'Value') returns toggle state of automaticThresholdRadioButton
 
 app = getappdata(0, 'app');
-red = app.imageList;
-n = app.currentFrameIndex;
+frameIndex = app.currentFrameIndex;
 
 set(handles.manualThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'off');
@@ -247,16 +241,11 @@ set(handles.autoThresholdStartEdit, 'Visible', 'on');
 set(handles.autoThresholdFinalEdit, 'Visible', 'on');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
 
-nImages = length(red);
-
 % compute thresholded images
-thresholdValues = zeros(nImages, 1);
-for i = 1 : nImages
-    thresholdValues(i) = round(graythresh(red{i}) * 255);
-end
-app.thresholdValues = thresholdValues;
+computeThresholdValues(app);
 
-string = sprintf('Threshold for frame %d is %d', n, round(thresholdValues(n)));
+currentThreshold = round(app.thresholdValues(frameIndex));
+string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
@@ -264,6 +253,49 @@ setappdata(0, 'app', app);
 
 % update display
 frameIndexSlider_Callback(hObject, eventdata, handles);
+
+
+% --- Executes on selection change in thresholdMethodPopup.
+function thresholdMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to thresholdMethodPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns thresholdMethodPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from thresholdMethodPopup
+
+app = getappdata(0, 'app');
+frameIndex = app.currentFrameIndex;
+
+ind = get(handles.thresholdMethodPopup, 'Value');
+methodList = {'maxEntropy', 'Otsu'};
+app.thresholdMethod = methodList{ind};
+
+computeThresholdValues(app);
+
+% display threshold of current frame
+currentThreshold = int16(app.thresholdValues(frameIndex));
+string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+set(handles.currentFrameThresholdLabel, 'String', string);
+
+% compute binarised image
+seg = app.imageList{frameIndex} > currentThreshold;
+axis(handles.currentFrameAxes);
+imshow(seg);
+
+
+% --- Executes during object creation, after setting all properties.
+function thresholdMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to thresholdMethodPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
 
 
 function autoThresholdValueEdit_Callback(hObject, eventdata, handles)%#ok
@@ -342,7 +374,6 @@ function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles)%#o
 % extract application data
 app     = getappdata(0, 'app');
 red     = app.imageList;
-n       = app.currentFrameIndex;
 seuil   = app.thresholdValues;
 nb      = length(red);
 
@@ -381,20 +412,14 @@ end
 set(handles.updateAutomaticThresholdButton, 'Enable', 'off');
 set(handles.updateAutomaticThresholdButton, 'String', 'Wait please...');
 pause(0.01);
+
 for i = start : fin
-    if graythresh(red{i}) * 255 <= 255
-        seuil(i) = round(graythresh(red{i}) * 255) + addThres;
-    else
-        warndlg(...
-            {'New threshold is bigger than 255.', ...
-            'Please select a smaller value to add', ...
-            'to the auto threshold.'}, ...
-        'Wrong threshold', 'modal');
-        return;
-    end
+    app.thresholdValues(i) = app.baseThresholdValues(i) + addThresh;
 end
 
-string = sprintf('Threshold for frame %d is %d', n, seuil(n));
+frameIndex = app.currentFrameIndex;
+currentThreshold = app.thresholdValues(frameIndex);
+string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
@@ -442,21 +467,22 @@ function manualThresholdSlider_Callback(hObject, eventdata, handles)%#ok % To ch
 val = round(get(handles.manualThresholdSlider, 'Value'));
 
 app = getappdata(0, 'app');
-col = app.imageList;
-n   = app.currentFrameIndex;
+frameIndex   = app.currentFrameIndex;
 
-imshow(handles.currentFrameAxes, col{n} > val);
+imshow(handles.currentFrameAxes, app.imageList{frameIndex} > val);
 
-nImages = length(col);
+nImages = length(app.imageList);
 thresholdValues = ones(nImages, 1) * val;
 
 app.thresholdValues = thresholdValues;
 setappdata(0, 'app', app);
 
 % update widgets
-set(handles.manualThresholdValueLabel, 'String', num2str(thresholdValues(n)));
+set(handles.manualThresholdValueLabel, 'String', ...
+    num2str(thresholdValues(frameIndex)));
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-string = sprintf('Threshold for frame %d is %d', n, round(thresholdValues(n)));
+string = sprintf('Threshold for frame %d is %d', frameIndex, ...
+    round(thresholdValues(frameIndex)));
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 
@@ -470,6 +496,47 @@ function manualThresholdSlider_CreateFcn(hObject, eventdata, handles)%#ok
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject, 'BackgroundColor',[.9 .9 .9]);
 end
+
+function computeThresholdValues(app)
+
+nImages = length(app.imageList);
+thresholdValues = zeros(nImages, 1);
+
+% Compute the contour
+disp('Segmentation');
+hDialog = msgbox(...
+    {'Computing image thresholds,', 'please wait...'}, ...
+    'Segmentation');
+
+% compute thresholded images
+switch app.thresholdMethod
+    case 'maxEntropy'
+        parfor_progress(nImages);
+        for i = 1 : nImages
+            thresholdValues(i) = maxEntropyThreshold(app.imageList{i});
+            parfor_progress;
+        end
+        parfor_progress(0);
+        
+    case 'Otsu'
+        parfor_progress(nImages);
+        for i = 1 : nImages
+            thresholdValues(i) = round(graythresh(app.imageList{i}) * 255);
+            parfor_progress;
+        end
+        parfor_progress(0);
+        
+    otherwise
+        error(['Could not recognize threshold method: ' app.thresholdMethod]);        
+end
+
+
+if ishandle(hDialog)
+    close(hDialog);
+end
+
+app.baseThresholdValues = thresholdValues;
+app.thresholdValues = thresholdValues;
 
 
 %% General settings widgets
@@ -619,3 +686,4 @@ app.contourList = contours;
 delete(gcf);
 
 SmoothContourDialog(app);
+
