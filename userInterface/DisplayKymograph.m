@@ -71,12 +71,16 @@ skeleton    = app.skeletonList{ind};
 
 % Display current image
 axes(handles.imageAxes);
-imshow(app.imageList{ind});
+handles.imageHandle = imshow(repmat(app.imageList{ind}, [1 1 3]));
+
 hold on;
-drawContour(contour, 'r');
-drawSkeleton(skeleton, 'b');
-colormap gray;
-freezeColors;
+handles.contourHandle = drawContour(contour, 'r');
+handles.skeletonHandle = drawSkeleton(skeleton, 'b');
+handles.imageMarker = drawMarker(skeleton(1, :), ...
+    'd', 'Color', 'c', 'LineWidth', 3);
+
+% colormap gray;
+% freezeColors;
 
 % compute display extent for elongation kymograph
 img = app.elongationImage;
@@ -215,18 +219,22 @@ if valPopUp == 1
 end
 
 % extract data for current frame
+img = app.imageList{frameIndex};
 contour     = app.contourList{frameIndex};
 skeleton    = app.skeletonList{frameIndex};
 
 % update display
 axes(handles.imageAxes);
-imshow(app.imageList{frameIndex});
-hold on;
-drawContour(contour, 'r');
-drawSkeleton(skeleton, 'b');
+% imshow(repmat(app.imageList{frameIndex}, [1 1 3]));
+% hold on;
+% drawContour(contour, 'r');
+% drawSkeleton(skeleton, 'b');
+set(handles.imageHandle, 'CData', repmat(img, [1 1 3]));
+set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
+set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
 
-colormap gray;
-freezeColors;
+% colormap gray;
+% freezeColors;
 
 % convert y-coordinate to curvilinear abscissa
 Smax = app.abscissaList{end}(end);
@@ -239,7 +247,8 @@ ind = max(ind, 1);
 if isempty(ind)
     ind = size(skeleton, 1);
 end
-drawMarker(skeleton(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
+% drawMarker(skeleton(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
+set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -298,13 +307,12 @@ hImg = imagesc(xdata, ydata, img);
 set(gca, 'YDir', 'normal', 'YTick', []);
 caxis([minCaxis, maxCaxis - val]); colorbar;
 colormap jet;
-freezeColors;
 
+% add the function handle to capture mouse clicks
 set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 
 % annotate
-str = sprintf('Time (%s)', app.timeIntervalUnit);
-xlabel(str);
+xlabel(sprintf('Time (%s)', app.timeIntervalUnit));
 
 
 % --- Executes on button press in saveAsPngButton.
