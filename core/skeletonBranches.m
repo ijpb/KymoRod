@@ -1,45 +1,49 @@
-function [SK, diam, ordre] = skeletonBranches(V, V_F, F, dist, jp, j, m, pere)
+function [SK, diam, order] = skeletonBranches(V, V_F, F, dist, jp, j, m, parent)
 % Hierarchisation of a voronoi diagram
 %
-% (attention: fonction recursive!)
+%   (attention: fonction recursive!)
+%   [SK, diam, order] = skeletonBranches(V, V_F, F, dist, jp, j, m, parent)
 %
-% V     : vertex corodinates
-% V_F   : degree of each vertex (between 1 and 3)
-% F     : list of neighbors of each vertex
-% dist  : distance between each vertex and initial contour
-% jp    : vertex index at previsou step
-% j     : index of starting vertex
-% m     : index of branch around current vertex
-% pere  : parent node
+%   Input arguments:
+%   V       vertex corodinates
+%   V_F     degree of each vertex (between 1 and 3)
+%   F       list of neighbors of each vertex
+%   dist    distance between each vertex and initial contour
+%   jp      vertex index at previsou step
+%   j       index of starting vertex
+%   m       index of branch around current vertex
+%   parent  index of parent branch
 % 
-% renvoie:
-% SK: un tableau de cellule contenant les branches, chaque branche sous la
-% forme d'un tableau N-by-2 de coordonnees
-% diam: diametres locaux
-% ordre : topologie du graphe
+%   Output arguments:
+%   SK      a cell array containing the branches, each branch being given 
+%           as a list of N-by-2 coordinates of adjacent vertices
+%   diam    a cell array containing the diameter for each vertex of the
+%           skeleton
+%   order   contains the topology of the skeleton graph
+%
 
 % some global variables
 % N         branch index
 % SQ4:
 % diam2:    diameter of each branch
-% ordre2:
+% order2:
 
 
-persistent N SQ4 diam2 ordre2;
+persistent N SQ4 diam2 order2;
 
 hold on;
 
 % initialization during first call
-if pere == 0 && m == 0
-    % index of current branch
-    N = 1;
+if parent == 0 && m == 0
+    % index of current branch. First branch has index 1 by definition.
+    N       = 1;
     
     % list of branches, and list of branch radius
-    SQ4 = [];
-    diam2 = [];
+    SQ4     = [];
+    diam2   = [];
     
     % list of parents for each branch
-    ordre2 = [];
+    order2  = [];
 end
 
 % vertex index within the branch
@@ -75,40 +79,36 @@ if V_F(j) < 3
     end
 end
 
-% store current branch
-SQ4{N} = SK1;
-diam2{N} = diam1;
+% store current branch in global variables
+SQ4{N}      = SK1;
+diam2{N}    = diam1;
     
-% store branch order from initial vertex
+% store succession of branch indices to reach the initial branch
 if N == 1
-    ordre2{N} = 1;
+    order2{N} = 1;
 else
-    ordre2{N} = [ordre2{pere} N];
+    order2{N} = [order2{parent} N];
 end
 
 % current branch will be used as parent for other branches concurrent to
 % the current vertex, if such branches exist
 if V_F(j) > 1
     % index of current branch is used to identify parent of other branches
-    pere = N;
+    parent = N;
     
-    % identify the vertices corresponding to child branche initiations
+    % identify the vertices corresponding to child branch initiations
     j2 = F{j}(F{j} ~= jp);
     
-    if length(j2) ~= 2
-        error(['Branching points should generate 2 children, not ' num2str(length(j2))]);
-    end
-        
     % initialize a new branch from each of the child vertices
-    N = N + 1;
-    skeletonBranches(V, V_F, F, dist, j, j2(1), 1, pere);
-    
-    N = N + 1;    
-    skeletonBranches(V, V_F, F, dist, j, j2(2), 2, pere);    
+    % (any number of children is allowed, though the expected number is 2)
+    for k = 1:length(j2)
+        N = N + 1;
+        skeletonBranches(V, V_F, F, dist, j, j2(k), k, parent);
+    end   
 end
 
 % rename variables
 SK      = SQ4;
 diam    = diam2;
-ordre   = ordre2;
+order   = order2;
 
