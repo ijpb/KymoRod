@@ -1,16 +1,17 @@
 function [SK, R] = contourSkeleton(CT, dir2)
 %CONTOURSKELETON Skeletonization of a contour by voronoisaition
 %
-% [SK, R] = contourSkeleton(CT, dir2)
-% Rewrittent from "skel55b" after removing contour filtering, and cleaning
-% up code.
+%   [SK, R] = contourSkeleton(CT, dir2)
+%   Rewritten from "skel55b" after removing contour filtering, and cleaning
+%   up code.
+%   
 %
-% CT: 	Contour of the figure
-% dir2: Position of the initial point of the skeleton
+%   CT:     Contour of the figure
+%   dir2:   Position of the initial point of the skeleton
 %
-% Outputs: 
-% SK: 	the resulting skeleton, as a N-by-2 array of vertex coordinates
-% R:  	Radius associated to each vertex of the contour
+%   Outputs: 
+%   SK: 	the resulting skeleton, as a N-by-2 array of vertex coordinates
+%   R:  	Radius associated to each vertex of the contour
 %
 %
 %
@@ -38,7 +39,8 @@ insideFlag = inpolygon(V(:,1), V(:,2), CT(:,1), CT(:,2));
 neighInds = zeros(nVertices, 3);
 neighCount = ones(nVertices, 1);
 
-% For each cell, identify indices of neighbor cells, and count them
+% iterate over cells to identify the indices of germs surrounding each
+% vertex
 for i = 1:nGerms
     % iterate over the neighbor cells
     for j = 1:length(C{i})
@@ -50,13 +52,14 @@ for i = 1:nGerms
             continue;
         end
         
+        % update the list of neighbors of each neighbor
         neighInds(ind_ij, neighCount(ind_ij)) = i;
         neighCount(ind_ij) = neighCount(ind_ij) + 1;
     end
 end
 
-% pour chaque sommet de Voronoi, calcule la distance au contour, en prenant
-% un des germes detectes a l'etape precedente
+% for each voronoi vertex, compute the distance to original contour,
+% using the array computed at previous step
 dist = zeros(nVertices, 1);
 for i = 2:nVertices
     dist(i) = norm(CT(neighInds(i,1),:) - V(i,:));
@@ -107,36 +110,23 @@ for i = 2:nCells
     end
 end
 
-% identify starting point of the skeleton
+% identify starting point of the skeleton, using apriori direction
 switch dir2
     case 'left'
-        [R_ma, R_ma_ind] = min((-V(:,1)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
+        [tmp, startIndex] = max((-V(:,1)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
     case 'right'
-        [R_ma, R_ma_ind] = max((V(:,1)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
+        [tmp, startIndex] = max((V(:,1)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
     case 'bottom'
-        [R_ma, R_ma_ind] = max((V(:,2)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
+        [tmp, startIndex] = max((V(:,2)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
     case 'top'
-        [R_ma, R_ma_ind] = min((-V(:,2)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
+        [tmp, startIndex] = max((-V(:,2)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
 end
 
 
-% F_d=sommet externe c�te � c�te dans une cellule de voronoi avec un sommet externe
-% v_F_d cardinal de F_d pour chaque sommet
-% F_i, v_F_i idem sommet inetrieurs
-% Fils_d_i=sommet interne c�te � c�te dans une cellule de voronoi avec un
-% sommet externe
-% F_d=sommet externe c�te � c�te dans une cellule de voronoi avec un
-% sommet interne
-
-j = R_ma_ind;
-jp = j;
-
 % Hierarchisation of the voronoi diagram
+j = startIndex;
+jp = j;
 [SK, R, order] = skeletonBranches(V, degrees, neighbors, dist, jp, j, 0, 0);
 
-% % Hierarchisation of the voronoi diagram
-% [SK2, R2, ordre] = branche(V, degrees, neighbors, dist, jp, j, 0, 0);
-
 % the skeleton SK is the largest branch of the diagram
-% [SK, R] = bigbranche(SK2, order, R2);
 [SK, R] = skeletonLargestPath(SK, order, R);
