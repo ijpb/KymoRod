@@ -18,10 +18,13 @@ function varargout = drawContour(contour, varargin)
 % Created: 2014-08-21,    using Matlab 8.3.0.532 (R2014a)
 % Copyright 2014 INRA - Cepia Software Platform.
 
+% create indices to plot closed contours
+inds = [1:size(contour,1) 1];
+
 if nargout == 0
-    plot(contour(:,1), contour(:,2), varargin{:});
+    plot(contour(inds,1), contour(inds,2), varargin{:});
 else
-    h = plot(contour(:,1), contour(:,2), varargin{:});
+    h = plot(contour(inds,1), contour(inds,2), varargin{:});
     varargout = {h};
 end
 

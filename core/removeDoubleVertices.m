@@ -1,4 +1,4 @@
-function S_n = removeDoubleVertices(S)
+function [S_n, vals] = removeDoubleVertices(S, vals)
 %removeDoubleVertices Removes double vertices in a closed contour
 %
 % S2 = removeDoubleVertices(S)
@@ -35,4 +35,9 @@ for i = 1:s_f
 end
 
 % keep only non-multiple vertices
-S_n = S_n(S_n(:,1) > 0,:);
+inds = S_n(:,1) > 0;
+S_n = S_n(inds, :);
+
+if nargin > 1
+    vals = vals(inds);
+end

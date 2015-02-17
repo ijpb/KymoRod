@@ -28,20 +28,22 @@ function [SK, R] = contourSkeleton(CT, dir2)
 [V, C] = voronoin(CT);
 
 % compute number of elements of each array
-nGerms      = size(CT, 1);
 nVertices   = size(V, 1);
 nCells      = size(C, 1);
 
 % Detection of the points inside the contour
 insideFlag = inpolygon(V(:,1), V(:,2), CT(:,1), CT(:,2));
 
+
+%% Compute distance to contour for each vertex
+
 % indices of neighbors of each vertex (three by construction)
 neighInds = zeros(nVertices, 3);
 neighCount = ones(nVertices, 1);
 
 % iterate over cells to identify the indices of germs surrounding each
-% vertex
-for i = 1:nGerms
+% vertex. (used to compute thickness of skeleton)
+for i = 1:nCells
     % iterate over the neighbor cells
     for j = 1:length(C{i})
         % index of current neighbor cell
@@ -65,20 +67,23 @@ for i = 2:nVertices
     dist(i) = norm(CT(neighInds(i,1),:) - V(i,:));
 end
 
+
+%% Compute skeleton topology
+
 % data structure for storing the skeleton
-% neighbors contains for each vertex, the list of neighbor indices 
-% degrees contains the number of neighbors (can be 1 for terminal vertices,
-% 2 for middle vertices or 3 for junction vertices).
+% neighbors: contains the list of neighbor indices of each vertex
+% degrees: contains the number of neighbors (can be 1 for terminal vertices,
+% 2 for middle vertices or 3 or more for junction vertices).
 neighbors = cell(nVertices, 1);
 degrees = zeros(nVertices, 1);
 
-% iterate on voronoi cells to compute skeleton, avoiding first cell which
-% is located at infinity
+% iterate on voronoi cells to compute skeleton by linking adjacent vertices
+% (avoiding first cell which is located at infinity)
 for i = 2:nCells
     
-    % iterate on neighbors of current cell
-    h = length(C{i});
-    for k = 1:h
+    % iterate on vertices of current cell
+    nCellVertices = length(C{i});
+    for k = 1:nCellVertices
         % index of current vertex
         iVertex = C{i}(k);
         
@@ -88,8 +93,8 @@ for i = 2:nCells
         end
             
         % Compute indices of previous and next vertices
-        iPrev = C{i}(mod(k - 2, h) + 1);
-        iNext = C{i}(mod(k, h) + 1);
+        iPrev = C{i}(mod(k - 2, nCellVertices) + 1);
+        iNext = C{i}(mod(k, nCellVertices) + 1);
         
         % add neighbors only if the are within the contour
         if insideFlag(iPrev) == 1
@@ -102,13 +107,25 @@ for i = 2:nCells
             neighbors{iVertex}(degrees(iVertex)) = iNext;
         end
         
-        % avoid duplicate indices
-        if degrees(iVertex) > 0
-            neighbors{iVertex} = unique(neighbors{iVertex});
-            degrees(iVertex) = length(neighbors{iVertex}');
-        end
+%         % avoid duplicate indices
+%         if degrees(iVertex) > 1
+%             neighbors{iVertex} = unique(neighbors{iVertex});
+%             degrees(iVertex) = length(neighbors{iVertex}');
+%         end
     end
 end
+
+        
+% cleanup to avoid duplicate indices
+for iVertex = 1:nVertices
+    if degrees(iVertex) > 1
+        neighbors{iVertex} = unique(neighbors{iVertex});
+        degrees(iVertex) = length(neighbors{iVertex}');
+    end
+end
+
+
+%% Compute branches of the skeleton
 
 % identify starting point of the skeleton, using apriori direction
 switch dir2
@@ -128,5 +145,10 @@ j = startIndex;
 jp = j;
 [SK, R, order] = skeletonBranches(V, degrees, neighbors, dist, jp, j, 0, 0);
 
+
+%% Keep only one branch from skeleton
+
 % the skeleton SK is the largest branch of the diagram
 [SK, R] = skeletonLargestPath(SK, order, R);
+
+

@@ -46,16 +46,21 @@ if parent == 0 && m == 0
     order2  = [];
 end
 
-% vertex index within the branch
-i = 1;
+% % vertex index within the branch
+% i = 1;
 
-% initialize current branch with current vertex
+% initialize current branch with node vertex and current vertex
 % (branch = vertex list + radius list);
-SK1(i, 1) = V(j, 1);
-SK1(i, 2) = V(j, 2);
-diam1(i)  = dist(j);
+SK1 = V([jp j], :);
+diam1  = dist([jp j])';
 
-% find terminal (degree=1) ou internal (degree=2) vertices
+% SK1(i, 1) = V(j, 1);
+% SK1(i, 2) = V(j, 2);
+% diam1(i)  = dist(j);
+
+i = 2;
+
+% find terminal (degree=1) or internal (degree=2) vertices
 if V_F(j) < 3
     % find index of next vertex along the current branch
     jind = F{j} ~= jp;
@@ -76,6 +81,15 @@ if V_F(j) < 3
         jp = j;
         j = F{j}(jind);
         V_F(j) = V_F(j) - 1; 
+    end
+    
+    % add last vertex to the current branch
+    % TODO: check why j could be empty...
+    if ~isempty(j)
+        i = i + 1;
+        SK1(i, 1) = V(j, 1);
+        SK1(i, 2) = V(j, 2);
+        diam1(i) = dist(j);
     end
 end
 
