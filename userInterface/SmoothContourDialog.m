@@ -259,7 +259,7 @@ drawContour(contour, 'r', 'LineWidth', 1.5);
 %% Validation and Comeback buttons
 
 % --- Executes on button press in backToTresholdButton.
-function backToTresholdButton_Callback(hObject, eventdata, handles)%#ok % To back at ValidateThres
+function backToTresholdButton_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to backToTresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -270,7 +270,7 @@ ChooseThresholdDialog(app);
 
 
 % --- Executes on button press in validateContourButton.
-function validateContourButton_Callback(hObject, eventdata, handles)%#ok % To go in the next window
+function validateContourButton_Callback(hObject, eventdata, handles)%#ok 
 % hObject    handle to validateContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
