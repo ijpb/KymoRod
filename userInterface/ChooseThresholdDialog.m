@@ -374,7 +374,6 @@ function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles)%#o
 % extract application data
 app     = getappdata(0, 'app');
 red     = app.imageList;
-seuil   = app.thresholdValues;
 nb      = length(red);
 
 addThres = get(handles.autoThresholdValueEdit, 'String');
@@ -409,14 +408,17 @@ if start > fin
     return;
 end
 
+% disable widgets to avoid double-clicks
 set(handles.updateAutomaticThresholdButton, 'Enable', 'off');
 set(handles.updateAutomaticThresholdButton, 'String', 'Wait please...');
 pause(0.01);
 
+% update modified threshold values
 for i = start : fin
     app.thresholdValues(i) = app.baseThresholdValues(i) + addThres;
 end
 
+% update widgets with new values
 frameIndex = app.currentFrameIndex;
 currentThreshold = app.thresholdValues(frameIndex);
 string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
@@ -428,8 +430,9 @@ seg = app.imageList{frameIndex} > currentThreshold;
 axis(handles.currentFrameAxes);
 imshow(seg);
 
+% re-enable widgets
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
-set(handles.updateAutomaticThresholdButton, 'String', 'Compute new automatical threshold');
+set(handles.updateAutomaticThresholdButton, 'String', 'Update threshold');
 
 
 %% Widgets for manual threshold

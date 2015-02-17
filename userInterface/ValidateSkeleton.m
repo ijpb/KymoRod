@@ -287,9 +287,9 @@ function computeAllSkeletons(handles)
 % compute skeletons from contours, and update widgets
 
 % get current application data
-app     = getappdata(0, 'app');
-smooth  = app.contourSmoothingSize;
-CT2     = app.contourList;
+app         = getappdata(0, 'app');
+contourList = app.contourList;
+smooth      = app.contourSmoothingSize;
 
 % To take the first values
 val = get(handles.filterDirectionPopup, 'Value'); 
@@ -305,7 +305,7 @@ dir = direction;
 dirbegin = dirInitial;
 
 % number of images
-nImages = length(CT2);
+nImages = length(contourList);
 
 % allocate memory for results
 CT      = cell(nImages, 1);
@@ -323,7 +323,7 @@ hDialog = msgbox(...
 parfor_progress(nImages);
 for i = 1:nImages
     % Smooth current contour
-    contour = CT2{i};
+    contour = contourList{i};
     if smooth ~= 0
         contour = smoothContour(contour, smooth);
     end
@@ -331,31 +331,22 @@ for i = 1:nImages
     % scale contour in user unit
     contour = contour * app.pixelSize / 1000;
     
-    % Skeleton of current contour
-
-%     CTVerif{i} = contour;
-%     % to mimic old behaviour of skel55
-%     contourf = CTfilter(contour, 200, dir); 
-%     [SQ, R, order] = voronoiSkeleton(contourf);
-%     [SKVerif{i}, rad{i}] = skeletonLargestPath(SQ, order, R);
-    
-    % Compute skeleton, without changing origin and y direction
-%     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
+    % apply filtering depending on contour type
     contour2 = filterContour(contour, 200, dir);
+
+    % extract skeleton of current contour
     [SKVerif{i}, rad{i}] = contourSkeleton(contour2, dirbegin);
     CTVerif{i} = contour;
 
-    % apply translation and symmetry separately
-    
-    % coordinates at bottom left
+    % coordinates of first point of skeleton
     origin = SKVerif{i}(1,:);
     shift{i} = origin;
     
-    % For new contour, align at bottom left
+    % align contour at bottom left and reverse y-axis (user coordinates)
     CT{i}(:,1) = contour(:,1) - origin(1);
     CT{i}(:,2) = -(contour(:,2) - origin(2));
     
-    % for new Skeleton, align at bottom left, and reverse y axis
+    % align skeleton at bottom left, and reverse y axis
     SK{i}(:,1) = SKVerif{i}(:,1) - origin(1);
     SK{i}(:,2) = -(SKVerif{i}(:,2) - origin(2));
 
