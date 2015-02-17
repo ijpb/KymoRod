@@ -1,13 +1,15 @@
-function [SK, R] = contourSkeleton(CT, dir2)
+function [SK, R] = contourSkeleton(CT, originDirection)
 %CONTOURSKELETON Skeletonization of a contour by voronoisaition
 %
-%   [SK, R] = contourSkeleton(CT, dir2)
+%   [SK, R] = contourSkeleton(CNT, ORIGIN)
+%   Computes the skeleton of a contour given as a rather dense polygon.
 %   Rewritten from "skel55b" after removing contour filtering, and cleaning
 %   up code.
 %   
-%
-%   CT:     Contour of the figure
-%   dir2:   Position of the initial point of the skeleton
+%   CNT     contour of the figure, as N-by-2 array containing vertex
+%           coordinates ofthe contour
+%   ORIGIN  a character array indicating the direction of the first point
+%           of the skeleton
 %
 %   Outputs: 
 %   SK: 	the resulting skeleton, as a N-by-2 array of vertex coordinates
@@ -106,12 +108,6 @@ for i = 2:nCells
             degrees(iVertex) = degrees(iVertex) + 1;
             neighbors{iVertex}(degrees(iVertex)) = iNext;
         end
-        
-%         % avoid duplicate indices
-%         if degrees(iVertex) > 1
-%             neighbors{iVertex} = unique(neighbors{iVertex});
-%             degrees(iVertex) = length(neighbors{iVertex}');
-%         end
     end
 end
 
@@ -127,18 +123,20 @@ end
 
 %% Compute branches of the skeleton
 
-% identify starting point of the skeleton, using apriori direction
-switch dir2
-    case 'left'
-        [tmp, startIndex] = max((-V(:,1)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
-    case 'right'
-        [tmp, startIndex] = max((V(:,1)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
-    case 'bottom'
-        [tmp, startIndex] = max((V(:,2)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
-    case 'top'
-        [tmp, startIndex] = max((-V(:,2)) .* (degrees==1).*insideFlag); %#ok<ASGLU>
+% identifies indices of node vertices within the contour
+insideNodeInds = find((degrees==1) .* insideFlag);
+
+% choose the value used to discriminate extreme points
+switch originDirection
+    case 'left',    values = -V(insideNodeInds, 1);
+    case 'right',   values =  V(insideNodeInds, 1);
+    case 'bottom',  values =  V(insideNodeInds, 2);
+    case 'top',     values = -V(insideNodeInds, 2);
 end
 
+% identify index of skeleton first point
+[tmp, startIndex] = max(values); %#ok<ASGLU>
+startIndex = insideNodeInds(startIndex);
 
 % Hierarchisation of the voronoi diagram
 j = startIndex;
