@@ -414,7 +414,7 @@ set(handles.updateAutomaticThresholdButton, 'String', 'Wait please...');
 pause(0.01);
 
 for i = start : fin
-    app.thresholdValues(i) = app.baseThresholdValues(i) + addThresh;
+    app.thresholdValues(i) = app.baseThresholdValues(i) + addThres;
 end
 
 frameIndex = app.currentFrameIndex;
@@ -423,9 +423,10 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
-app.thresholdValues = seuil;
-setappdata(0, 'app', app);
-frameIndexSlider_Callback(hObject, eventdata, handles);
+% compute binarised image
+seg = app.imageList{frameIndex} > currentThreshold;
+axis(handles.currentFrameAxes);
+imshow(seg);
 
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
 set(handles.updateAutomaticThresholdButton, 'String', 'Compute new automatical threshold');
@@ -541,50 +542,6 @@ app.thresholdValues = thresholdValues;
 
 %% General settings widgets
 
-
-function pixelScaleEdit_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to pixelScaleEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of pixelScaleEdit as text
-%        str2double(get(hObject,'String')) returns contents of pixelScaleEdit as a double
-
-% --- Executes during object creation, after setting all properties.
-function pixelScaleEdit_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to pixelScaleEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-% --- Executes on selection change in directionFilterPopup.
-function directionFilterPopup_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to directionFilterPopup (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns directionFilterPopup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from directionFilterPopup
-
-
-% --- Executes during object creation, after setting all properties.
-function directionFilterPopup_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to directionFilterPopup (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
 % --- Executes on selection change in firstPointSkeletonPopup.
 function firstPointSkeletonPopup_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to firstPointSkeletonPopup (see GCBO)
@@ -636,7 +593,7 @@ pause(0.01);
 
 % retrieve application data
 app     = getappdata(0, 'app');
-seuil   = app.thresholdValues;
+thres   = app.thresholdValues;
 images  = app.imageList;
 
 disp('Binarisation...');
@@ -644,11 +601,9 @@ hDialog = msgbox(...
     {'Performing Binarisation,', 'please wait...'}, ...
     'Binarisation');
 
-thres = seuil;
-
 nImages = length(images);
 
-% add black border around each image
+% add black border around each image, to ensure continuous contours
 parfor_progress(nImages);
 for k = 1:nImages
     images{k} = imAddBlackBorder(images{k});
@@ -671,7 +626,6 @@ contours = cell(nImages, 1);
 % compute contours from gray scale images
 parfor_progress(nImages);
 for i = 1:nImages
-%     contours{i} = cont(images{i}, thres(i));
     contours{i} = segmentContour(images{i}, thres(i));
     parfor_progress;
 end
