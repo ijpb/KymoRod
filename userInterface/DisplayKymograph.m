@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 12-Nov-2014 17:36:42
+% Last Modified by GUIDE v2.5 18-Feb-2015 13:50:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,17 +70,16 @@ contour     = app.contourList{ind};
 skeleton    = app.skeletonList{ind};
 
 % Display current image
-axes(handles.imageAxes);
-handles.imageHandle = imshow(repmat(app.imageList{ind}, [1 1 3]));
+axes(handles.imageAxes); hold on;
 
-hold on;
-handles.contourHandle = drawContour(contour, 'r');
-handles.skeletonHandle = drawSkeleton(skeleton, 'b');
-handles.imageMarker = drawMarker(skeleton(1, :), ...
-    'd', 'Color', 'c', 'LineWidth', 3);
+handles.imageHandle     = imshow(repmat(app.imageList{ind}, [1 1 3]));
 
-% colormap gray;
-% freezeColors;
+handles.contourHandle   = drawContour(contour, 'r');
+handles.skeletonHandle  = drawSkeleton(skeleton, 'b');
+handles.colorSkelHandle = scatter(skeleton(:, 1), skeleton(:, 2), ...
+    [], 'b', 'filled', 'Visible', 'off');
+handles.imageMarker     = drawMarker(skeleton(1, :), ...
+    'd', 'Color', 'k', 'LineWidth', 1, 'MarkerFaceColor', 'w');
 
 % compute display extent for elongation kymograph
 img = app.elongationImage;
@@ -128,6 +127,23 @@ delete(gcf);
 HypoGrowthMenu(app);
 
 
+
+% --- Executes on button press in showColoredSkeletonCheckBox.
+function showColoredSkeletonCheckBox_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to showColoredSkeletonCheckBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of showColoredSkeletonCheckBox
+
+if get(handles.showColoredSkeletonCheckBox, 'Value')
+    updateColoredSkeleton(handles);
+    set(handles.colorSkelHandle, 'Visible', 'On');
+else
+    set(handles.colorSkelHandle, 'Visible', 'Off');
+end
+
+
 % --- Executes on selection change in kymographTypePopup.
 function kymographTypePopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to kymographTypePopup (see GCBO)
@@ -159,11 +175,10 @@ set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
 
 updateKymographDisplay(handles);
-
+updateColoredSkeleton(handles);
+    
 handles.kymographMarker = [];
 guidata(hObject, handles);
-
-
 
 % --- Executes during object creation, after setting all properties.
 function kymographTypePopup_CreateFcn(hObject, eventdata, handles) %#ok<*DEFNU,INUSD>
@@ -176,6 +191,54 @@ function kymographTypePopup_CreateFcn(hObject, eventdata, handles) %#ok<*DEFNU,I
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+function updateColoredSkeleton(handles)
+
+app = getappdata(0, 'app');
+
+frameIndex = app.currentFrameIndex;
+
+skeleton = app.skeletonList{frameIndex};
+xdata = skeleton(:,1);
+ydata = skeleton(:,2);
+
+
+valPopUp = get(handles.kymographTypePopup, 'Value');
+switch valPopUp
+    case 1
+        % extract the values of elongation
+        elg = app.elongationList{frameIndex};
+        values = elg(:, 2);
+        
+        % need to re-compute x and y data, as they are computed on a pixel
+        % approximation of the skeleton
+        abscissa = app.abscissaList{frameIndex};
+        inds = zeros(size(elg, 1), 1);
+        for i = 1:length(inds)
+            inds(i) = find(abscissa > elg(i,1), 1, 'first');
+        end
+        xdata = skeleton(inds,1);
+        ydata = skeleton(inds,2);
+
+    case 2, values = app.radiusList{frameIndex};
+    case 3, values = app.curvatureList{frameIndex};
+    case 4, values = app.verticalAngleList{frameIndex};
+end
+
+% extract bounds
+vmin = getappdata(0, 'minCaxis');
+val = get(handles.slider1, 'Value');
+vmax = getappdata(0, 'maxCaxis') - val;
+
+% create 256-by-3 array of colors
+cmap = jet(256);
+inds = floor((values - vmin) * 255 / (vmax - vmin)) + 1;
+inds = max(min(inds, 256), 1);
+colors = cmap(inds, :);
+
+set(handles.colorSkelHandle, 'XData', xdata, 'YData', ydata, 'CData', colors);
+
 
 % --- Executes on mouse press over axes background.
 function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
@@ -207,16 +270,9 @@ else
     set(handles.kymographMarker, 'XData', posX, 'YData', posY);
 end
 
-% Take the value of pop up menu
-valPopUp = get(handles.kymographTypePopup, 'Value'); 
-
 % determine index of frame corresponding to clicked point
-frameIndex = round(posX / (app.timeInterval * app.indexStep));
-if valPopUp == 1
-    % in case of elongation kymograph, need to add one extra image due to
-    % the removal of extremities
-    frameIndex = frameIndex + 1;
-end
+frameIndex = round(posX / (app.timeInterval * app.indexStep)) + 1;
+app.currentFrameIndex = frameIndex;
 
 % extract data for current frame
 img = app.imageList{frameIndex};
@@ -225,16 +281,9 @@ skeleton    = app.skeletonList{frameIndex};
 
 % update display
 axes(handles.imageAxes);
-% imshow(repmat(app.imageList{frameIndex}, [1 1 3]));
-% hold on;
-% drawContour(contour, 'r');
-% drawSkeleton(skeleton, 'b');
 set(handles.imageHandle, 'CData', repmat(img, [1 1 3]));
 set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
-
-% colormap gray;
-% freezeColors;
 
 % convert y-coordinate to curvilinear abscissa
 Smax = app.abscissaList{end}(end);
@@ -247,9 +296,12 @@ ind = max(ind, 1);
 if isempty(ind)
     ind = size(skeleton, 1);
 end
-% drawMarker(skeleton(ind, :), 'd', 'Color', 'c', 'LineWidth', 3);
 set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
 
+if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
+    updateColoredSkeleton(handles);
+end    
+    
 % Update handles structure
 guidata(hObject, handles);
 
@@ -298,7 +350,7 @@ switch valPopUp
 end
 
 % display current kymograph
-xdata = (1:size(img, 2)) * app.timeInterval * app.indexStep;
+xdata = (0:(size(img, 2)-1)) * app.timeInterval * app.indexStep;
 ydata = 1:size(img, 1);
 axes(handles.kymographAxes);
 hImg = imagesc(xdata, ydata, img);
@@ -463,3 +515,4 @@ button = questdlg({'This will quit the program', 'Are you sure ?'}, ...
 if strcmp(button, 'Yes')
     delete(gcf);
 end
+
