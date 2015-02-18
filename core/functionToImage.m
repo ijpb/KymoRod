@@ -19,32 +19,29 @@ function res = functionToImage(image, curve, S)
 % Copyright 2012 INRA - Cepia Software Platform.
 
 % determine size of result image
-dim  = size(image);
+dim = size(image);
 
 % allocate memory
 res = zeros(dim);
-count = zeros(dim);
 
 % extract curve coordinates
 px = round(curve(:, 1));
 py = round(curve(:, 2));
 
 % keep only curve points within image bounds
-inds = find(px >= 1 & px <= dim(2) & py >= 1 & py <= dim(1));
+insideFlag = px >= 1 & px <= dim(2) & py >= 1 & py <= dim(1);
+px = px(insideFlag);
+py = py(insideFlag);
+S  = S(insideFlag);
 
-% for i = 1:size(func, 1)
-for i = 1:length(inds)
-	% compute indices in image space
-    indi = py(inds(i));
-    indj = px(inds(i));
+% compute linear indices in image 
+inds = sub2ind(dim, py, px);
 
-	% add current abscissa
-    res(indi, indj) = res(indi, indj) + S(inds(i));
-    
-    % increment count
-    count(indi, indj) = count(indi, indj) + 1;
+% compute average for each unique index
+uninds = unique(inds);
+for i = 1:length(uninds)
+    uni = uninds(i);
+    res(uni) = mean(S(inds == uni));
 end
 
-% normalisation
-res = res ./ count;
 
