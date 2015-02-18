@@ -84,22 +84,6 @@ function varargout = HypoGrowthMenu_OutputFcn(hObject, eventdata, handles) %#ok
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in frameEditButton.
-function frameEditButton_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to frameEditButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of frameEditButton
-set(handles.frameEditButton,            'Value', 1);
-set(handles.imagesSelectionButton,      'Value', 0);
-set(handles.validateThresholdButton,    'Value', 0);
-set(handles.validateContourButton,      'Value', 0);
-set(handles.validateSkeletonButton,     'Value', 0);
-set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 0);
-set(handles.displayKymographButton,     'Value', 0);
-
 % --- Executes on button press in imagesSelectionButton.
 function imagesSelectionButton_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to imagesSelectionButton (see GCBO)
@@ -107,7 +91,7 @@ function imagesSelectionButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of imagesSelectionButton
-set(handles.frameEditButton,            'Value', 0);
+
 set(handles.imagesSelectionButton,      'Value', 1);
 set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
@@ -125,7 +109,6 @@ function validateThresholdButton_Callback(hObject, eventdata, handles) %#ok<INUS
 
 % Hint: get(hObject,'Value') returns toggle state of validateThresholdButton
 
-set(handles.frameEditButton,            'Value', 0);
 set(handles.imagesSelectionButton,      'Value', 0);
 set(handles.validateThresholdButton,    'Value', 1);
 set(handles.validateContourButton,      'Value', 0);
@@ -143,7 +126,6 @@ function validateContourButton_Callback(hObject, eventdata, handles) %#ok<INUSL,
 
 % Hint: get(hObject,'Value') returns toggle state of validateContourButton
 
-set(handles.frameEditButton,            'Value', 0);
 set(handles.imagesSelectionButton,      'Value', 0);
 set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 1);
@@ -160,7 +142,6 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<INUSL
 
 % Hint: get(hObject,'Value') returns toggle state of validateSkeletonButton
 
-set(handles.frameEditButton,            'Value', 0);
 set(handles.imagesSelectionButton,      'Value', 0);
 set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
@@ -177,7 +158,6 @@ function elongationButton_Callback(hObject, eventdata, handles)%#ok
 
 % Hint: get(hObject,'Value') returns toggle state of elongationButton
 
-set(handles.frameEditButton,            'Value', 0);
 set(handles.imagesSelectionButton,      'Value', 0);
 set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
@@ -195,7 +175,6 @@ function specificElongationButton_Callback(hObject, eventdata, handles)%#ok
 
 % Hint: get(hObject,'Value') returns toggle state of specificElongationButton
 
-set(handles.frameEditButton,            'Value', 0);
 set(handles.imagesSelectionButton,      'Value', 0);
 set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
@@ -212,7 +191,7 @@ function displayKymographButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of displayKymographButton
-set(handles.frameEditButton,            'Value', 0);
+
 set(handles.imagesSelectionButton,      'Value', 0);
 set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
