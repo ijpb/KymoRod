@@ -1,10 +1,11 @@
-function startHypoGrowth(varargin)
-%STARTHYPOGROWTH  Run the 'hypogrowth' GUI
+function startKymoRod(varargin)
+%STARKYMOROD  Run the 'KymoRod' GUI
 %
 %   Usage:
-%   startHypoGrowth
+%   startKymoRod
 %
 %   See also
+%   setupKymoRod
 %
  
 % ------

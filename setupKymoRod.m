@@ -1,8 +1,8 @@
-function setupHypoGrowth(varargin)
-%SETUPHYPOGROWTH Setup all paths required to run hypocotyl growth tool
+function setupKymoRod(varargin)
+%SETUPKYMOROD Setup all paths required to run the KymoRod software
 %
 %   usage:
-%   setupHypocotyle
+%   setupKymoRod
 %
 %
  
@@ -16,7 +16,7 @@ function setupHypoGrowth(varargin)
 fileName = mfilename('fullpath');
 mainDir = fileparts(fileName);
 
-disp('Installing Hypocotyl Growth Software...');
+disp('Installing KymoRod software...');
 
 % add libraries
 addpath(fullfile(mainDir, 'lib'));
@@ -30,5 +30,5 @@ addpath(fullfile(mainDir, 'CroissanceHypocotyle'));
 % add GUI software
 addpath(fullfile(mainDir, 'userInterface'));
 
-disp('Hypocotyl Growth Software installed!');
+disp('KymoRod Software installed!');
 
