@@ -230,8 +230,8 @@ elseif get(handles.elongationButton, 'Value') == 1
     StartElongation(app);
     
 elseif get(handles.specificElongationButton, 'Value') == 1
-    delete(gcf);
-    StartComposedElongation(app);
+%     delete(gcf);
+%     StartComposedElongation(app);
     
 elseif get(handles.displayKymographButton, 'Value') == 1
     delete(gcf);

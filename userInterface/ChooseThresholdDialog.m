@@ -84,7 +84,7 @@ elseif nargin == 11
 elseif nargin == 4 
     % if user come from ValidateContour, back way
     col = varargin{1};
-    app = HypoGrowthApp();
+    app = HypoGrowthAppData();
     app.imageList = col;
     
 else

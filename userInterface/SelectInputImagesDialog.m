@@ -291,7 +291,7 @@ function spatialResolutionEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % Hints: get(hObject,'String') returns contents of spatialResolutionEdit as text
 %        str2double(get(hObject,'String')) returns contents of spatialResolutionEdit as a double
 
-app = getappata(0, 'app');
+app = getappdata(0, 'app');
 resolString = get(handles.spatialResolutionEdit, 'String');
 resol = str2double(resolString);
 app.pixelSize = resol;
@@ -318,7 +318,7 @@ function timeIntervalEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % Hints: get(hObject,'String') returns contents of timeIntervalEdit as text
 %        str2double(get(hObject,'String')) returns contents of timeIntervalEdit as a double
 
-app = getappata(0, 'app');
+app = getappdata(0, 'app');
 
 timeString = get(handles.timeIntervalEdit, 'String');
 time = str2double(timeString);
