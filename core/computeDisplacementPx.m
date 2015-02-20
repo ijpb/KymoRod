@@ -37,12 +37,15 @@ dim = size(pic1);
 L = 0.25; %2.*ws./scale;
 a = 0;
 
-% on prend les points de l'image pour lesquels l'absciss curviligne passe,
+% on prend les points de l'image pour lesquels l'abscisse curviligne passe,
 % correspondant aux points ou passent le squelette.
 [x1, y1] = find(picSQ1 > 0);
 
-% default value in case processing fails
-E = [0 1];
+% allocate memory for result
+E = zeros(length(x1), 2);
+
+% % default value in case processing fails
+% E = [0 1];
 
 % on applique la PIV sur tous les points ou passent le squelette
 for k = 1:length(x1)
@@ -60,11 +63,6 @@ for k = 1:length(x1)
         continue;
     end
     
-    % on initialise le fichier dans lequel on met les valeurs de la
-    % correlation pour le point i j
-    clear Corr;
-    Corr = zeros(1,2);
-    
     % on fait tourner l'image de maniere a ce que les bords du
     % contour soient parralleles au bord inf�rieur de l'image
     w1 = double(pic1(i-ws:i+ws, j-ws:j+ws));
@@ -79,7 +77,6 @@ for k = 1:length(x1)
     % puis on calcule la moyenne et la variance (?) de celle ci
     % Ix=avgw(w1);
     % Normx=normal(w1,Ix);
-    b = 0;
     
     % faire attention: voire si il ne faut pas le changer
     [x2, y2] = find(abs(picSQ2-picSQ1(i,j)) < L & picSQ2 > 0);
@@ -88,7 +85,16 @@ for k = 1:length(x1)
     inds = (x2 > ws) & (x2 < dim(1)-ws) & (y2 > ws) & (y2 < dim(2)-ws);
     x2 = x2(inds);
     y2 = y2(inds);
+
+    % on initialise le fichier dans lequel on met les valeurs de la
+    % correlation pour le point i j
+%     clear Corr;
+%     Corr = zeros(1,2);
+    Corr = zeros(length(x2), 2);
     
+    % count valid positions in second image
+    b = 0;
+
     for l = 1:length(x2)
         % indices of positions in second image
         u = x2(l);
@@ -146,4 +152,5 @@ for k = 1:length(x1)
 % 	end
 end
 
+E = E(1:a, :);
 E = sortrows(E, 1);
