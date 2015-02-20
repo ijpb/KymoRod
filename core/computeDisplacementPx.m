@@ -11,10 +11,9 @@ function E = computeDisplacementPx(SQ1, SQ2, S1, S2, pic1, pic2, ws)
 % Pic1: 	image number one
 % Pic2: 	image number two
 % ws: 		size of the correlation window
-% we: 		unnecessary in this program
 %
 % E: a N-by-2 array, containing for each vertex the curvilinear abscissa
-% and the displacement 
+% and the displacement (difference in curvilinear abscissa)
 %
 % ------
 % Author: Renaud Bastien
@@ -44,12 +43,9 @@ a = 0;
 % allocate memory for result
 E = zeros(length(x1), 2);
 
-% % default value in case processing fails
-% E = [0 1];
-
 % on applique la PIV sur tous les points ou passent le squelette
 for k = 1:length(x1)
-	% indices of current point
+	% image indices of current point
     i = x1(k);
     j = y1(k);
     
@@ -63,8 +59,7 @@ for k = 1:length(x1)
         continue;
     end
     
-    % on fait tourner l'image de maniere a ce que les bords du
-    % contour soient parralleles au bord inf�rieur de l'image
+    % get small image around current point of first skeleton
     w1 = double(pic1(i-ws:i+ws, j-ws:j+ws));
     
     % compute PIV only if variability in window is sufficient
@@ -73,12 +68,8 @@ for k = 1:length(x1)
         continue;
     end
         
-    % on recupere ensuite l'image a la bonne taille de la fenetre
-    % puis on calcule la moyenne et la variance (?) de celle ci
-    % Ix=avgw(w1);
-    % Normx=normal(w1,Ix);
-    
-    % faire attention: voire si il ne faut pas le changer
+    % identify positions in second image with similar curvilinear abscissa
+    % (faire attention: voire si il ne faut pas le changer)
     [x2, y2] = find(abs(picSQ2-picSQ1(i,j)) < L & picSQ2 > 0);
     
     % process only neighbor points that are not too close from border
@@ -86,10 +77,12 @@ for k = 1:length(x1)
     x2 = x2(inds);
     y2 = y2(inds);
 
-    % on initialise le fichier dans lequel on met les valeurs de la
-    % correlation pour le point i j
-%     clear Corr;
-%     Corr = zeros(1,2);
+    % check degenerate cases
+    if isempty(x2)
+        error('Could not find enough points in second contour close to point (%d,%d)', j, i);
+    end
+    
+    % initialze result of image to image correlation
     Corr = zeros(length(x2), 2);
     
     % count valid positions in second image
@@ -102,11 +95,9 @@ for k = 1:length(x1)
         
         b = b + 1;
         
+        % get small image around current point in second skeleton
         w2 = double(pic2(u-ws:u+ws, v-ws:v+ws));
-        
-        % Iy=avgw(w2);
-        % Normy=normal(w2,Iy);
-        
+                
         % on peut donc calculer la correlation entre les deux images, on
         % obtient une fonction qui nous donne les valeurs de correlation en
         % fonction de la  difference d'abscisse curviligne entre les deux
@@ -119,18 +110,13 @@ for k = 1:length(x1)
     end
 			
     % On trouve le maximum de correlation ainsi que sa postion
-    % en ordonnant Corr. Et on prend les un ou deux points adjacents pour
-    % ajuster une gaussienne.
-    
+    % en ordonnant Corr.     
     Corr = sortrows(Corr,1);
     [Corrmax, Corry] = max(Corr(:,2)); %#ok<ASGLU>
-    %fsz1=min([10 Corry-1]);
-    %fsz2=min([10 size(Corr,1)-Corry]);
-    %if var(Corr(Corry-fsz1:Corry+fsz2,2))>1e-4
-        a = a + 1;
-        E(a,1) = picSQ1(i, j);
-        E(a,2) = Corr(Corry,1);
-    %end
+    
+    a = a + 1;
+    E(a,1) = picSQ1(i, j);
+    E(a,2) = Corr(Corry,1);
 
 % 			if disp == 1
 % 				subplot(2,2,3);
@@ -147,9 +133,7 @@ for k = 1:length(x1)
 
 % 			clear x2;
 % 			clear y2;
-            
-% 		end 
-% 	end
+
 end
 
 E = E(1:a, :);
