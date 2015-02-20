@@ -38,7 +38,7 @@ a = 0;
 
 % on prend les points de l'image pour lesquels l'abscisse curviligne passe,
 % correspondant aux points ou passent le squelette.
-[x1, y1] = find(picSQ1 > 0);
+[y1, x1] = find(picSQ1 > 0);
 
 % allocate memory for result
 E = zeros(length(x1), 2);
@@ -46,8 +46,8 @@ E = zeros(length(x1), 2);
 % on applique la PIV sur tous les points ou passent le squelette
 for k = 1:length(x1)
 	% image indices of current point
-    i = x1(k);
-    j = y1(k);
+    i = y1(k);
+    j = x1(k);
     
     % on adapte notre fenetre de maniere a recupere la taille de fenetre ws
     % desiree apres rotation, et on verifie que tous les points sont bien
@@ -70,10 +70,10 @@ for k = 1:length(x1)
         
     % identify positions in second image with similar curvilinear abscissa
     % (faire attention: voire si il ne faut pas le changer)
-    [x2, y2] = find(abs(picSQ2-picSQ1(i,j)) < L & picSQ2 > 0);
+    [y2, x2] = find(abs(picSQ2-picSQ1(i,j)) < L & picSQ2 > 0);
     
     % process only neighbor points that are not too close from border
-    inds = (x2 > ws) & (x2 < dim(1)-ws) & (y2 > ws) & (y2 < dim(2)-ws);
+    inds = (x2 > ws) & (x2 < dim(2)-ws) & (y2 > ws) & (y2 < dim(1)-ws);
     x2 = x2(inds);
     y2 = y2(inds);
 
@@ -85,16 +85,12 @@ for k = 1:length(x1)
     % initialze result of image to image correlation
     Corr = zeros(length(x2), 2);
     
-    % count valid positions in second image
-    b = 0;
-
     for l = 1:length(x2)
         % indices of positions in second image
-        u = x2(l);
-        v = y2(l);
+        u = y2(l);
+        v = x2(l);
         
-        b = b + 1;
-        
+       
         % get small image around current point in second skeleton
         w2 = double(pic2(u-ws:u+ws, v-ws:v+ws));
                 
@@ -102,8 +98,8 @@ for k = 1:length(x1)
         % obtient une fonction qui nous donne les valeurs de correlation en
         % fonction de la  difference d'abscisse curviligne entre les deux
         % points (le deplacement).
-        Corr(b, 1) = picSQ2(u,v) - picSQ1(i,j);
-        Corr(b, 2) = corr2(w1, w2);
+        Corr(l, 1) = picSQ2(u,v) - picSQ1(i,j);
+        Corr(l, 2) = corr2(w1, w2);
         %sum(sum(( w1 - Ix ) .* (w2 - Iy )))/sqrt(Normx*Normy);
         %if disp==1;clear figure;subplot(2,2,1); imagesc(w1);subplot(2,2,2); imagesc(w2);drawnow; end;
         % 				end
@@ -111,12 +107,12 @@ for k = 1:length(x1)
 			
     % On trouve le maximum de correlation ainsi que sa postion
     % en ordonnant Corr.     
-    Corr = sortrows(Corr,1);
-    [Corrmax, Corry] = max(Corr(:,2)); %#ok<ASGLU>
+    Corr = sortrows(Corr, 1);
+    [Corrmax, Corry] = max(Corr(:, 2)); %#ok<ASGLU>
     
     a = a + 1;
-    E(a,1) = picSQ1(i, j);
-    E(a,2) = Corr(Corry,1);
+    E(a, 1) = picSQ1(i, j);
+    E(a, 2) = Corr(Corry,1);
 
 % 			if disp == 1
 % 				subplot(2,2,3);
