@@ -38,7 +38,7 @@ classdef HypoGrowthAppData < handle
         
         % spatial calibration of input images
         pixelSize = 1;
-        pixelSizeUnit = '';
+        pixelSizeUnit = 'µm';
         
         % time interval between two frames
         timeInterval = 10;

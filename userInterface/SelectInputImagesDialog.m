@@ -22,7 +22,7 @@ function varargout = SelectInputImagesDialog(varargin)
 
 % Edit the above text to modify the response to help SelectInputImagesDialog
 
-% Last Modified by GUIDE v2.5 10-Dec-2014 18:19:35
+% Last Modified by GUIDE v2.5 02-Mar-2015 09:09:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,11 +66,6 @@ app = varargin{1};
 
 switch app.currentStep
     case 'none'
-        % initialisation for new application
-        app.pixelSize = 3.9526;
-        app.pixelSizeUnit = 'µm';
-        app.timeInterval = 10;
-        app.timeIntervalUnit = 'min';
 
     otherwise
         % some data are already initialized
@@ -89,6 +84,12 @@ end
 
 app.currentStep = 'selection';
 setappdata(0, 'app', app);
+
+% setup some widgets with current settings
+set(handles.spatialResolutionEdit, 'String', num2str(app.pixelSize));
+set(handles.spatialResolutionUnitEdit, 'String', app.pixelSizeUnit);
+set(handles.timeIntervalEdit, 'String', num2str(app.timeInterval));
+set(handles.timeIntervalUnitEdit, 'String', app.timeIntervalUnit);
 
 
 % Choose default command line output for SelectInputImagesDialog
@@ -310,6 +311,32 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
+
+function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to spatialResolutionUnitEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of spatialResolutionUnitEdit as text
+%        str2double(get(hObject,'String')) returns contents of spatialResolutionUnitEdit as a double
+
+app = getappdata(0, 'app');
+unitString = get(handles.spatialResolutionUnitEdit, 'String');
+app.pixelSizeUnit = unitString;
+
+% --- Executes during object creation, after setting all properties.
+function spatialResolutionUnitEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to spatialResolutionUnitEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
 function timeIntervalEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to timeIntervalEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -327,6 +354,32 @@ app.timeInterval = time;
 % --- Executes during object creation, after setting all properties.
 function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to timeIntervalEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function timeIntervalUnitEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to timeIntervalUnitEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of timeIntervalUnitEdit as text
+%        str2double(get(hObject,'String')) returns contents of timeIntervalUnitEdit as a double
+
+app = getappdata(0, 'app');
+unitString = get(handles.timeIntervalUnitEdit, 'String');
+app.timeIntervalUnit = unitString;
+
+
+% --- Executes during object creation, after setting all properties.
+function timeIntervalUnitEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to timeIntervalUnitEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -653,3 +706,4 @@ parfor_progress(0);
 
 app.imageList = imageList;
 app.imageNameList = imageNameList;
+
