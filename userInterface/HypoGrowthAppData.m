@@ -37,7 +37,7 @@ classdef HypoGrowthAppData < handle
         indexStep = 1;
         
         % spatial calibration of input images
-        pixelSize = 1;
+        pixelSize = 1000 / 253;  
         pixelSizeUnit = 'µm';
         
         % time interval between two frames
@@ -222,6 +222,13 @@ classdef HypoGrowthAppData < handle
             fprintf(f, '\n');
         
             % length of window for smoothing coutours
+            fprintf(f, 'thresholdMethod = %s\n', this.thresholdMethod);
+            nImages = length(this.imageNameList);
+            pattern = ['thresholdValues =' repmat(' %d', 1, nImages) '\n'];
+            fprintf(f, pattern, this.thresholdValues);
+            fprintf(f, '\n');
+            
+            % length of window for smoothing coutours
             fprintf(f, 'contourSmoothingSize = %d\n', this.contourSmoothingSize);
             fprintf(f, '\n');
             
@@ -308,6 +315,12 @@ classdef HypoGrowthAppData < handle
                         app.timeInterval = str2double(value);
                     case lower('timeIntervalUnit')
                         app.timeIntervalUnit = value;
+                        
+                    case lower('thresholdMethod')
+                        app.thresholdMethod = value;
+                    case lower('thresholdValues')
+                        tokens = strsplit(value, ' ');
+                        app.thresholdValues = str2num(char(tokens')); %#ok<ST2NM>
                         
                     case lower('contourSmoothingSize')
                         app.contourSmoothingSize = str2double(value);
