@@ -452,7 +452,7 @@ E = computeDisplacementPxAll(app.skeletonList, Sa, app.imageList, ws, step);
 
 % Elongation
 disp('Elongation');
-[Elg, E2] = elgall(E, t0, step, ws2);
+[Elg, E2] = computeElongationAll(E, t0, step, ws2);
 
 %  Space-time mapping
 ElgE1 = reconstruct_Elg2(nx, Elg);
