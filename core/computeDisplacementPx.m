@@ -1,19 +1,22 @@
-function E = computeDisplacementPx(SQ1, SQ2, S1, S2, pic1, pic2, ws)
+function E = computeDisplacementPx(SK1, SK2, S1, S2, pic1, pic2, ws)
 %COMPUTEDISPLACEMENTPX Compute elongation between two frames in pixel coordinates
 % 
-% E = computeDisplacementPx(SQ1, SQ2, S1, S2, pic1, pic2, ws)
-% (rewritten from elong5)
+%   E = computeDisplacementPx(SK1, SK2, S1, S2, IMG1, IMG2, WS)
+%   (rewritten from function 'elong5')
 %
-% SQ1: 		skeleton number one
-% SQ2: 		skeleton number two
-% S1: 		curvilinear abscissa number one
-% S2: 		curvilinear abscissa number two
-% Pic1: 	image number one
-% Pic2: 	image number two
-% ws: 		size of the correlation window
+%   
+%   Input arguments:
+%   SK1: 	skeleton number one
+%   SK2: 	skeleton number two
+%   S1: 	curvilinear abscissa number one
+%   S2: 	curvilinear abscissa number two
+%   IMG1: 	image number one
+%   IMG2: 	image number two
+%   WS: 	size of the correlation window
 %
-% E: a N-by-2 array, containing for each vertex the curvilinear abscissa
-% and the displacement (difference in curvilinear abscissa)
+%   Output arguments:
+%   E: a N-by-2 array, containing for each vertex the curvilinear abscissa
+%   and the displacement (difference in curvilinear abscissa)
 %
 % ------
 % Author: Renaud Bastien
@@ -24,22 +27,24 @@ function E = computeDisplacementPx(SQ1, SQ2, S1, S2, pic1, pic2, ws)
 % % flag for displaying evolution of computation or not
 % disp = 0;
 
+
 dim = size(pic1);
 
 %L=20;
 %L=0.5;
 L = 0.25; %2.*ws./scale;
-a = 0;
 
-% on prend les points de l'image pour lesquels l'abscisse curviligne passe,
-% correspondant aux points ou passent le squelette.
-[x1, y1, S1bis] = snapFunctionToPixels(pic1, SQ1, S1);
-[x2a, y2a, S2bis] = snapFunctionToPixels(pic2, SQ2, S2);
+% identify in each image the pixels containing a portion of skeleton
+[x1, y1, S1bis] = snapFunctionToPixels(pic1, SK1, S1);
+[x2a, y2a, S2bis] = snapFunctionToPixels(pic2, SK2, S2);
 
 % allocate memory for result
 E = zeros(length(x1), 2);
 
-% on applique la PIV sur tous les points ou passent le squelette
+% counter for number of computed correlations
+a = 0;
+
+% apply Particle Image Velocimetry on each point of the skeleton
 for k = 1:length(x1)
 	% image indices of current point
     i = y1(k);
@@ -93,10 +98,10 @@ for k = 1:length(x1)
         % transform to vector, and remove mean
         w2 = w2(:) - mean(w2(:));
                 
-        % on peut donc calculer la correlation entre les deux images, on
-        % obtient une fonction qui nous donne les valeurs de correlation en
-        % fonction de la  difference d'abscisse curviligne entre les deux
-        % points (le deplacement).
+        % compute image correlation between the two thumbnails.
+        % the result is the correlation value, and the difference in
+        % curvilinear abscissa between the two points, which is associated
+        % to the displacement
         Corr(l, 1) = S2k(l) - S1bis(k);
         Corr(l, 2) = sum(w1 .* w2) / sqrt(sum(w1 .* w1) * sum(w2 .* w2));
         
@@ -109,6 +114,7 @@ for k = 1:length(x1)
     Corr = sortrows(Corr, 1);
     [Corrmax, Corry] = max(Corr(:, 2)); %#ok<ASGLU>
     
+    % increment result array
     a = a + 1;
     E(a, 1) = S1bis(k);
     E(a, 2) = Corr(Corry,1);
@@ -131,5 +137,6 @@ for k = 1:length(x1)
 
 end
 
+% keep and sort relevant results
 E = E(1:a, :);
 E = sortrows(E, 1);
