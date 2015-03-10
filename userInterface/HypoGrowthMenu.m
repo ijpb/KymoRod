@@ -227,7 +227,7 @@ elseif get(handles.validateSkeletonButton, 'Value') == 1
     
 elseif get(handles.elongationButton, 'Value') == 1
     delete(gcf);
-    StartElongation(app);
+    ChooseElongationSettingsDialog(app);
     
 elseif get(handles.specificElongationButton, 'Value') == 1
 %     delete(gcf);

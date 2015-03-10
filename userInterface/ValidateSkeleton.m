@@ -426,4 +426,4 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 delete(gcf);
-StartElongation(app);
+ChooseElongationSettingsDialog(app);

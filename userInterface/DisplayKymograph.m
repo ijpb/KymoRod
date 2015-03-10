@@ -499,7 +499,7 @@ function backToElongationButton_Callback(hObject, eventdata, handles) %#ok<INUSD
 
 app = getappdata(0, 'app');
 delete(gcf);
-StartElongation(app);
+ChooseElongationSettingsDialog(app);
 
 
 % --- Executes on button press in quitButton.
