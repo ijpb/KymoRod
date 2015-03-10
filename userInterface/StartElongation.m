@@ -444,7 +444,7 @@ disp('Curvature');
 
 % Alignment of all the results
 disp('Alignment of curves');
-Sa = aligncurv(S, R);
+Sa = alignAbscissa(S, R);
 
 % Displacement
 disp('Displacement');
