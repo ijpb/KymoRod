@@ -440,7 +440,7 @@ app.finalResultLength = nx;
 
 % Curvature
 disp('Curvature');
-[S, A, C] = curvall(SK, iw);
+[S, A, C] = computeCurvatureAll(SK, iw);
 
 % Alignment of all the results
 disp('Alignment of curves');
