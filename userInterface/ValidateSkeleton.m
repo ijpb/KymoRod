@@ -82,8 +82,27 @@ computeAllSkeletons(handles);
 
 dirInitial  = app.firstPointLocation;
 
-% update display
-displayCurrentSkeleton(handles);
+% displayCurrentSkeleton(handles);
+
+% compute current segmented image
+seuil = app.thresholdValues(frameIndex);
+segmentedImage = app.imageList{frameIndex} > seuil;
+
+% setup display:
+% draw each item, and store handles
+
+% display current frame (image, contour, skeleton)
+axes(handles.currentFrameAxes);
+handles.imageHandle     = imshow(segmentedImage);
+hold on;
+handles.contourHandle   = drawContour(app.contourList{frameIndex}, 'color', 'r', 'linewidth', 2);
+
+handles.skeletonHandle  = [];
+handles.markerHandle    = [];
+if ~isempty(app.skeletonList)
+    handles.skeletonHandle  = drawSkeleton(app.skeletonList{frameIndex}, 'b');
+    handles.markerHandle    = drawMarker(app.skeletonList{frameIndex}(1,:), 'bo');
+end
 
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
@@ -169,7 +188,8 @@ frameIndex = max(ceil(frameIndex), 1);
 app.currentFrameIndex = frameIndex;
 
 % update display
-displayCurrentSkeleton(handles);
+updateCurrentDisplay(handles);
+% displayCurrentSkeleton(handles);
 
 % update display of current frame index
 nFrames = length(app.imageList);
@@ -244,8 +264,8 @@ function updateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 % Update the skeleton with the new settings in popupmenu
-set(handles.updateSkeletonButton, 'Enable', 'Off')
-set(handles.updateSkeletonButton, 'String', 'Wait please...')
+set(handles.updateSkeletonButton, 'Enable', 'Off');
+set(handles.updateSkeletonButton, 'String', 'Wait please...');
 pause(0.01);
 
 app = getappdata(0, 'app');
@@ -258,29 +278,35 @@ dirInitial  = dirInitial{val2};
 
 app.firstPointLocation = dirInitial;
 
-% close the window and open again with the new settings
-% TODO: could simply update the widgets...
-delete(gcf);
+computeAllSkeletons(handles);
+updateCurrentDisplay(handles);
 
-ValidateSkeleton(app);
+set(handles.updateSkeletonButton, 'Enable', 'On');
+set(handles.updateSkeletonButton, 'String', 'Update All Skeletons');
 
-function displayCurrentSkeleton(handles)
+
+function updateCurrentDisplay(handles)
+% refresh the content of graphical elements: image, contour, skeleton...
+
 
 app = getappdata(0, 'app');
-
 frameIndex = app.currentFrameIndex;
 
 % compute current segmented image
 seuil = app.thresholdValues(frameIndex);
 segmentedImage = app.imageList{frameIndex} > seuil;
 
-% display current frame (image, contour, skeleton)
-axes(handles.currentFrameAxes);
-imshow(segmentedImage);
-hold on;
-drawContour(app.contourList{frameIndex}, 'r');
-drawSkeleton(app.skeletonList{frameIndex}, 'b');
-drawMarker(app.skeletonList{frameIndex}(1,:), 'bo');
+% display current frame image and contour
+set(handles.imageHandle, 'CData', segmentedImage);
+contour = app.contourList{frameIndex};
+set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
+
+% display current skeleton if already computed
+if ~isempty(app.skeletonList)
+    skeleton = app.skeletonList{frameIndex};
+    set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
+    set(handles.markerHandle, 'XData', skeleton(1,1), 'YData', skeleton(2,2));
+end
 
 
 function computeAllSkeletons(handles)
@@ -291,18 +317,15 @@ app         = getappdata(0, 'app');
 contourList = app.contourList;
 smooth      = app.contourSmoothingSize;
 
-% To take the first values
+% determine the "type" of skeleton (loop, hook...)
 val = get(handles.filterDirectionPopup, 'Value'); 
 directionList = get(handles.filterDirectionPopup, 'String');
-direction = directionList{val};
+organShape = directionList{val};
 
-% To take the second value
+% determine origin of skeleton
 val2 = get(handles.firstSkeletonPointPopup, 'Value');
 stringList = get(handles.firstSkeletonPointPopup, 'String');
-dirInitial = stringList{val2};
-
-dir = direction;
-dirbegin = dirInitial;
+originDirection = stringList{val2};
 
 % number of images
 nImages = length(contourList);
@@ -332,10 +355,10 @@ for i = 1:nImages
     contour = contour * app.pixelSize / 1000;
     
     % apply filtering depending on contour type
-    contour2 = filterContour(contour, 200, dir);
+    contour2 = filterContour(contour, 200, organShape);
 
     % extract skeleton of current contour
-    [SKVerif{i}, rad{i}] = contourSkeleton(contour2, dirbegin);
+    [SKVerif{i}, rad{i}] = contourSkeleton(contour2, originDirection);
     CTVerif{i} = contour;
 
     % coordinates of first point of skeleton
