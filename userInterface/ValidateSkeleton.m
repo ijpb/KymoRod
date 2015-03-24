@@ -45,7 +45,7 @@ end
 
 
 % --- Executes just before ValidateSkeleton is made visible.
-function ValidateSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
+function ValidateSkeleton_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -56,8 +56,6 @@ function ValidateSkeleton_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
-    % should be the canonical way of calling the program
-    
     app = varargin{1};
     setappdata(0, 'app', app);
     
@@ -77,33 +75,30 @@ set(handles.currentFrameSlider, 'Value', frameIndex);
 sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.currentFrameSlider, 'SliderStep', sliderStep); 
 
-% Compute skeletons that should be validated by the user
-computeAllSkeletons(handles);
-
-dirInitial  = app.firstPointLocation;
-
-% displayCurrentSkeleton(handles);
-
 % compute current segmented image
 seuil = app.thresholdValues(frameIndex);
 segmentedImage = app.imageList{frameIndex} > seuil;
+contour = app.contourList{frameIndex};
 
-% setup display:
-% draw each item, and store handles
-
-% display current frame (image, contour, skeleton)
+% display current frame (image and contour)
 axes(handles.currentFrameAxes);
 handles.imageHandle     = imshow(segmentedImage);
 hold on;
-handles.contourHandle   = drawContour(app.contourList{frameIndex}, 'color', 'r', 'linewidth', 2);
+handles.contourHandle   = drawContour(contour, 'color', 'r', 'linewidth', 2);
 
-handles.skeletonHandle  = [];
-handles.markerHandle    = [];
+% eventually display skeleton
 if ~isempty(app.skeletonList)
-    handles.skeletonHandle  = drawSkeleton(app.skeletonList{frameIndex}, 'b');
-    handles.markerHandle    = drawMarker(app.skeletonList{frameIndex}(1,:), 'bo');
+    skeleton = app.skeletonList{frameIndex};
+else
+    skeleton = zeros(1, 2);
+end
+handles.skeletonHandle  = drawSkeleton(skeleton, 'b');
+handles.markerHandle    = drawMarker(skeleton(1,:), 'bo');
+if isempty(app.skeletonList)
+    set([handles.skeletonHandle, handles.markerHandle], 'Visible', 'Off');  
 end
 
+% display some info on current frame
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
@@ -125,7 +120,7 @@ switch direction
         set(handles.filterDirectionPopup, 'Value', 7);
 end
 
-
+dirInitial  = app.firstPointLocation;
 switch dirInitial
     case 'bottom'
         set(handles.firstSkeletonPointPopup, 'Value', 1);
@@ -135,6 +130,12 @@ switch dirInitial
         set(handles.firstSkeletonPointPopup, 'Value', 3);
     case 'top'
         set(handles.firstSkeletonPointPopup, 'Value', 4);
+end
+
+% disable some widgets in case skeletons are not computed
+if isempty(app.skeletonList)
+    set(handles.validateSkeletonButton, 'Enable', 'Off');
+    set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 end
 
 
@@ -189,7 +190,6 @@ app.currentFrameIndex = frameIndex;
 
 % update display
 updateCurrentDisplay(handles);
-% displayCurrentSkeleton(handles);
 
 % update display of current frame index
 nFrames = length(app.imageList);
@@ -288,7 +288,6 @@ set(handles.updateSkeletonButton, 'String', 'Update All Skeletons');
 function updateCurrentDisplay(handles)
 % refresh the content of graphical elements: image, contour, skeleton...
 
-
 app = getappdata(0, 'app');
 frameIndex = app.currentFrameIndex;
 
@@ -306,6 +305,9 @@ if ~isempty(app.skeletonList)
     skeleton = app.skeletonList{frameIndex};
     set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
     set(handles.markerHandle, 'XData', skeleton(1,1), 'YData', skeleton(2,2));
+    set([handles.skeletonHandle handles.markerHandle], 'Visible', 'On');
+else
+    set([handles.skeletonHandle handles.markerHandle], 'Visible', 'Off');
 end
 
 
@@ -402,6 +404,9 @@ app.originPosition = shift;
 
 setappdata(0, 'app', app); 
 
+set(handles.validateSkeletonButton, 'Enable', 'On');
+set(handles.saveSkeletonDataButton, 'Enable', 'On');
+
 
 % --- Executes on button press in saveSkeletonDataButton.
 function saveSkeletonDataButton_Callback(hObject, eventdata, handles)%#ok
@@ -440,6 +445,7 @@ function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 delete (gcf);
 SmoothContourDialog(app);
+
 
 % --- Executes on button press in validateSkeletonButton.
 function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
