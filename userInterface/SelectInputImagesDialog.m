@@ -22,7 +22,7 @@ function varargout = SelectInputImagesDialog(varargin)
 
 % Edit the above text to modify the response to help SelectInputImagesDialog
 
-% Last Modified by GUIDE v2.5 02-Mar-2015 09:09:47
+% Last Modified by GUIDE v2.5 24-Mar-2015 16:28:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -64,21 +64,18 @@ set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
 
 app = varargin{1};
 
-switch app.currentStep
-    case 'none'
-
-    otherwise
-        % some data are already initialized
-        
-        % need to refresh image list from file information
-        folderName  = app.inputImagesDir;
-        filePattern = app.inputImagesFilePattern;
-        app.imageNameList = readImageNameList(folderName, filePattern);
-        
-        % update visibility and content of widgets
-        makeAllWidgetsVisible(handles);
-        updateFrameSliderBounds(handles);
-        updateFramePreview(handles);
+if ~strcmp(app.currentStep, 'none')
+    % if some data are already initialized, display widgets
+    
+    % need to refresh image list from file information
+    folderName  = app.inputImagesDir;
+    filePattern = app.inputImagesFilePattern;
+    app.imageNameList = readImageNameList(folderName, filePattern);
+    
+    % update visibility and content of widgets
+    makeAllWidgetsVisible(handles);
+    updateFrameSliderBounds(handles);
+    updateFramePreview(handles);
 
 end
 
@@ -153,21 +150,110 @@ end
 set(handles.inputImageFolderEdit, 'String', folderName);
 app.inputImagesDir = folderName;
 
-% read the list of image names
+updateImageNameList(handles);
+
+% --- Executes on button change in channelSelectionPanel
+function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)
+% this function is used to catch selection of radiobuttons in selection panel
+
+
+function filePatternEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to filePatternEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of filePatternEdit as text
+%        str2double(get(hObject,'String')) returns contents of filePatternEdit as a double
+
+app = getappdata(0, 'app');
+string = get(handles.filePatternEdit, 'String');
+app.inputImagesFilePattern = string;
+disp(['update file pattern: ' string]);
+
+updateImageNameList(handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function filePatternEdit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to filePatternEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in imageChannelPopup.
+function imageChannelPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to imageChannelPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns imageChannelPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from imageChannelPopup
+
+app = getappdata(0, 'app');
+stringArray = get(handles.imageChannelPopup, 'String');
+value = get(handles.imageChannelPopup, 'Value');
+channelString = strtrim(stringArray(value,:));
+app.imageSegmentationChannel = channelString;
+
+% --- Executes during object creation, after setting all properties.
+function imageChannelPopup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to imageChannelPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function updateImageNameList(handles)
+% should be called after change of input directory, or file pattern
+
+% extract app data
+app = getappdata(0, 'app');
+
+% read new list
+folderName = app.inputImagesDir;
 filePattern = app.inputImagesFilePattern;
 imageNames = readImageNameList(folderName, filePattern);
+app.imageNameList = imageNames;
 
 if isempty(imageNames)
     errordlg({'The chosen directory contains no file.', ...
         'Please choose another one'}, ...
-        'Empty Directory Error', 'modal')
+        'Empty Directory Error', 'modal');
+    
+    % disable preview and other settings
+    set(handles.calibrationPanel, 'Visible', 'Off');
+    set(handles.frameSelectionPanel, 'Visible', 'Off');
+    set(handles.currentFrameLabel, 'Visible', 'Off');
+    cla(handles.currentFrameAxes);
+    set(handles.currentFrameAxes, 'Visible', 'Off');
+    set(handles.framePreviewSlider, 'Visible', 'Off');
+    set(handles.selectImagesButton, 'Visible', 'On');
+
     return;
 end
 
-app.imageNameList = imageNames;
-frameNumber = length(imageNames);
+% choose to display color image selection
+info = imfinfo(fullfile(folderName, imageNames{1}));
+if strcmpi(info(1).ColorType, 'grayscale')
+    set(handles.imageChannelLabel, 'Enable', 'Off');
+    set(handles.imageChannelPopup, 'Enable', 'Off');
+else
+    set(handles.imageChannelLabel, 'Enable', 'On');
+    set(handles.imageChannelPopup, 'Enable', 'On');
+end
 
 % init image selection indices
+frameNumber = length(imageNames);
 app.inputImagesFilePattern = filePattern;
 app.firstIndex = 1;
 app.lastIndex = frameNumber;
@@ -178,7 +264,8 @@ makeAllWidgetsVisible(handles);
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);
 
-guidata(hObject, handles);
+guidata(handles.figure1, handles);
+
 
 function imageNames = readImageNameList(folderName, filePattern)
     
@@ -200,46 +287,41 @@ end
 
 function makeAllWidgetsVisible(handles)
 
+% update widgets with app information
+app = getappdata(0, 'app');
+
 % show all panels
 set(handles.inputImagesPanel, 'Visible', 'On');
 set(handles.calibrationPanel, 'Visible', 'On');
 set(handles.frameSelectionPanel, 'Visible', 'On');
 
-% update widgets with app information
-app = getappdata(0, 'app');
+% update calibration widgets
 set(handles.inputImageFolderEdit, 'String', app.inputImagesDir);
 set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
 set(handles.spatialResolutionEdit, 'String', num2str(app.pixelSize));
 set(handles.timeIntervalEdit, 'String', num2str(app.timeInterval));
 
-
+% display image preview
 set(handles.currentFrameLabel, 'Visible', 'On');
 set(handles.currentFrameAxes, 'Visible', 'On');
+
+frameSelectionHandles = [...
+    handles.firstFrameIndexLabel, handles.frameIndexStepLabel, ...
+    handles.lastFrameIndexLabel, handles.lastFrameIndexEdit, ...
+    handles.frameIndexStepLabel, handles.frameIndexStepEdit  ];
 
 frameNumber = length(app.imageNameList);
 if app.firstIndex == 1 && app.lastIndex == frameNumber && app.indexStep == 1
     set(handles.keepAllFramesRadioButton, 'Value', 1);
     set(handles.selectFrameIndicesRadioButton, 'Value', 0);
-    
-    % make file selection widgets visible
-    set(handles.firstFrameIndexLabel, 'Visible', 'Off');
-    set(handles.lastFrameIndexLabel, 'Visible', 'Off');
-    set(handles.frameIndexStepLabel, 'Visible', 'Off');
-    set(handles.firstFrameIndexEdit, 'Visible', 'Off');
-    set(handles.lastFrameIndexEdit, 'Visible', 'Off');
-    set(handles.frameIndexStepEdit, 'Visible', 'Off');
+    % make file selection widgets invisible
+    set(frameSelectionHandles, 'Visible', 'Off');
 
 else
     set(handles.keepAllFramesRadioButton, 'Value', 0);
     set(handles.selectFrameIndicesRadioButton, 'Value', 1);
-    
     % make file selection widgets visible
-    set(handles.firstFrameIndexLabel, 'Visible', 'On');
-    set(handles.lastFrameIndexLabel, 'Visible', 'On');
-    set(handles.frameIndexStepLabel, 'Visible', 'On');
-    set(handles.firstFrameIndexEdit, 'Visible', 'On');
-    set(handles.lastFrameIndexEdit, 'Visible', 'On');
-    set(handles.frameIndexStepEdit, 'Visible', 'On');
+    set(frameSelectionHandles, 'Visible', 'On');
 end
 
 string = sprintf('Keep All Frames (%d)', frameNumber);
@@ -252,34 +334,6 @@ set(handles.lastFrameIndexEdit, 'String', num2str(app.lastIndex));
 set(handles.frameIndexStepEdit, 'String', num2str(app.indexStep));
 
 set(handles.selectImagesButton, 'Visible', 'On');
-
-
-
-% --- Executes on button change in channelSelectionPanel
-function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)
-% this function is used to catch selection of radiobuttons in selection panel
-
-
-function filePatternEdit_Callback(hObject, eventdata, handles)
-% hObject    handle to filePatternEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of filePatternEdit as text
-%        str2double(get(hObject,'String')) returns contents of filePatternEdit as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function filePatternEdit_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to filePatternEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 %% Calibration section
@@ -684,6 +738,9 @@ nFrames = length(fileList);
 imageList = cell(nFrames, 1);
 imageNameList = cell(nFrames, 1);
 
+% channel to use for color images
+channelName = app.imageSegmentationChannel;
+
 disp('Read input images...');
 parfor_progress(nFrames);
 
@@ -695,7 +752,14 @@ parfor i = 1:nFrames
 
     % keep only the red channel of color images
     if ndims(img) > 2 %#ok<ISMAT>
-        img = img(:,:,1);
+        switch lower(channelName)
+            case 'red', img = img(:,:,1); 
+            case 'green', img = img(:,:,2); 
+            case 'blue', img = img(:,:,3); 
+            case 'intensity', img = rgb2gray(img);
+            otherwise
+                error(['could not recognise channel name: ' channelName]);
+        end
     end
     imageList{i} = img;
     

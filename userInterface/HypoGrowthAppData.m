@@ -27,6 +27,9 @@ classdef HypoGrowthAppData < handle
         inputImagesDir = '';
         inputImagesFilePattern = '*.*';
         
+        % in case of color images, which channel should be used for analysis
+        imageSegmentationChannel = 'red';
+        
         % flag indicating whether images are loaded in memory or read from
         % files only when necessary
         inputImagesLazyLoading = false;
@@ -201,6 +204,8 @@ classdef HypoGrowthAppData < handle
             % informations to retrieve input image
             fprintf(f, 'inputImagesDir = %s\n', this.inputImagesDir);
             fprintf(f, 'inputImagesFilePattern = %s\n', this.inputImagesFilePattern);
+            fprintf(f, 'imageSegmentationChannel = %s\n', this.imageSegmentationChannel);
+
             string = HypoGrowthAppData.booleanToString(this.inputImagesLazyLoading);
             fprintf(f, 'inputImagesLazyLoading = %s\n', string);
             fprintf(f, '\n');
@@ -296,6 +301,9 @@ classdef HypoGrowthAppData < handle
                         app.inputImagesDir = value;
                     case lower('inputImagesFilePattern')
                         app.inputImagesFilePattern = value;
+                    case lower('imageSegmentationChannel')
+                        app.imageSegmentationChannel = value;
+
                     case lower('inputImagesLazyLoading')
                         app.inputImagesLazyLoading = strcmp(value, 'true');
                         
