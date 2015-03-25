@@ -258,7 +258,7 @@ segmentedImage = app.imageList{index} > threshold;
 
 % retrieve current contour
 contour = app.contourList{index};
-% Smooth current contour
+KymoRodMenuDialog
 smooth  = app.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 
