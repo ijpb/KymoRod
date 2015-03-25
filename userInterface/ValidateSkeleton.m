@@ -167,7 +167,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok % To save t
 
 app = getappdata(0, 'app');
 delete(gcf);
-HypoGrowthMenu(app);
+KymoRodMenuDialog(app);
 
 
 % --- Executes on slider movement.
@@ -353,7 +353,7 @@ hDialog = msgbox(...
 
 parfor_progress(nImages);
 for i = 1:nImages
-    KymoRodMenuDialog
+    % extract current contour
     contour = contourList{i};
     if smooth ~= 0
         contour = smoothContour(contour, smooth);

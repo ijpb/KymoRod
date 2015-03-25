@@ -125,7 +125,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 delete(gcf);
-HypoGrowthMenu(app);
+KymoRodMenuDialog(app);
 
 %% Widgets
 
@@ -258,7 +258,6 @@ segmentedImage = app.imageList{index} > threshold;
 
 % retrieve current contour
 contour = app.contourList{index};
-KymoRodMenuDialog
 smooth  = app.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 
