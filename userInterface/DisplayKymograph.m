@@ -373,21 +373,21 @@ function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-try
-    % open a dialog to select a PNG file
-    [fileName, pathName] = uiputfile({'*.png'});
-    
-    % select current frame and convert to image
-    f = getframe(handles.kymographAxes);
-    im = frame2im(f);
-    
-    % save image into selected file
-    imwrite(im, fullfile(pathName, fileName), 'png');
-    
-catch error %#ok
-    warning('Select a folder to save picture please');
+% open a dialog to select a PNG file
+[fileName, pathName] = uiputfile({'*.png'});
+
+% check dialog was canceled
+if fileName == 0
     return;
 end
+
+% select current frame and convert to image
+f = getframe(handles.kymographAxes);
+im = frame2im(f);
+
+% save image into selected file
+imwrite(im, fullfile(pathName, fileName), 'png');
+
 
 
 % --- Executes on button press in saveAsTiffButton.
@@ -396,21 +396,21 @@ function saveAsTiffButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-try
-    % open a dialog to select a PNG file
-    [fileName, pathName] = uiputfile({'*.tif'});
-    
-    % select current frame and convert to image
-    f = getframe(handles.kymographAxes);
-    im = frame2im(f);
-    
-    % save image into selected file
-    imwrite(im, fullfile(pathName, fileName), 'tif');
+% open a dialog to select a PNG file
+[fileName, pathName] = uiputfile({'*.tif'});
 
-catch error%#ok
-    warning('Select a folder to save picture please');
+% check dialog was canceled
+if fileName == 0
     return;
 end
+
+% select current frame and convert to image
+f = getframe(handles.kymographAxes);
+im = frame2im(f);
+
+% save image into selected file
+imwrite(im, fullfile(pathName, fileName), 'tif');
+
 
 % --- Executes on button press in saveAllDataButton.
 function saveAllDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
