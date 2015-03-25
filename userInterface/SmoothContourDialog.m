@@ -56,7 +56,7 @@ function SmoothContourDialog_OpeningFcn(hObject, eventdata, handles, varargin)%#
 
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
+if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     app = varargin{1};
 
 else

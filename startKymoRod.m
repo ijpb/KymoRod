@@ -14,8 +14,8 @@ function startKymoRod(varargin)
 % Created: 2014-10-13,    using Matlab 8.3.0.532 (R2014a)
 % Copyright 2014 INRA - Cepia Software Platform.
 
-% create application data structure
-app = HypoGrowthAppData;
+% create new empty application data structure
+app = KymoRodAppData;
 
 % [path, name] = fileparts(mfilename('fullpath'));
 path = fileparts(mfilename('fullpath'));

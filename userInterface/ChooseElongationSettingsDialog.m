@@ -56,8 +56,8 @@ function ChooseElongationSettingsDialog_OpeningFcn(hObject, eventdata, handles, 
 % Choose default command line output for ChooseElongationSettingsDialog
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
-    disp('init from HypoGrowthAppData');
+if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
+    disp('init from KymoRodAppData');
     
     app = varargin{1};
     app.currentStep = 'elongation';
@@ -65,7 +65,7 @@ if nargin == 4 && isa(varargin{1}, 'HypoGrowthAppData')
  
 else
     % if user come from ValidateSkeleton
-    error('StartElongation should be called with an HypoGrowthAppData object');
+    error('StartElongation should be called with an KymoRodAppData object');
 end
 
 % Update handles structure

@@ -1,5 +1,5 @@
-classdef HypoGrowthAppData < handle
-    % Data Class for Application "HypoGrowth"
+classdef KymoRodAppData < handle
+    % Data Class for Application "KymoRod"
     %
     
     properties
@@ -130,7 +130,7 @@ classdef HypoGrowthAppData < handle
     
     % Constructor
     methods
-        function this = HypoGrowthAppData(varargin)
+        function this = KymoRodAppData(varargin)
             % Create a new data structure for storing application data
         end
     end
@@ -206,7 +206,7 @@ classdef HypoGrowthAppData < handle
             fprintf(f, 'inputImagesFilePattern = %s\n', this.inputImagesFilePattern);
             fprintf(f, 'imageSegmentationChannel = %s\n', this.imageSegmentationChannel);
 
-            string = HypoGrowthAppData.booleanToString(this.inputImagesLazyLoading);
+            string = KymoRodAppData.booleanToString(this.inputImagesLazyLoading);
             fprintf(f, 'inputImagesLazyLoading = %s\n', string);
             fprintf(f, '\n');
             
@@ -263,7 +263,7 @@ classdef HypoGrowthAppData < handle
         function app = readFromFile(fileName)
             
             % create new empty appdata class
-            app = HypoGrowthAppData();
+            app = KymoRodAppData();
             
             % open in text mode, erasing content if it exists
             f = fopen(fileName, 'rt');
