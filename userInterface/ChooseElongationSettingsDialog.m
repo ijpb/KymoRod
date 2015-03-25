@@ -60,7 +60,6 @@ if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     disp('init from KymoRodAppData');
     
     app = varargin{1};
-    app.currentStep = 'elongation';
     setappdata(0, 'app', app);
  
 else
@@ -247,7 +246,7 @@ set(handles.validateSettingsButton, 'String', 'Wait please...')
 pause(0.01);
 
 % get global data
-app = getappdata(0, 'app');
+app     = getappdata(0, 'app');
 SK      = app.scaledSkeletonList;
 R       = app.radiusList;
 t0      = app.timeInterval;
@@ -330,6 +329,8 @@ app.elongationImage     = ElgE1;
 app.curvatureImage      = CE1;
 app.verticalAngleImage  = AE1;
 app.radiusImage         = RE1;
+
+setProcessingStep(app, 'kymograph');
 
 setappdata(0, 'app', app);
 

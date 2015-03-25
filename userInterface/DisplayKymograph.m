@@ -57,9 +57,7 @@ handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     app = varargin{1};
-    app.currentStep = 'kymograph';
     setappdata(0, 'app', app);
-    
 else
     error('Run DisplayKymograph using deprecated call');
 end
@@ -71,9 +69,10 @@ skeleton    = app.skeletonList{ind};
 
 % Display current image
 axes(handles.imageAxes); hold on;
-
+% display grayscale image as RGB, to avoid colormap problems
 handles.imageHandle     = imshow(repmat(app.imageList{ind}, [1 1 3]));
 
+% draw geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
 handles.skeletonHandle  = drawSkeleton(skeleton, 'b');
 handles.colorSkelHandle = scatter(skeleton(:, 1), skeleton(:, 2), ...

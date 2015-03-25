@@ -65,7 +65,6 @@ else
 end
 
 % update current process state
-app.currentStep = 'contour';
 setappdata(0, 'app', app);
 
 % retrieve app data
@@ -77,7 +76,6 @@ index   = app.currentFrameIndex;
 set(handles.smoothValueSlider, 'Value', smooth);
 set(handles.smoothValueEdit, 'String', num2str(smooth));
 
-
 % initialize current frame index slider
 set(handles.frameIndexSlider, 'Min', 1);
 set(handles.frameIndexSlider, 'Max', nImages);
@@ -87,9 +85,17 @@ set(handles.frameIndexSlider, 'SliderStep', steps);
 label = sprintf('Current Frame: %d / %d', index, nImages);
 set(handles.currentFrameIndexLabel, 'String', label);
 
-% Display current frame together with initial contour
-updateContourDisplay(handles);
+% compute data to display for current frame
+threshold = app.thresholdValues(index);
+segmentedImage = app.imageList{index} > threshold;
+contour = app.contourList{index};
+contour = smoothContour(contour, smooth); 
 
+% display current frame (image and contour)
+axes(handles.imageAxes);
+handles.imageHandle     = imshow(segmentedImage);
+hold on;
+handles.contourHandle   = drawContour(contour, 'color', 'r', 'linewidth', 1.5);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -145,6 +151,8 @@ set(handles.smoothValueEdit, 'String', num2str(smooth));
 
 % update app data 
 app.contourSmoothingSize = smooth;
+setProcessingStep(app, 'contour');
+
 setappdata(0, 'app', app);
 
 % update display
@@ -184,6 +192,9 @@ set(handles.smoothValueSlider, 'Value', smooth);
 
 % update app data 
 app.contourSmoothingSize = smooth;
+
+setProcessingStep(app, 'contour');
+
 setappdata(0, 'app', app);
 
 % update display
@@ -239,20 +250,20 @@ function updateContourDisplay(handles)
 
 % get global data
 app     = getappdata(0, 'app');
+index   = app.currentFrameIndex;
+
+% compute current segmented image
+threshold = app.thresholdValues(index);
+segmentedImage = app.imageList{index} > threshold;
 
 % retrieve current contour
-index   = app.currentFrameIndex;
 contour = app.contourList{index};
-
 smooth  = app.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 
-% update display
-axes(handles.imageAxes);
-threshold = app.thresholdValues(index);
-imshow(app.imageList{index} > threshold);
-hold on;
-drawContour(contour, 'r', 'LineWidth', 1.5);
+% display current frame image and contour
+set(handles.imageHandle, 'CData', segmentedImage);
+set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 
 
 %% Validation and Comeback buttons

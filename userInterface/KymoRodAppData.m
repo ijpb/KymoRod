@@ -13,8 +13,8 @@ classdef KymoRodAppData < handle
         % 'contour'
         % 'skeleton'
         % 'elongation'
-        % 'kymogram'
-        currentStep = 'none';
+        % 'kymograph'
+        processingStep = 'none';
         
         % index of current frame for display
         currentFrameIndex = 1;
@@ -116,16 +116,18 @@ classdef KymoRodAppData < handle
         
         elongationList;
         
-        elongationImage;
+        
+        % reconstructed image of skeleton radius in absissa and time
+        radiusImage;
+
+        % reconstructed image of angle with vertical in absissa and time
+        verticalAngleImage;
         
         % reconstructed image of curvature in absissa and time
         curvatureImage;
         
-        % reconstructed image of angle with vertical in absissa and time
-        verticalAngleImage;
-        
-        % reconstructed image of skeleton radius in absissa and time
-        radiusImage;
+        % final result: elongation as a function of position and time
+        elongationImage;        
     end
     
     % Constructor
@@ -174,11 +176,106 @@ classdef KymoRodAppData < handle
                 
                 % keep only the red channel of color images
                 if ndims(img) > 2 %#ok<ISMAT>
+                    % TODO: use imageSegmentationChannel field
                     img = img(:,:,1);
                 end
                 this.imageList{i} = img;
             end
             
+        end
+    end
+    
+    
+    % processing step management
+    methods
+        function step = getProcessingStep(this)
+            step = this.processingStep;
+        end
+        
+        function setProcessingStep(this, newStep)
+            % changes the current processing step, and clear outdated variables
+            
+            switch lower(newStep)
+                case 'none'
+                    % clear all data, including input image info
+                    clearImageData();
+                    
+                case 'selection'
+                    % select new image batch: clear all computed data
+                    clearSegmentationData();
+                    
+                case 'threshold'
+                    clearContourData();
+                    
+                case 'contour'
+                    clearSkeletonData();
+                    
+                case 'skeleton'
+                    % skeletons are updated. Need to recompute displacement
+                    % and elongation data
+                     clearElongationData();
+                     
+                case 'elongation'
+                    % ??? should add displacement step ?
+                     clearResultImages();
+                     
+                case 'kymograph'
+                    % final processing step: nothing to clear!
+                    
+                otherwise
+                    error(['Unrecognised processing step: ' newStep]);
+            end
+            
+            % update current processing step
+            this.processingStep = newStep;
+            
+            function clearImageData()
+                this.imageList = {};
+                this.imageNameList = {};
+
+                clearSegmentationData();
+            end
+            
+            function clearSegmentationData()
+                this.baseThresholdValues = [];
+                this.thresholdValues = [];
+                
+                clearContourData();
+            end
+            
+            function clearContourData()
+                this.contourList = {};
+                this.scaledContourList = {};
+                
+                clearSkeletonData();
+            end
+            
+            function clearSkeletonData()
+                this.skeletonList = {};
+                this.scaledSkeletonList = {};
+                this.radiusList = {};
+                this.originPosition = {};
+
+                clearElongationData();
+            end
+            
+            function clearElongationData()
+                this.abscissaList = {};
+                this.verticalAngleList = {};
+                this.curvatureList = {};
+                this.displacementList = {};
+                this.smoothedDisplacementList = {};
+                this.elongationList = {};
+                
+                clearResultImages();
+            end
+            
+            function clearResultImages()
+                this.curvatureImage = [];
+                this.verticalAngleImage = [];
+                this.radiusImage = [];
+                this.elongationImage = [];
+            end
         end
     end
     
@@ -249,7 +346,7 @@ classdef KymoRodAppData < handle
             fprintf(f, '\n');
            
             % info about current step of the process
-            fprintf(f, 'currentStep = %s\n', this.currentStep);
+            fprintf(f, 'currentStep = %s\n', this.processingStep);
             fprintf(f, 'currentFrameIndex = %d\n', this.currentFrameIndex);
             fprintf(f, '\n');
         
@@ -343,8 +440,8 @@ classdef KymoRodAppData < handle
                     case lower('finalResultLength')
                         app.finalResultLength = str2double(value);
                     
-                    case lower('currentStep')
-                        app.currentStep = value;
+                    case {lower('processingStep'), lower('currentStep')}
+                        app.processingStep = value;
                     case lower('currentFrameIndex')
                         app.currentFrameIndex = str2double(value);
                     

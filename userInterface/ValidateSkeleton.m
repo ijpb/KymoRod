@@ -63,8 +63,6 @@ else
     error('Deprecated way of calling ValidateSkeleton');
 end
 
-app.currentStep = 'skeleton';
-
 frameIndex  = app.currentFrameIndex;
 nFrames     = length(app.imageList);
 
@@ -411,6 +409,7 @@ app.scaledSkeletonList = SK;
 app.originPosition = shift;
 
 setappdata(0, 'app', app); 
+setProcessingStep(app, 'skeleton');
 
 set(handles.validateSkeletonButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'Enable', 'On');

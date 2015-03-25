@@ -61,12 +61,10 @@ end
 set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
 
-
 app = varargin{1};
 
-if ~strcmp(app.currentStep, 'none')
-    % if some data are already initialized, display widgets
-    
+% if some data are already initialized, display widgets
+if ~strcmp(getProcessingStep(app), 'none')
     % need to refresh image list from file information
     folderName  = app.inputImagesDir;
     filePattern = app.inputImagesFilePattern;
@@ -76,10 +74,8 @@ if ~strcmp(app.currentStep, 'none')
     makeAllWidgetsVisible(handles);
     updateFrameSliderBounds(handles);
     updateFramePreview(handles);
-
 end
 
-app.currentStep = 'selection';
 setappdata(0, 'app', app);
 
 % setup some widgets with current settings
@@ -219,10 +215,12 @@ function updateImageNameList(handles)
 % extract app data
 app = getappdata(0, 'app');
 
+setProcessingStep(app, 'selection');
+
 % read new list
-folderName = app.inputImagesDir;
+folderName  = app.inputImagesDir;
 filePattern = app.inputImagesFilePattern;
-imageNames = readImageNameList(folderName, filePattern);
+imageNames  = readImageNameList(folderName, filePattern);
 app.imageNameList = imageNames;
 
 if isempty(imageNames)

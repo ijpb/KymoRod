@@ -62,37 +62,11 @@ if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     app = varargin{1};    
     col = app.imageList;
     
-elseif nargin == 11 
-    % if user come from StartSkeleton
-    warning('deprecated way of calling ChooseThresholdDialog');
-    
-    col = varargin{4};
-    fin = varargin{2};
-    debut = varargin{1};
-    step = varargin{5};
-    nbInit = varargin{6};
-    N = varargin{7};
-    folder_name = varargin{8};
-    setappdata(0, 'debut', debut);
-    setappdata(0, 'step', step);
-    setappdata(0, 'fin', fin);
-    setappdata(0, 'col', col);
-    setappdata(0, 'nbInit', nbInit);
-    setappdata(0, 'N', N);
-    setappdata(0, 'folder_name', folder_name);
-    
-elseif nargin == 4 
-    % if user come from ValidateContour, back way
-    col = varargin{1};
-    app = KymoRodAppData();
-    app.imageList = col;
-    
 else
-    error('requires 11 or 4 input arguments');
+    error('requires 4 input arguments, with a KymoRodAppDAta as fourth argument');
 end
 
 % update current process state
-app.currentStep = 'threshold';
 setappdata(0, 'app', app);
 
 frameIndex = app.currentFrameIndex;
@@ -434,6 +408,8 @@ imshow(seg);
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
 set(handles.updateAutomaticThresholdButton, 'String', 'Update threshold');
 
+setProcessingStep(app, 'threshold');
+
 
 %% Widgets for manual threshold
 
@@ -489,6 +465,8 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, ...
     round(thresholdValues(frameIndex)));
 set(handles.currentFrameThresholdLabel, 'String', string);
 
+setProcessingStep(app, 'threshold');
+
 
 % --- Executes during object creation, after setting all properties.
 function manualThresholdSlider_CreateFcn(hObject, eventdata, handles)%#ok
@@ -542,31 +520,10 @@ end
 app.baseThresholdValues = thresholdValues;
 app.thresholdValues = thresholdValues;
 
+setProcessingStep(app, 'threshold');
+
 
 %% General settings widgets
-
-% --- Executes on selection change in firstPointSkeletonPopup.
-function firstPointSkeletonPopup_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to firstPointSkeletonPopup (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns firstPointSkeletonPopup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from firstPointSkeletonPopup
-
-
-% --- Executes during object creation, after setting all properties.
-function firstPointSkeletonPopup_CreateFcn(hObject, eventdata, handles)%#ok
-% hObject    handle to firstPointSkeletonPopup (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 % --- Executes on button press in backToSelectionButton.
 function backToSelectionButton_Callback(hObject, eventdata, handles)%#ok
