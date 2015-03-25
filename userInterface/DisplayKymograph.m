@@ -123,7 +123,7 @@ function mainMenuMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSD>
 
 app = getappdata(0, 'app');
 delete(gcf);
-KymoRodMenuDialog(app);
+HypoGrowthMenu(app);
 
 
 

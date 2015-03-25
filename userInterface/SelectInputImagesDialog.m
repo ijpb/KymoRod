@@ -116,7 +116,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)
 
 app = getappdata(0, 'app');
 delete(gcf);
-KymoRodMenuDialog(app);
+HypoGrowthMenu(app);
 
 %% Input directory selection
 
