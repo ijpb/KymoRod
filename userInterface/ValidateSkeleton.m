@@ -347,7 +347,7 @@ hDialog = msgbox(...
 
 parfor_progress(nImages);
 for i = 1:nImages
-    % Smooth current contour
+    KymoRodMenuDialog
     contour = contourList{i};
     if smooth ~= 0
         contour = smoothContour(contour, smooth);
