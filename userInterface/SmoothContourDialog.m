@@ -244,7 +244,6 @@ app     = getappdata(0, 'app');
 index   = app.currentFrameIndex;
 contour = app.contourList{index};
 
-% Smooth current contour
 smooth  = app.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 

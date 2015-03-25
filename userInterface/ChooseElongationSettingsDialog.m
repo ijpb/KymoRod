@@ -94,7 +94,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 delete(gcf);
-HypoGrowthMenu(app);
+KymoRodMenuDialog(app);
 
 
 function smoothingLengthEdit_Callback(hObject, eventdata, handles)%#ok

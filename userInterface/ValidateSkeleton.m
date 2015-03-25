@@ -89,6 +89,7 @@ handles.contourHandle   = drawContour(contour, 'color', 'r', 'linewidth', 2);
 % eventually display skeleton
 if ~isempty(app.skeletonList)
     skeleton = app.skeletonList{frameIndex};
+    
 else
     skeleton = zeros(1, 2);
 end
@@ -165,7 +166,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok % To save t
 
 app = getappdata(0, 'app');
 delete(gcf);
-HypoGrowthMenu(app);
+KymoRodMenuDialog(app);
 
 
 % --- Executes on slider movement.
@@ -347,7 +348,7 @@ hDialog = msgbox(...
 
 parfor_progress(nImages);
 for i = 1:nImages
-    % Smooth current contour
+    KymoRodMenuDialog
     contour = contourList{i};
     if smooth ~= 0
         contour = smoothContour(contour, smooth);
