@@ -80,6 +80,10 @@ seuil = app.thresholdValues(frameIndex);
 segmentedImage = app.imageList{frameIndex} > seuil;
 contour = app.contourList{frameIndex};
 
+% apply smoothing on current contour
+smooth  = app.contourSmoothingSize;
+contour = smoothContour(contour, smooth);
+
 % display current frame (image and contour)
 axes(handles.currentFrameAxes);
 handles.imageHandle     = imshow(segmentedImage);
@@ -89,7 +93,6 @@ handles.contourHandle   = drawContour(contour, 'color', 'r', 'linewidth', 2);
 % eventually display skeleton
 if ~isempty(app.skeletonList)
     skeleton = app.skeletonList{frameIndex};
-    
 else
     skeleton = zeros(1, 2);
 end
@@ -296,9 +299,13 @@ frameIndex = app.currentFrameIndex;
 seuil = app.thresholdValues(frameIndex);
 segmentedImage = app.imageList{frameIndex} > seuil;
 
+% apply smoothing on current contour
+contour = app.contourList{frameIndex};
+smooth  = app.contourSmoothingSize;
+contour = smoothContour(contour, smooth);
+
 % display current frame image and contour
 set(handles.imageHandle, 'CData', segmentedImage);
-contour = app.contourList{frameIndex};
 set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 
 % display current skeleton if already computed
@@ -348,7 +355,7 @@ hDialog = msgbox(...
 
 parfor_progress(nImages);
 for i = 1:nImages
-    KymoRodMenuDialog
+    % Smooth current contour
     contour = contourList{i};
     if smooth ~= 0
         contour = smoothContour(contour, smooth);
