@@ -428,7 +428,6 @@ pause(0.01);
     'Save Kymographs');
 
 if pathName == 0
-    warning('Select a file please');
     return;
 end
 
@@ -436,15 +435,16 @@ disp('Saving...');
 
 % retrieve application data
 app     = getappdata(0, 'app');
-ElgE1   = app.elongationImage;
-CE1     = app.curvatureImage;
-AE1     = app.verticalAngleImage;
-RE1     = app.radiusImage;
 
-% save full application data as mat file
+% filename of mat file
 [emptyPath, baseName, ext] = fileparts(fileName); %#ok<ASGLU>
 filePath = fullfile(pathName, [baseName '.mat']);
+
+% save full application data as mat file, without image data
+imgTemp = app.imageList;
+app.imageList = {};
 save(filePath, 'app');
+app.imageList = imgTemp;
 
 % save settings of application, to retrieve them easily
 filePath = fullfile(pathName, [baseName '-settings.txt']);
@@ -466,6 +466,12 @@ else
 		rowNames{i} = sprintf('frame%03d', i);
 	end
 end
+
+% save individual image arrays
+ElgE1   = app.elongationImage;
+CE1     = app.curvatureImage;
+AE1     = app.verticalAngleImage;
+RE1     = app.radiusImage;
 
 % initialize col names: a list of values
 nPositions = app.finalResultLength;
