@@ -589,8 +589,8 @@ for i = 1:nImages
     contours{i} = segmentContour(images{i}, thres(i));
     parfor_progress;
 end
-
 parfor_progress(0);
+
 if ishandle(hDialog)
     close(hDialog);
 end

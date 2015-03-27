@@ -130,7 +130,7 @@ KymoRodMenuDialog(app);
 %% Widgets
 
 % --- Executes on slider movement.
-function smoothValueSlider_Callback(hObject, eventdata, handles)%#ok % To select the good smooth with a slidebar
+function smoothValueSlider_Callback(hObject, eventdata, handles)%#ok 
 % hObject    handle to smoothValueSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

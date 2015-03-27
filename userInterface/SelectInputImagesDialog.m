@@ -267,21 +267,27 @@ guidata(handles.figure1, handles);
 
 function imageNames = readImageNameList(folderName, filePattern)
     
+fprintf('Read name image list...');
+
 % list files in chosen directory
 fileList = dir(fullfile(folderName, filePattern));
 fileList = fileList(~[fileList.isdir]);
 
+% no file matching pattern
 if isempty(fileList)
+    fprintf(' no file found\n');
     imageNames = {};
     return;
 end
 
+% populate the list of image names
 frameNumber = length(fileList);
 imageNames = cell(frameNumber, 1);
 parfor i = 1:frameNumber
     imageNames{i} = fileList(i).name;
 end
 
+fprintf(' done\n');
 
 function makeAllWidgetsVisible(handles)
 
@@ -712,7 +718,7 @@ readAllImages();
 % extract global data
 app = getappdata(0, 'app');
 
-nFrames = length(app.firstIndex:app.indexStep:app.lastIndex);
+nFrames = length(app.imageList);
 app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
