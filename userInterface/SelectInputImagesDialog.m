@@ -73,7 +73,7 @@ if ~strcmp(getProcessingStep(app), 'none')
     % update visibility and content of widgets
     makeAllWidgetsVisible(handles);
     updateFrameSliderBounds(handles);
-    updateFramePreview(handles);
+    handles = updateFramePreview(handles);
 end
 
 setappdata(0, 'app', app);
@@ -260,7 +260,7 @@ app.indexStep = 1;
 makeAllWidgetsVisible(handles);
 
 updateFrameSliderBounds(handles);
-updateFramePreview(handles);
+handles = updateFramePreview(handles);
 
 guidata(handles.figure1, handles);
 
@@ -605,7 +605,7 @@ end
 
 
 
-function updateFramePreview(handles)
+function handles = updateFramePreview(handles)
 % Determine the current frame from widgets, and display it
 
 % extract app data
@@ -635,9 +635,15 @@ end
 currentImageName = fileList(fileIndex).name;
 img = imread(fullfile(folderName, currentImageName));
 
-% display first frame
-axes(handles.currentFrameAxes);
-imshow(img);
+% display current frame frame
+if isfield(handles, 'currentFrameImage')
+    set(handles.currentFrameImage, 'CData', img);
+else
+    axes(handles.currentFrameAxes);
+    handles.currentFrameImage = imshow(img);
+end
+% axes(handles.currentFrameAxes);
+% imshow(img);
 string = sprintf('frame %d / %d (%s)', frameIndex, frameNumber, currentImageName);
 set(handles.currentFrameLabel, 'String', string);
 
