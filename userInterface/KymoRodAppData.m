@@ -40,11 +40,13 @@ classdef KymoRodAppData < handle
         indexStep = 1;
         
         % spatial calibration of input images
-        pixelSize = 1000 / 253;  
+        pixelSize = 1000 / 253;
+        % The unit name for spatial calibration. Default value is 'µm'
         pixelSizeUnit = 'µm';
         
-        % time interval between two frames
+        % time interval between two frames. Default value is 10.
         timeInterval = 10;
+        % The unit name for time interval. Default value is 'min'
         timeIntervalUnit = 'min';
         
         % the method for computing threshold on each image
@@ -58,7 +60,7 @@ classdef KymoRodAppData < handle
         % manual correction
         baseThresholdValues = [];
 
-        % length of window for smoothing coutours
+        % length of window for smoothing coutours. Default value is 20.
         contourSmoothingSize = 20;
         
         % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
@@ -85,18 +87,21 @@ classdef KymoRodAppData < handle
         % coordinates of the first point of the skeleton for each image
         originPosition = {};
         
-        % smoothing window size for computation of curvature
+        % smoothing window size for computation of curvature.  
+        % Default value is 10.
         curvatureSmoothingSize = 10;
         
-        % size of first correlation window (in pixels)
-        windowSize1 = 15;
-        % size of second correlation window (in pixels)
+        % size of first correlation window (in pixels). Default value is 5.
+        windowSize1 = 5;
+        
+        % size of second correlation window (in pixels). Not used anymore?
         windowSize2 = 20;
         
-        % length of displacement (in pixels)
+        % length of displacement (in pixels). Default value is 2.
         displacementStep = 2;
         
-        % the number of points used to discretize signal on each skeleton
+        % the number of points used to discretize signal on each skeleton.
+        % Default value is 500.
         finalResultLength = 500;
         
         % the curvilinear abscissa of each skeleton, in a cell array
