@@ -1,14 +1,14 @@
 function Elg = computeElongation(dep, t0, step, ws)
 %COMPUTEELONGATION Compute elongation by spatial derivation of the displacement
 % 
-%   Elg = computeElongation(dep, t0, step)
+%   Elg = computeElongation(dep, t0, step, ws)
 %
 %   Input arguments:
 %   E:      a N-by-2 array containing the curvilinear abscissa and the
 %           displacement of current skeleton
 %   t0: 	time between two frames, in minutes
-%   ws: 	size of the correlation window
 %   step:   step between two measurements of displacement
+%   ws: 	size of the smoothing window
 %
 %   Output arguments:
 %   Elg:    a N-by-2 array containing the curvilinear abscissa and the

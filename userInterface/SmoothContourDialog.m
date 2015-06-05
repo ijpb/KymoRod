@@ -69,10 +69,10 @@ setappdata(0, 'app', app);
 
 % retrieve app data
 nImages = length(app.imageList);
-smooth  = app.contourSmoothingSize;
 index   = app.currentFrameIndex;
 
 % initialize smoothing value
+smooth  = app.settings.contourSmoothingSize;
 set(handles.smoothValueSlider, 'Value', smooth);
 set(handles.smoothValueEdit, 'String', num2str(smooth));
 
@@ -150,7 +150,7 @@ smooth = round(get(handles.smoothValueSlider, 'Value'));
 set(handles.smoothValueEdit, 'String', num2str(smooth));
 
 % update app data 
-app.contourSmoothingSize = smooth;
+app.settings.contourSmoothingSize = smooth;
 setProcessingStep(app, 'contour');
 
 setappdata(0, 'app', app);
@@ -191,7 +191,7 @@ smooth = str2double(get(handles.smoothValueEdit, 'String'));
 set(handles.smoothValueSlider, 'Value', smooth);
 
 % update app data 
-app.contourSmoothingSize = smooth;
+app.settings.contourSmoothingSize = smooth;
 
 setProcessingStep(app, 'contour');
 
@@ -258,7 +258,7 @@ segmentedImage = app.imageList{index} > threshold;
 
 % retrieve current contour
 contour = app.contourList{index};
-smooth  = app.contourSmoothingSize;
+smooth  = app.settings.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 
 % display current frame image and contour
@@ -269,7 +269,7 @@ set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 %% Validation and Comeback buttons
 
 % --- Executes on button press in backToTresholdButton.
-function backToTresholdButton_Callback(hObject, eventdata, handles)%#ok
+function backToTresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % hObject    handle to backToTresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -280,7 +280,7 @@ ChooseThresholdDialog(app);
 
 
 % --- Executes on button press in validateContourButton.
-function validateContourButton_Callback(hObject, eventdata, handles)%#ok 
+function validateContourButton_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % hObject    handle to validateContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

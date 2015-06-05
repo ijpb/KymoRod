@@ -2,7 +2,13 @@ classdef KymoRodAppData < handle
     % Data Class for Application "KymoRod"
     %
     
+    %% Properties
     properties
+        
+        % the set of settings for the different processing steps
+        % as an instance of KymoRodSettings.
+        settings;
+        
         % Step of processing, to know which data are initialized, and which
         % ones need to be computed.
         %
@@ -27,8 +33,8 @@ classdef KymoRodAppData < handle
         inputImagesDir = '';
         inputImagesFilePattern = '*.*';
         
-        % in case of color images, which channel should be used for analysis
-        imageSegmentationChannel = 'red';
+        %         % in case of color images, which channel should be used for analysis
+        %         imageSegmentationChannel = 'red';
         
         % flag indicating whether images are loaded in memory or read from
         % files only when necessary
@@ -39,19 +45,19 @@ classdef KymoRodAppData < handle
         lastIndex = 1;
         indexStep = 1;
         
-        % spatial calibration of input images
-        pixelSize = 1000 / 253;
-        % The unit name for spatial calibration. Default value is 'µm'
-        pixelSizeUnit = 'µm';
+        %         % spatial calibration of input images
+        %         pixelSize = 1000 / 253;
+        %         % The unit name for spatial calibration. Default value is 'µm'
+        %         pixelSizeUnit = 'µm';
         
-        % time interval between two frames. Default value is 10.
-        timeInterval = 10;
-        % The unit name for time interval. Default value is 'min'
-        timeIntervalUnit = 'min';
+        %         % time interval between two frames. Default value is 10.
+        %         timeInterval = 10;
+        %         % The unit name for time interval. Default value is 'min'
+        %         timeIntervalUnit = 'min';
         
-        % the method for computing threshold on each image
-        % Can be one of {'maxEntropy'}, 'Otsu'.
-        thresholdMethod = 'maxEntropy';
+        %         % the method for computing threshold on each image
+        %         % Can be one of {'maxEntropy'}, 'Otsu'.
+        %         thresholdMethod = 'maxEntropy';
         
         % the list of threshold values used to segment images
         thresholdValues = [];
@@ -59,9 +65,9 @@ classdef KymoRodAppData < handle
         % the list of threshold values computed automatically, without
         % manual correction
         baseThresholdValues = [];
-
-        % length of window for smoothing coutours. Default value is 20.
-        contourSmoothingSize = 20;
+        
+        %         % length of window for smoothing coutours. Default value is 20.
+        %         contourSmoothingSize = 20;
         
         % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
         contourList = {};
@@ -70,9 +76,9 @@ classdef KymoRodAppData < handle
         % origin (old CT).
         scaledContourList = {};
         
-        % location of the first point of the skeleton. Can be one of
-        % 'bottom', 'top', 'left', 'right'.
-        firstPointLocation = 'bottom';
+        %         % location of the first point of the skeleton. Can be one of
+        %         % 'bottom', 'top', 'left', 'right'.
+        %         firstPointLocation = 'bottom';
         
         % list of skeletons, one curve by cell, in pixel unit (old SKVerif)
         skeletonList = {};
@@ -87,31 +93,31 @@ classdef KymoRodAppData < handle
         % coordinates of the first point of the skeleton for each image
         originPosition = {};
         
-        % smoothing window size for computation of curvature.  
-        % Default value is 10.
-        curvatureSmoothingSize = 10;
+        %         % smoothing window size for computation of curvature.
+        %         % Default value is 10.
+        %         curvatureSmoothingSize = 10;
         
-        % size of first correlation window (in pixels). Default value is 5.
-        windowSize1 = 5;
+        %         % size of first correlation window (in pixels). Default value is 5.
+        %         windowSize1 = 5;
+        %
+        %         % size of second correlation window (in pixels). Not used anymore?
+        %         windowSize2 = 20;
         
-        % size of second correlation window (in pixels). Not used anymore?
-        windowSize2 = 20;
+        %         % length of displacement (in pixels). Default value is 2.
+        %         displacementStep = 2;
         
-        % length of displacement (in pixels). Default value is 2.
-        displacementStep = 2;
-        
-        % the number of points used to discretize signal on each skeleton.
-        % Default value is 500.
-        finalResultLength = 500;
+        %         % the number of points used to discretize signal on each skeleton.
+        %         % Default value is 500.
+        %         finalResultLength = 500;
         
         % the curvilinear abscissa of each skeleton, in a cell array
         abscissaList;
         
         % the angle with the vertical of each point of each skeleton, in a
-        % cell array 
+        % cell array
         verticalAngleList;
         
-        % the curvature of each point of each skeleton, in a cell array 
+        % the curvature of each point of each skeleton, in a cell array
         curvatureList;
         
         % the displacement of a point to the next similar point
@@ -124,7 +130,7 @@ classdef KymoRodAppData < handle
         
         % reconstructed image of skeleton radius in absissa and time
         radiusImage;
-
+        
         % reconstructed image of angle with vertical in absissa and time
         verticalAngleImage;
         
@@ -132,18 +138,22 @@ classdef KymoRodAppData < handle
         curvatureImage;
         
         % final result: elongation as a function of position and time
-        elongationImage;        
+        elongationImage;
     end
     
-    % Constructor
+    
+    %% Constructor
     methods
         function this = KymoRodAppData(varargin)
             % Create a new data structure for storing application data
+            
+            % initialize new default settings
+            this.settings = KymoRodSettings;
         end
     end
     
-   
-    % Data access methods
+    
+    %% Data access methods
     methods
         function image = getImage(this, index)
             if this.inputImagesLazyLoading
@@ -163,7 +173,7 @@ classdef KymoRodAppData < handle
             
             % ensure no directory is load (can happen under linux)
             fileList = fileList(~[fileList.isdir]);
-
+            
             % select images corresponding to indices selection
             fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
             fileList = fileList(fileIndices);
@@ -191,7 +201,7 @@ classdef KymoRodAppData < handle
     end
     
     
-    % processing step management
+    %% Processing step management
     methods
         function step = getProcessingStep(this)
             step = this.processingStep;
@@ -218,12 +228,12 @@ classdef KymoRodAppData < handle
                 case 'skeleton'
                     % skeletons are updated. Need to recompute displacement
                     % and elongation data
-                     clearElongationData();
-                     
+                    clearElongationData();
+                    
                 case 'elongation'
                     % ??? should add displacement step ?
-                     clearResultImages();
-                     
+                    clearResultImages();
+                    
                 case 'kymograph'
                     % final processing step: nothing to clear!
                     
@@ -237,7 +247,7 @@ classdef KymoRodAppData < handle
             function clearImageData()
                 this.imageList = {};
                 this.imageNameList = {};
-
+                
                 clearSegmentationData();
             end
             
@@ -260,7 +270,7 @@ classdef KymoRodAppData < handle
                 this.scaledSkeletonList = {};
                 this.radiusList = {};
                 this.originPosition = {};
-
+                
                 clearElongationData();
             end
             
@@ -285,10 +295,12 @@ classdef KymoRodAppData < handle
     end
     
     
-    % input / output methods
+    %% Input / output methods
     methods
         function saveSettings(this, fileName)
             % Save the different options used to compute kymographs
+            
+            % TODO: should be rewritten according to new Settings class
             
             % open in text mode, erasing content if it exists
             f = fopen(fileName, 'w+t');
@@ -296,7 +308,7 @@ classdef KymoRodAppData < handle
                 errordlg(['Could not open file for writing: ' fileName]);
                 return;
             end
- 
+            
             % write header
             fprintf(f, '# KymoRod Settings\n');
             fprintf(f, '# %s\n', datestr(now,0));
@@ -306,8 +318,8 @@ classdef KymoRodAppData < handle
             % informations to retrieve input image
             fprintf(f, 'inputImagesDir = %s\n', this.inputImagesDir);
             fprintf(f, 'inputImagesFilePattern = %s\n', this.inputImagesFilePattern);
-            fprintf(f, 'imageSegmentationChannel = %s\n', this.imageSegmentationChannel);
-
+            fprintf(f, 'imageSegmentationChannel = %s\n', this.settings.imageSegmentationChannel);
+            
             string = KymoRodAppData.booleanToString(this.inputImagesLazyLoading);
             fprintf(f, 'inputImagesLazyLoading = %s\n', string);
             fprintf(f, '\n');
@@ -317,63 +329,66 @@ classdef KymoRodAppData < handle
             fprintf(f, 'lastIndex = %d\n', this.lastIndex);
             fprintf(f, 'indexStep = %d\n', this.indexStep);
             fprintf(f, '\n');
-                    
+            
             % spatial calibration of input images
-            fprintf(f, 'pixelSize = %f\n', this.pixelSize);
-            fprintf(f, 'pixelSizeUnit = %s\n', this.pixelSizeUnit);
+            fprintf(f, 'pixelSize = %f\n', this.settings.pixelSize);
+            fprintf(f, 'pixelSizeUnit = %s\n', this.settings.pixelSizeUnit);
             fprintf(f, '\n');
             
             % time interval between two frames
-            fprintf(f, 'timeInterval = %f\n', this.timeInterval);
-            fprintf(f, 'timeIntervalUnit = %s\n', this.timeIntervalUnit);
+            fprintf(f, 'timeInterval = %f\n', this.settings.timeInterval);
+            fprintf(f, 'timeIntervalUnit = %s\n', this.settings.timeIntervalUnit);
             fprintf(f, '\n');
-        
+            
             % length of window for smoothing coutours
-            fprintf(f, 'thresholdMethod = %s\n', this.thresholdMethod);
+            fprintf(f, 'thresholdMethod = %s\n', this.settings.thresholdMethod);
             nImages = length(this.imageNameList);
             pattern = ['thresholdValues =' repmat(' %d', 1, nImages) '\n'];
             fprintf(f, pattern, this.thresholdValues);
             fprintf(f, '\n');
             
             % length of window for smoothing coutours
-            fprintf(f, 'contourSmoothingSize = %d\n', this.contourSmoothingSize);
+            fprintf(f, 'contourSmoothingSize = %d\n', this.settings.contourSmoothingSize);
             fprintf(f, '\n');
             
             % smoothing window size for computation of curvature
-            fprintf(f, 'curvatureSmoothingSize = %d\n', this.curvatureSmoothingSize);
+            fprintf(f, 'curvatureSmoothingSize = %d\n', this.settings.curvatureSmoothingSize);
             fprintf(f, '\n');
             
             % info for computation of elongation
-            fprintf(f, 'windowSize1 = %d\n', this.windowSize1);
-            fprintf(f, 'windowSize2 = %d\n', this.windowSize2);
-            fprintf(f, 'displacementStep = %d\n', this.displacementStep);
-            fprintf(f, 'finalResultLength = %d\n', this.finalResultLength);
+            fprintf(f, 'windowSize1 = %d\n', this.settings.windowSize1);
+            fprintf(f, 'windowSize2 = %d\n', this.settings.windowSize2);
+            fprintf(f, 'displacementStep = %d\n', this.settings.displacementStep);
+            fprintf(f, 'finalResultLength = %d\n', this.settings.finalResultLength);
             fprintf(f, '\n');
-           
+            
             % info about current step of the process
             fprintf(f, 'currentStep = %s\n', this.processingStep);
             fprintf(f, 'currentFrameIndex = %d\n', this.currentFrameIndex);
             fprintf(f, '\n');
-        
+            
             % close the file
             fclose(f);
         end
-    end
+        
+    end % I/O Methods
     
-    % Static methods 
+    
+    %% Static methods
     methods (Static)
         function app = readFromFile(fileName)
+            % Initialize a new instance of "KymoRodAppData" from saved file
             
             % create new empty appdata class
             app = KymoRodAppData();
             
-            % open in text mode, erasing content if it exists
+            % open in text reading mode
             f = fopen(fileName, 'rt');
             if f == -1
                 errordlg(['Could not open file for reading: ' fileName]);
                 return;
             end
- 
+            
             while true
                 % read lines until end of file
                 line = fgetl(f);
@@ -405,7 +420,7 @@ classdef KymoRodAppData < handle
                         app.inputImagesFilePattern = value;
                     case lower('imageSegmentationChannel')
                         app.imageSegmentationChannel = value;
-
+                        
                     case lower('inputImagesLazyLoading')
                         app.inputImagesLazyLoading = strcmp(value, 'true');
                         
@@ -444,12 +459,12 @@ classdef KymoRodAppData < handle
                         app.displacementStep = str2double(value);
                     case lower('finalResultLength')
                         app.finalResultLength = str2double(value);
-                    
+                        
                     case {lower('processingStep'), lower('currentStep')}
                         app.processingStep = value;
                     case lower('currentFrameIndex')
                         app.currentFrameIndex = str2double(value);
-                    
+                        
                     otherwise
                         warning(['Unrecognized parameter: ' key]);
                 end
@@ -463,7 +478,7 @@ classdef KymoRodAppData < handle
     % some utility methods
     methods (Static, Access = private)
         function string = booleanToString(bool)
-             if bool
+            if bool
                 string = 'true';
             else
                 string = 'false';

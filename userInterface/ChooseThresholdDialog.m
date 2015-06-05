@@ -243,7 +243,7 @@ frameIndex = app.currentFrameIndex;
 
 ind = get(handles.thresholdMethodPopup, 'Value');
 methodList = {'maxEntropy', 'Otsu'};
-app.thresholdMethod = methodList{ind};
+app.settings.thresholdMethod = methodList{ind};
 
 computeThresholdValues(app);
 
@@ -294,7 +294,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function autoThresholdStartEdit_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to autoThresholdStartEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -340,15 +339,14 @@ end
 
 
 % --- Executes on button press in updateAutomaticThresholdButton.
-function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles)%#ok
+function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 % hObject    handle to updateAutomaticThresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % extract application data
 app     = getappdata(0, 'app');
-red     = app.imageList;
-nb      = length(red);
+nb      = length(app.imageList);
 
 addThres = get(handles.autoThresholdValueEdit, 'String');
 start   = get(handles.autoThresholdStartEdit, 'String');
@@ -491,7 +489,7 @@ hDialog = msgbox(...
     'Segmentation');
 
 % compute thresholded images
-switch app.thresholdMethod
+switch app.settings.thresholdMethod
     case 'maxEntropy'
         parfor_progress(nImages);
         for i = 1 : nImages

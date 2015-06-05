@@ -79,7 +79,7 @@ segmentedImage = app.imageList{frameIndex} > seuil;
 contour = app.contourList{frameIndex};
 
 % apply smoothing on current contour
-smooth  = app.contourSmoothingSize;
+smooth  = app.settings.contourSmoothingSize;
 contour = smoothContour(contour, smooth);
 
 % display current frame (image and contour)
@@ -104,6 +104,7 @@ end
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
+%TODO: check if used ?
 direction = 'boucle';
 switch direction
     case 'boucle'
@@ -122,7 +123,7 @@ switch direction
         set(handles.filterDirectionPopup, 'Value', 7);
 end
 
-dirInitial  = app.firstPointLocation;
+dirInitial  = app.settings.firstPointLocation;
 switch dirInitial
     case 'bottom'
         set(handles.firstSkeletonPointPopup, 'Value', 1);
@@ -274,11 +275,10 @@ app = getappdata(0, 'app');
 
 % parse popup containing info for starting skeleton
 val2 = get(handles.firstSkeletonPointPopup, 'Value');
-setappdata(0, 'val2', val2);
 dirInitial = get(handles.firstSkeletonPointPopup, 'String');
 dirInitial  = dirInitial{val2};
 
-app.firstPointLocation = dirInitial;
+app.settings.firstPointLocation = dirInitial;
 
 computeAllSkeletons(handles);
 updateCurrentDisplay(handles);
@@ -299,7 +299,7 @@ segmentedImage = app.imageList{frameIndex} > seuil;
 
 % apply smoothing on current contour
 contour = app.contourList{frameIndex};
-smooth  = app.contourSmoothingSize;
+smooth  = app.settings.contourSmoothingSize;
 contour = smoothContour(contour, smooth);
 
 % display current frame image and contour
@@ -323,7 +323,7 @@ function computeAllSkeletons(handles)
 % get current application data
 app         = getappdata(0, 'app');
 contourList = app.contourList;
-smooth      = app.contourSmoothingSize;
+smooth      = app.settings.contourSmoothingSize;
 
 % determine the "type" of skeleton (loop, hook...)
 val = get(handles.filterDirectionPopup, 'Value'); 
@@ -331,9 +331,10 @@ directionList = get(handles.filterDirectionPopup, 'String');
 organShape = directionList{val};
 
 % determine origin of skeleton
-val2 = get(handles.firstSkeletonPointPopup, 'Value');
-stringList = get(handles.firstSkeletonPointPopup, 'String');
-originDirection = stringList{val2};
+% val2 = get(handles.firstSkeletonPointPopup, 'Value');
+% stringList = get(handles.firstSkeletonPointPopup, 'String');
+% originDirection = stringList{val2};
+originDirection = app.settings.firstPointLocation;
 
 % number of images
 nImages = length(contourList);
@@ -360,7 +361,7 @@ for i = 1:nImages
     end
     
     % scale contour in user unit
-    contour = contour * app.pixelSize / 1000;
+    contour = contour * app.settings.pixelSize / 1000;
     
     % apply filtering depending on contour type
     contour2 = filterContour(contour, 200, organShape);
@@ -382,7 +383,7 @@ for i = 1:nImages
     SK{i}(:,2) = -(SKVerif{i}(:,2) - origin(2));
 
     % keep skeleton in pixel units
-    SKVerif{i} = SKVerif{i} * 1000 / app.pixelSize;
+    SKVerif{i} = SKVerif{i} * 1000 / app.settings.pixelSize;
     
 %    % old version   
 %     CTVerif{i} = contour;

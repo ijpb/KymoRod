@@ -251,7 +251,7 @@ function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
 handles = guidata(hObject);
 
 app     = getappdata(0, 'app');
-nx      = app.finalResultLength;
+nx      = app.settings.finalResultLength;
 
 % extract last clicked position, x = index of frame
 pos = get(handles.kymographAxes, 'CurrentPoint');
@@ -270,7 +270,7 @@ else
 end
 
 % determine index of frame corresponding to clicked point
-frameIndex = round(posX / (app.timeInterval * app.indexStep)) + 1;
+frameIndex = round(posX / (app.settings.timeInterval * app.indexStep)) + 1;
 app.currentFrameIndex = frameIndex;
 
 % extract data for current frame
@@ -349,7 +349,8 @@ switch valPopUp
 end
 
 % display current kymograph
-xdata = (0:(size(img, 2)-1)) * app.timeInterval * app.indexStep;
+timeInterval = app.settings.timeInterval;
+xdata = (0:(size(img, 2)-1)) * timeInterval * app.indexStep;
 ydata = 1:size(img, 1);
 axes(handles.kymographAxes);
 hImg = imagesc(xdata, ydata, img);
@@ -363,7 +364,7 @@ colormap jet;
 set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 
 % annotate
-xlabel(sprintf('Time (%s)', app.timeIntervalUnit));
+xlabel(sprintf('Time (%s)', app.settings.timeIntervalUnit));
 
 
 % --- Executes on button press in saveAsPngButton.
@@ -473,7 +474,7 @@ AE1     = app.verticalAngleImage;
 RE1     = app.radiusImage;
 
 % initialize col names: a list of values
-nPositions = app.finalResultLength;
+nPositions = app.settings.finalResultLength;
 colNames = strtrim(cellstr(num2str((1:nPositions)', '%d'))');
 
 % Save each data file as tab separated values

@@ -75,7 +75,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ChooseElongationSettingsDialog_OutputFcn(hObject, eventdata, handles) %#ok
+function varargout = ChooseElongationSettingsDialog_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -86,7 +86,7 @@ varargout{1} = handles.output;
 
 
 % --------------------------------------------------------------------
-function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
+function mainFrameMenuItem_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -96,7 +96,7 @@ delete(gcf);
 KymoRodMenuDialog(app);
 
 
-function smoothingLengthEdit_Callback(hObject, eventdata, handles)%#ok
+function smoothingLengthEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to smoothingLengthEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -106,7 +106,7 @@ function smoothingLengthEdit_Callback(hObject, eventdata, handles)%#ok
 
 
 % --- Executes during object creation, after setting all properties.
-function smoothingLengthEdit_CreateFcn(hObject, eventdata, handles)%#ok
+function smoothingLengthEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to smoothingLengthEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -118,7 +118,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function pointNumberEdit_Callback(hObject, eventdata, handles)%#ok
+function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -128,7 +128,7 @@ function pointNumberEdit_Callback(hObject, eventdata, handles)%#ok
 
 
 % --- Executes during object creation, after setting all properties.
-function pointNumberEdit_CreateFcn(hObject, eventdata, handles)%#ok
+function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -140,7 +140,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function correlationWindowSize1Edit_Callback(hObject, eventdata, handles)%#ok
+function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -150,7 +150,7 @@ function correlationWindowSize1Edit_Callback(hObject, eventdata, handles)%#ok
 
 
 % --- Executes during object creation, after setting all properties.
-function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles)%#ok
+function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -163,7 +163,7 @@ end
 
 
 
-function correlationWindowSize2Edit_Callback(hObject, eventdata, handles)%#ok
+function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -173,7 +173,7 @@ function correlationWindowSize2Edit_Callback(hObject, eventdata, handles)%#ok
 
 
 % --- Executes during object creation, after setting all properties.
-function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles)%#ok
+function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -186,7 +186,7 @@ end
 
 
 
-function displacementStepEdit_Callback(hObject, eventdata, handles)%#ok
+function displacementStepEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -196,7 +196,7 @@ function displacementStepEdit_Callback(hObject, eventdata, handles)%#ok
 
 
 % --- Executes during object creation, after setting all properties.
-function displacementStepEdit_CreateFcn(hObject, eventdata, handles)%#ok
+function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -217,7 +217,7 @@ function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,
 % Reset the defulat parameters
 set(handles.smoothingLengthEdit,        'String', num2str(10));
 set(handles.pointNumberEdit,            'String', num2str(500));
-set(handles.correlationWindowSize1Edit, 'String', num2str(15));
+set(handles.correlationWindowSize1Edit, 'String', num2str(5));
 set(handles.correlationWindowSize2Edit, 'String', num2str(30));
 set(handles.displacementStepEdit,       'String', num2str(2));
 
@@ -233,12 +233,12 @@ app = getappdata(0, 'app');
 delete(gcf);
 ValidateSkeleton(app);
 
+
 % --- Executes on button press in validateSettingsButton.
 function validateSettingsButton_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to validateSettingsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 
 % To start the programm
 set(handles.validateSettingsButton, 'Enable', 'Off')
@@ -249,7 +249,7 @@ pause(0.01);
 app     = getappdata(0, 'app');
 SK      = app.scaledSkeletonList;
 R       = app.radiusList;
-t0      = app.timeInterval;
+t0      = app.settings.timeInterval;
 
 tic;
 
@@ -283,11 +283,11 @@ end
 
 
 % store new settings in Application Data
-app.curvatureSmoothingSize = iw;
-app.windowSize1 = ws;
-app.windowSize2 = ws2;
-app.displacementStep = step;
-app.finalResultLength = nx;
+app.settings.curvatureSmoothingSize = iw;
+app.settings.windowSize1 = ws;
+app.settings.windowSize2 = ws2;
+app.settings.displacementStep = step;
+app.settings.finalResultLength = nx;
 
 
 % Start the program

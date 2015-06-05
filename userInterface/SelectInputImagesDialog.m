@@ -79,10 +79,11 @@ end
 setappdata(0, 'app', app);
 
 % setup some widgets with current settings
-set(handles.spatialResolutionEdit, 'String', num2str(app.pixelSize));
-set(handles.spatialResolutionUnitEdit, 'String', app.pixelSizeUnit);
-set(handles.timeIntervalEdit, 'String', num2str(app.timeInterval));
-set(handles.timeIntervalUnitEdit, 'String', app.timeIntervalUnit);
+settings = app.settings;
+set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
+set(handles.spatialResolutionUnitEdit, 'String', settings.pixelSizeUnit);
+set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));
+set(handles.timeIntervalUnitEdit, 'String', settings.timeIntervalUnit);
 
 
 % Choose default command line output for SelectInputImagesDialog
@@ -96,7 +97,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = SelectInputImagesDialog_OutputFcn(hObject, eventdata, handles) %#ok
+function varargout = SelectInputImagesDialog_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -104,7 +105,6 @@ function varargout = SelectInputImagesDialog_OutputFcn(hObject, eventdata, handl
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
-
 
 
 %% Menu management
@@ -118,10 +118,11 @@ app = getappdata(0, 'app');
 delete(gcf);
 KymoRodMenuDialog(app);
 
+
 %% Input directory selection
 
 % --- Executes on button press in chooseInputImagesButton.
-function chooseInputImagesButton_Callback(hObject, eventdata, handles)%#ok 
+function chooseInputImagesButton_Callback(hObject, eventdata, handles)  %#ok<INUSL>
 % To select the images from a directory
 
 % extract app data
@@ -195,7 +196,7 @@ app = getappdata(0, 'app');
 stringArray = get(handles.imageChannelPopup, 'String');
 value = get(handles.imageChannelPopup, 'Value');
 channelString = strtrim(stringArray(value,:));
-app.imageSegmentationChannel = channelString;
+app.settings.imageSegmentationChannel = channelString;
 
 % --- Executes during object creation, after setting all properties.
 function imageChannelPopup_CreateFcn(hObject, eventdata, handles)
@@ -299,11 +300,14 @@ set(handles.inputImagesPanel, 'Visible', 'On');
 set(handles.calibrationPanel, 'Visible', 'On');
 set(handles.frameSelectionPanel, 'Visible', 'On');
 
-% update calibration widgets
+% update input data widgets
 set(handles.inputImageFolderEdit, 'String', app.inputImagesDir);
 set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
-set(handles.spatialResolutionEdit, 'String', num2str(app.pixelSize));
-set(handles.timeIntervalEdit, 'String', num2str(app.timeInterval));
+
+% update calibration widgets
+settings = app.settings;
+set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
+set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));
 
 % display image preview
 set(handles.currentFrameLabel, 'Visible', 'On');
@@ -353,7 +357,7 @@ function spatialResolutionEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 app = getappdata(0, 'app');
 resolString = get(handles.spatialResolutionEdit, 'String');
 resol = str2double(resolString);
-app.pixelSize = resol;
+app.settings.pixelSize = resol;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -380,7 +384,7 @@ function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles) %#ok<IN
 
 app = getappdata(0, 'app');
 unitString = get(handles.spatialResolutionUnitEdit, 'String');
-app.pixelSizeUnit = unitString;
+app.settings.pixelSizeUnit = unitString;
 
 % --- Executes during object creation, after setting all properties.
 function spatialResolutionUnitEdit_CreateFcn(hObject, eventdata, handles)
@@ -407,7 +411,7 @@ app = getappdata(0, 'app');
 
 timeString = get(handles.timeIntervalEdit, 'String');
 time = str2double(timeString);
-app.timeInterval = time;
+app.settings.timeInterval = time;
 
 % --- Executes during object creation, after setting all properties.
 function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)
@@ -432,7 +436,7 @@ function timeIntervalUnitEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 app = getappdata(0, 'app');
 unitString = get(handles.timeIntervalUnitEdit, 'String');
-app.timeIntervalUnit = unitString;
+app.settings.timeIntervalUnit = unitString;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -610,7 +614,6 @@ if isnan(val)
 end
 
 
-
 function handles = updateFramePreview(handles)
 % Determine the current frame from widgets, and display it
 
@@ -648,8 +651,8 @@ else
     axes(handles.currentFrameAxes);
     handles.currentFrameImage = imshow(img);
 end
-% axes(handles.currentFrameAxes);
-% imshow(img);
+
+% display the index and name of current frame
 string = sprintf('frame %d / %d (%s)', frameIndex, frameNumber, currentImageName);
 set(handles.currentFrameLabel, 'String', string);
 
@@ -749,7 +752,7 @@ imageList = cell(nFrames, 1);
 imageNameList = cell(nFrames, 1);
 
 % channel to use for color images
-channelName = app.imageSegmentationChannel;
+channelName = app.settings.imageSegmentationChannel;
 
 disp('Read input images...');
 parfor_progress(nFrames);
