@@ -367,6 +367,88 @@ classdef KymoRodAppData < handle
         end
     end
    
+    
+    %% Skeletons computation
+
+    methods
+        function skel = getSkeleton(this, index)
+            if ismember(this.processingStep, {'none', 'selection', ...
+                    'threshold', 'contour'})
+                error('need to have skeletons computed');
+            end
+            skel = this.skeletonList{index};
+        end
+        
+        function computeSkeletons(this)
+            % compute all skeletons from smoothed contours
+            
+            % number of images
+            nFrames = frameNumber(this);
+            
+            smooth = this.settings.contourSmoothingSize;
+            
+            organShape = 'boucle';
+            originDirection = this.settings.firstPointLocation;
+            
+            % allocate memory for results
+            this.skeletonList = cell(nFrames, 1);
+            this.radiusList = cell(nFrames, 1);
+            this.scaledContourList = cell(nFrames, 1);
+            this.scaledSkeletonList = cell(nFrames, 1);
+            this.originPosition = cell(nFrames, 1);
+            
+            disp('Skeletonization');
+            hDialog = msgbox(...
+                {'Computing skeletons from contours,', 'please wait...'}, ...
+                'Skeletonization');
+            
+            parfor_progress(nFrames);
+            for i = 1:nFrames
+                % extract current contour
+                contour = getContour(this, i);
+                if smooth ~= 0
+                    contour = smoothContour(contour, smooth);
+                end
+                
+                % scale contour in user unit
+                contour = contour * this.settings.pixelSize / 1000;
+                
+                % apply filtering depending on contour type
+                contour2 = filterContour(contour, 200, organShape);
+                
+                % extract skeleton of current contour
+                [skel, rad] = contourSkeleton(contour2, originDirection);
+                
+                % keep skeleton in pixel units
+                skelPx = skel * 1000 / this.settings.pixelSize;
+                this.skeletonList{i} = skelPx;
+                this.radiusList{i} = rad;
+                
+                % coordinates of first point of skeleton
+                origin = skel(1,:);
+                this.originPosition{i} = origin;
+                
+                % align contour at bottom left and reverse y-axis (user coordinates)
+                contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
+                this.scaledContourList{i} = contour2;
+
+                % align skeleton at bottom left, and reverse y axis
+                skel2 = [skel(:,1) - origin(1), -(skel(:,2) - origin(2))];
+                this.scaledSkeletonList{i} = skel2;
+                
+                parfor_progress;
+            end
+            
+            parfor_progress(0);
+            if ishandle(hDialog)
+                close(hDialog);
+            end
+    
+            setProcessingStep(this, 'skeleton');
+        end
+    end
+    
+    
     %% Input / output methods
     methods
         function saveSettings(this, fileName)

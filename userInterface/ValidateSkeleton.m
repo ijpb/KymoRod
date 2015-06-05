@@ -246,6 +246,14 @@ function firstSkeletonPointPopup_Callback(hObject, eventdata, handles)%#ok
 % Hints: contents = cellstr(get(hObject,'String')) returns firstSkeletonPointPopup contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from firstSkeletonPointPopup
 
+% determine origin of skeleton
+val2 = get(handles.firstSkeletonPointPopup, 'Value');
+stringList = get(handles.firstSkeletonPointPopup, 'String');
+originDirection = stringList{val2};
+
+% store in app settings
+app = getappdata(0, 'app');
+app.settings.firstPointLocation = originDirection;
 
 % --- Executes during object creation, after setting all properties.
 function firstSkeletonPointPopup_CreateFcn(hObject, eventdata, handles)%#ok
@@ -321,96 +329,9 @@ function computeAllSkeletons(handles)
 % compute skeletons from contours, and update widgets
 
 % get current application data
-app         = getappdata(0, 'app');
-contourList = app.contourList;
-smooth      = app.settings.contourSmoothingSize;
+app = getappdata(0, 'app');
 
-% determine the "type" of skeleton (loop, hook...)
-val = get(handles.filterDirectionPopup, 'Value'); 
-directionList = get(handles.filterDirectionPopup, 'String');
-organShape = directionList{val};
-
-% determine origin of skeleton
-% val2 = get(handles.firstSkeletonPointPopup, 'Value');
-% stringList = get(handles.firstSkeletonPointPopup, 'String');
-% originDirection = stringList{val2};
-originDirection = app.settings.firstPointLocation;
-
-% number of images
-nFrames = frameNumber(app);
-
-% allocate memory for results
-CT      = cell(nFrames, 1);
-SK      = cell(nFrames, 1);
-shift   = cell(nFrames, 1);
-rad     = cell(nFrames, 1);
-CTVerif = cell(nFrames, 1);
-SKVerif = cell(nFrames, 1);
-
-disp('Skeletonization');
-hDialog = msgbox(...
-    {'Computing skeletons from contours,', 'please wait...'}, ...
-    'Skeletonization');
-
-parfor_progress(nFrames);
-for i = 1:nFrames
-    % extract current contour
-    contour = contourList{i};
-    if smooth ~= 0
-        contour = smoothContour(contour, smooth);
-    end
-    
-    % scale contour in user unit
-    contour = contour * app.settings.pixelSize / 1000;
-    
-    % apply filtering depending on contour type
-    contour2 = filterContour(contour, 200, organShape);
-
-    % extract skeleton of current contour
-    [SKVerif{i}, rad{i}] = contourSkeleton(contour2, originDirection);
-    CTVerif{i} = contour;
-
-    % coordinates of first point of skeleton
-    origin = SKVerif{i}(1,:);
-    shift{i} = origin;
-    
-    % align contour at bottom left and reverse y-axis (user coordinates)
-    CT{i}(:,1) = contour(:,1) - origin(1);
-    CT{i}(:,2) = -(contour(:,2) - origin(2));
-    
-    % align skeleton at bottom left, and reverse y axis
-    SK{i}(:,1) = SKVerif{i}(:,1) - origin(1);
-    SK{i}(:,2) = -(SKVerif{i}(:,2) - origin(2));
-
-    % keep skeleton in pixel units
-    SKVerif{i} = SKVerif{i} * 1000 / app.settings.pixelSize;
-    
-%    % old version   
-%     CTVerif{i} = contour;
-%     [SKVerif{i}, rad{i}] = skel55b(contour, dir, dirbegin);
-%     CT{i} = CTVerif{i} * app.pixelSize;
-
-    % Version 0
-%     [SK{i}, CT{i}, shift{i}, rad{i}, SKVerif{i}, CTVerif{i}] = skel55(contour, dir, dirbegin);
-
-    parfor_progress;
-end
-
-parfor_progress(0);
-if ishandle(hDialog)
-    close(hDialog);
-end
-
-% store new values in app data object
-app.skeletonList = SKVerif;
-app.radiusList = rad;
-
-app.scaledContourList = CT;
-app.scaledSkeletonList = SK;
-app.originPosition = shift;
-
-setappdata(0, 'app', app); 
-setProcessingStep(app, 'skeleton');
+computeSkeletons(app);
 
 set(handles.validateSkeletonButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
