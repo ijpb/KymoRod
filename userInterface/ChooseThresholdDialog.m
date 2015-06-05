@@ -61,7 +61,7 @@ if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     disp('validate threshold from app');
     app = varargin{1};    
 else
-    error('requires 4 input arguments, with a KymoRodAppDAta as fourth argument');
+    error('requires 4 input arguments, with a KymoRodAppData as fourth argument');
 end
 
 % update current process state
@@ -106,7 +106,7 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
-seg = getImage(app, frameIndex) > currentThreshold;
+seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -156,17 +156,18 @@ app = getappdata(0, 'app');
 
 frameIndex = round(get(handles.frameIndexSlider, 'Value'));
 
-% compute segmented image
-currentFrame = getImage(app, frameIndex);
-currentThreshold = app.thresholdValues(frameIndex);
-bin = currentFrame > currentThreshold;
-
+% compute and display segmented image
+bin = getSegmentedImage(app, frameIndex);
 axes(handles.currentFrameAxes)
 imshow(bin);
+
+% display threshold level of current image
+currentThreshold = app.thresholdValues(frameIndex);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
 set(handles.currentFrameThresholdLabel, 'String', string);
 
+% show info on current frame
 nFrames = frameNumber(app);
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameIndexLabel, 'String', string);
@@ -251,7 +252,7 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
-seg = getImage(app, frameIndex) > currentThreshold;
+seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -396,7 +397,7 @@ set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 % compute binarised image
-seg = getImage(app, frameIndex) > currentThreshold;
+seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -476,50 +477,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject, 'BackgroundColor',[.9 .9 .9]);
 end
 
-function computeThresholdValues(app)
-
-nImages = frameNumber(app);
-thresholdValues = zeros(nImages, 1);
-
-% Compute the contour
-disp('Segmentation');
-hDialog = msgbox(...
-    {'Computing image thresholds,', 'please wait...'}, ...
-    'Segmentation');
-
-% compute thresholded images
-switch app.settings.thresholdMethod
-    case 'maxEntropy'
-        parfor_progress(nImages);
-        for i = 1 : nImages
-            thresholdValues(i) = maxEntropyThreshold(app.getImage(i));
-            parfor_progress;
-        end
-        parfor_progress(0);
-        
-    case 'Otsu'
-        parfor_progress(nImages);
-        for i = 1 : nImages
-            thresholdValues(i) = round(graythresh(app.getImage(i)) * 255);
-            parfor_progress;
-        end
-        parfor_progress(0);
-        
-    otherwise
-        error(['Could not recognize threshold method: ' app.thresholdMethod]);        
-end
-
-
-if ishandle(hDialog)
-    close(hDialog);
-end
-
-app.baseThresholdValues = thresholdValues;
-app.thresholdValues = thresholdValues;
-
-setProcessingStep(app, 'threshold');
-
-
 %% General settings widgets
 
 % --- Executes on button press in backToSelectionButton.
@@ -550,49 +507,7 @@ pause(0.01);
 
 % retrieve application data
 app     = getappdata(0, 'app');
-thres   = app.thresholdValues;
-images  = app.imageList;
-
-disp('Binarisation...');
-hDialog = msgbox(...
-    {'Performing Binarisation,', 'please wait...'}, ...
-    'Binarisation');
-
-nFrames = frameNumber(app);
-
-% add black border around each image, to ensure continuous contours
-parfor_progress(nFrames);
-for k = 1:nFrames
-    images{k} = imAddBlackBorder(images{k});
-    parfor_progress;
-end
-parfor_progress(0);
-if ishandle(hDialog)
-    close(hDialog);
-end
-
-% Compute the contour
-disp('Contour');
-hDialog = msgbox(...
-    {'Computing contours,', 'please wait...'}, ...
-    'Contour');
-
-% allocate memory for contour array
-contours = cell(nFrames, 1);
-
-% compute contours from gray scale images
-parfor_progress(nFrames);
-for i = 1:nFrames
-    contours{i} = segmentContour(images{i}, thres(i));
-    parfor_progress;
-end
-parfor_progress(0);
-
-if ishandle(hDialog)
-    close(hDialog);
-end
-
-app.contourList = contours;
+computeContours(app);
 
 delete(gcf);
 

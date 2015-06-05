@@ -86,9 +86,8 @@ label = sprintf('Current Frame: %d / %d', index, nFrames);
 set(handles.currentFrameIndexLabel, 'String', label);
 
 % compute data to display for current frame
-threshold = app.thresholdValues(index);
-segmentedImage = app.getImage(index) > threshold;
-contour = app.contourList{index};
+segmentedImage = app.getSegmentedImage(index);
+contour = app.getContour(index);
 contour = smoothContour(contour, smooth); 
 
 % display current frame (image and contour)
@@ -253,11 +252,10 @@ app     = getappdata(0, 'app');
 index   = app.currentFrameIndex;
 
 % compute current segmented image
-threshold = app.thresholdValues(index);
-segmentedImage = app.getImage(index) > threshold;
+segmentedImage = app.getSegmentedImage(index);
 
-% retrieve current contour
-contour = app.contourList{index};
+% retrieve current contour and smooth it
+contour = app.getContour(index);
 smooth  = app.settings.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 

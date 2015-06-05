@@ -112,59 +112,6 @@ classdef KymoRodAppData < handle
     end
     
     
-    %% Data access methods
-    methods
-        function image = getImage(this, index)
-            if this.inputImagesLazyLoading
-                filePath = fullfile(this.inputImagesDir, this.imageNameList{index});
-                image = imread(filePath);
-            else
-                image = this.imageList{index};
-            end
-        end
-        
-        function n = frameNumber(this)
-            % return the total number of images selected for processing
-            n = length(this.imageNameList);
-        end
-        
-        function readAllImages(this)
-            % load all images based on settings
-            % refresh imageList and imageNameList
-            
-            % read all files in specified directory
-            fileList = dir(fullfile(this.inputImagesDir, this.inputImagesFilePattern));
-            
-            % ensure no directory is load (can happen under linux)
-            fileList = fileList(~[fileList.isdir]);
-            
-            % select images corresponding to indices selection
-            fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
-            fileList = fileList(fileIndices);
-            nImages = length(fileList);
-            
-            % allocate memory
-            this.imageList = cell(nImages, 1);
-            this.imageNameList = cell(nImages, 1);
-            
-            % read each image
-            for i = 1:nImages
-                fileName = fileList(i).name;
-                this.imageNameList{i} = fileName;
-                img = imread(fullfile(this.inputImagesDir, fileName));
-                
-                % keep only the red channel of color images
-                if ndims(img) > 2 %#ok<ISMAT>
-                    % TODO: use imageSegmentationChannel field
-                    img = img(:,:,1);
-                end
-                this.imageList{i} = img;
-            end
-            
-        end
-    end
-    
-    
     %% Processing step management
     methods
         function step = getProcessingStep(this)
@@ -259,6 +206,167 @@ classdef KymoRodAppData < handle
     end
     
     
+    %% Image selection
+    methods
+        function n = frameNumber(this)
+            % return the total number of images selected for processing
+            n = length(this.imageNameList);
+        end
+        
+        function image = getImage(this, index)
+            if this.inputImagesLazyLoading
+                filePath = fullfile(this.inputImagesDir, this.imageNameList{index});
+                image = imread(filePath);
+            else
+                image = this.imageList{index};
+            end
+        end
+        
+        function readAllImages(this)
+            % load all images based on settings
+            % refresh imageList and imageNameList
+            
+            % read all files in specified directory
+            fileList = dir(fullfile(this.inputImagesDir, this.inputImagesFilePattern));
+            
+            % ensure no directory is load (can happen under linux)
+            fileList = fileList(~[fileList.isdir]);
+            
+            % select images corresponding to indices selection
+            fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
+            fileList = fileList(fileIndices);
+            nImages = length(fileList);
+            
+            % allocate memory
+            this.imageList = cell(nImages, 1);
+            this.imageNameList = cell(nImages, 1);
+            
+            % read each image
+            for i = 1:nImages
+                fileName = fileList(i).name;
+                this.imageNameList{i} = fileName;
+                img = imread(fullfile(this.inputImagesDir, fileName));
+                
+                % keep only the red channel of color images
+                if ndims(img) > 2 %#ok<ISMAT>
+                    % TODO: use imageSegmentationChannel field
+                    img = img(:,:,1);
+                end
+                this.imageList{i} = img;
+            end
+        end
+    end
+    
+    
+    %% Image segmentation
+
+    methods
+        function seg = getSegmentedImage(this, index)
+            img = getImage(this, index);
+            thresh = this.thresholdValues(index);
+            seg = img > thresh;
+        end
+        
+        function computeThresholdValues(this)
+            % compute threshold values for all images
+            
+            if ismember(this.processingStep, {'none'})
+                error('need to have images selected');
+            end
+            
+            nImages = frameNumber(this);
+            this.thresholdValues = zeros(nImages, 1);
+            
+            % Compute the contour
+            disp('Segmentation');
+            hDialog = msgbox(...
+                {'Computing image thresholds,', 'please wait...'}, ...
+                'Segmentation');
+            
+            % compute threshold values
+            switch this.settings.thresholdMethod
+                case 'maxEntropy'
+                    parfor_progress(nImages);
+                    for i = 1 : nImages
+                        this.thresholdValues(i) = ...
+                            maxEntropyThreshold(this.getImage(i));
+                        parfor_progress;
+                    end
+                    parfor_progress(0);
+                    
+                case 'Otsu'
+                    parfor_progress(nImages);
+                    for i = 1 : nImages
+                        this.thresholdValues(i) = ...
+                            round(graythresh(this.getImage(i)) * 255);
+                        parfor_progress;
+                    end
+                    parfor_progress(0);
+                    
+                otherwise
+                    error(['Could not recognize threshold method: ' ...
+                        this.settings.thresholdMethod]);
+            end
+            
+            if ishandle(hDialog)
+                close(hDialog);
+            end
+
+            setProcessingStep(this, 'threshold');
+        end
+    end
+    
+    %% Contour computation
+
+    methods
+        function contour = getContour(this, index)
+            if ismember(this.processingStep, {'none', 'selection', 'threshold'})
+                error('need to have contours computed');
+            end
+            contour = this.contourList{index};
+        end
+        
+        function computeContours(this)
+            % compute the contour for each image
+            
+            if ismember(this.processingStep, {'none', 'selection'})
+                error('need to have threshold computed');
+            end
+            
+            disp('Contour extraction...');
+            hDialog = msgbox(...
+                {'Performing Contour extraction,', 'please wait...'}, ...
+                'Contour Extraction');
+            
+            nFrames = frameNumber(this);
+            
+            % allocate memory for contour array
+            this.contourList = cell(nFrames, 1);
+
+            % iterate over images
+            parfor_progress(nFrames);
+            for i = 1:nFrames
+                % add black border around each image, to ensure continuous contours
+                image = imAddBlackBorder(getImage(this, i));
+                threshold = this.thresholdValues(i);
+                this.contourList{i} = segmentContour(image, threshold);
+                
+                parfor_progress;
+            end
+            
+            parfor_progress(0);
+            if ishandle(hDialog)
+                close(hDialog);
+            end
+            
+            if ishandle(hDialog)
+                close(hDialog);
+            end
+            
+            setProcessingStep(this, 'contour');
+        end
+    end
+   
     %% Input / output methods
     methods
         function saveSettings(this, fileName)

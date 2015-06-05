@@ -268,7 +268,7 @@ guidata(handles.figure1, handles);
 
 function imageNames = readImageNameList(folderName, filePattern)
     
-fprintf('Read name image list...');
+fprintf('Read image name list...');
 
 % list files in chosen directory
 fileList = dir(fullfile(folderName, filePattern));
