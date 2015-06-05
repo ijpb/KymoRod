@@ -70,7 +70,7 @@ skeleton    = app.skeletonList{ind};
 % Display current image
 axes(handles.imageAxes); hold on;
 % display grayscale image as RGB, to avoid colormap problems
-handles.imageHandle     = imshow(repmat(app.imageList{ind}, [1 1 3]));
+handles.imageHandle     = imshow(repmat(getImage(app, ind), [1 1 3]));
 
 % draw geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
@@ -196,8 +196,8 @@ function updateColoredSkeleton(handles)
 
 app = getappdata(0, 'app');
 
+% coordinates of current skeleton
 frameIndex = app.currentFrameIndex;
-
 skeleton = app.skeletonList{frameIndex};
 xdata = skeleton(:,1);
 ydata = skeleton(:,2);
@@ -274,7 +274,7 @@ frameIndex = round(posX / (app.settings.timeInterval * app.indexStep)) + 1;
 app.currentFrameIndex = frameIndex;
 
 % extract data for current frame
-img = app.imageList{frameIndex};
+img = app.getImage(frameIndex);
 contour     = app.contourList{frameIndex};
 skeleton    = app.skeletonList{frameIndex};
 
@@ -451,7 +451,7 @@ filePath = fullfile(pathName, [baseName '-settings.txt']);
 saveSettings(app, filePath);
 
 % initialize row names
-nFrames = length(app.imageList);
+nFrames = frameNumber(app);
 rowNames = cell(nFrames, 1);
 if isstruct(app.imageNameList)
 	for i = 1:nFrames

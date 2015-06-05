@@ -68,7 +68,7 @@ end
 setappdata(0, 'app', app);
 
 % retrieve app data
-nImages = length(app.imageList);
+nFrames = frameNumber(app);
 index   = app.currentFrameIndex;
 
 % initialize smoothing value
@@ -78,16 +78,16 @@ set(handles.smoothValueEdit, 'String', num2str(smooth));
 
 % initialize current frame index slider
 set(handles.frameIndexSlider, 'Min', 1);
-set(handles.frameIndexSlider, 'Max', nImages);
+set(handles.frameIndexSlider, 'Max', nFrames);
 set(handles.frameIndexSlider, 'Value', index);
-steps = min([1 10] ./ nImages, .5);
+steps = min([1 10] ./ nFrames, .5);
 set(handles.frameIndexSlider, 'SliderStep', steps);
-label = sprintf('Current Frame: %d / %d', index, nImages);
+label = sprintf('Current Frame: %d / %d', index, nFrames);
 set(handles.currentFrameIndexLabel, 'String', label);
 
 % compute data to display for current frame
 threshold = app.thresholdValues(index);
-segmentedImage = app.imageList{index} > threshold;
+segmentedImage = app.getImage(index) > threshold;
 contour = app.contourList{index};
 contour = smoothContour(contour, smooth); 
 
@@ -226,7 +226,7 @@ app = getappdata(0, 'app');
 
 index = round(get(hObject, 'Value'));
 
-label = sprintf('Frame index: %d / %d', index, length(app.imageList));
+label = sprintf('Frame index: %d / %d', index, frameNumber(app));
 set(handles.currentFrameIndexLabel, 'String', label);
 
 app.currentFrameIndex = index;
@@ -254,7 +254,7 @@ index   = app.currentFrameIndex;
 
 % compute current segmented image
 threshold = app.thresholdValues(index);
-segmentedImage = app.imageList{index} > threshold;
+segmentedImage = app.getImage(index) > threshold;
 
 % retrieve current contour
 contour = app.contourList{index};

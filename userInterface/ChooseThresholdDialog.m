@@ -60,8 +60,6 @@ if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     
     disp('validate threshold from app');
     app = varargin{1};    
-    col = app.imageList;
-    
 else
     error('requires 4 input arguments, with a KymoRodAppDAta as fourth argument');
 end
@@ -71,11 +69,11 @@ setappdata(0, 'app', app);
 
 frameIndex = app.currentFrameIndex;
 
-imageNumber = length(col);
-string = sprintf('Current Frame: %d / %d', frameIndex, imageNumber);
+nFrames = frameNumber(app);
+string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameIndexLabel, 'String', string);
 
-set(handles.autoThresholdFinalEdit, 'String', num2str(imageNumber));
+set(handles.autoThresholdFinalEdit, 'String', num2str(nFrames));
 
 set(handles.automaticThresholdRadioButton, 'Value', 1);
 set(handles.manualThresholdRadioButton, 'Value', 0);
@@ -97,8 +95,8 @@ computeThresholdValues(app);
 
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Min', 1); 
-set(handles.frameIndexSlider, 'Max', imageNumber); 
-sliderStep = min(max([1 5] ./ (imageNumber - 1), 0.001), 1);
+set(handles.frameIndexSlider, 'Max', nFrames); 
+sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
 
 % get threshold of current frame
@@ -108,7 +106,7 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
-seg = app.imageList{frameIndex} > currentThreshold;
+seg = getImage(app, frameIndex) > currentThreshold;
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -159,7 +157,7 @@ app = getappdata(0, 'app');
 frameIndex = round(get(handles.frameIndexSlider, 'Value'));
 
 % compute segmented image
-currentFrame = app.imageList{frameIndex};
+currentFrame = getImage(app, frameIndex);
 currentThreshold = app.thresholdValues(frameIndex);
 bin = currentFrame > currentThreshold;
 
@@ -169,8 +167,8 @@ set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
 set(handles.currentFrameThresholdLabel, 'String', string);
 
-imageNumber = length(app.imageList);
-string = sprintf('Current Frame: %d / %d', frameIndex, imageNumber);
+nFrames = frameNumber(app);
+string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameIndexLabel, 'String', string);
 
 app.currentFrameIndex = frameIndex;
@@ -178,7 +176,7 @@ setappdata(0, 'app', app);
 
 
 % --- Executes during object creation, after setting all properties.
-function frameIndexSlider_CreateFcn(hObject, eventdata, handles)%#ok
+function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % hObject    handle to frameIndexSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -192,7 +190,7 @@ end
 %% Widgets for automated threshold
 
 % --- Executes on button press in automaticThresholdRadioButton.
-function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %Automatic
+function automaticThresholdRadioButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 % hObject    handle to automaticThresholdRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -253,7 +251,7 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
-seg = app.imageList{frameIndex} > currentThreshold;
+seg = getImage(app, frameIndex) > currentThreshold;
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -346,7 +344,7 @@ function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles) %#
 
 % extract application data
 app     = getappdata(0, 'app');
-nb      = length(app.imageList);
+nb      = frameNumber(app);
 
 addThres = get(handles.autoThresholdValueEdit, 'String');
 start   = get(handles.autoThresholdStartEdit, 'String');
@@ -398,7 +396,7 @@ set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 % compute binarised image
-seg = app.imageList{frameIndex} > currentThreshold;
+seg = getImage(app, frameIndex) > currentThreshold;
 axis(handles.currentFrameAxes);
 imshow(seg);
 
@@ -433,7 +431,7 @@ set(handles.autoThresholdFinalEdit, 'Visible', 'off');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'off');
 
 % --- Executes on slider movement.
-function manualThresholdSlider_Callback(hObject, eventdata, handles)%#ok % To change the value of smooth
+function manualThresholdSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 % hObject    handle to manualThresholdSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -447,9 +445,10 @@ val = round(get(handles.manualThresholdSlider, 'Value'));
 app = getappdata(0, 'app');
 frameIndex   = app.currentFrameIndex;
 
-imshow(handles.currentFrameAxes, app.imageList{frameIndex} > val);
+bin = getImage(app, frameIndex) > val;
+imshow(handles.currentFrameAxes, bin);
 
-nImages = length(app.imageList);
+nImages = frameNumber(app);
 thresholdValues = ones(nImages, 1) * val;
 
 app.thresholdValues = thresholdValues;
@@ -479,7 +478,7 @@ end
 
 function computeThresholdValues(app)
 
-nImages = length(app.imageList);
+nImages = frameNumber(app);
 thresholdValues = zeros(nImages, 1);
 
 % Compute the contour
@@ -493,7 +492,7 @@ switch app.settings.thresholdMethod
     case 'maxEntropy'
         parfor_progress(nImages);
         for i = 1 : nImages
-            thresholdValues(i) = maxEntropyThreshold(app.imageList{i});
+            thresholdValues(i) = maxEntropyThreshold(app.getImage(i));
             parfor_progress;
         end
         parfor_progress(0);
@@ -501,7 +500,7 @@ switch app.settings.thresholdMethod
     case 'Otsu'
         parfor_progress(nImages);
         for i = 1 : nImages
-            thresholdValues(i) = round(graythresh(app.imageList{i}) * 255);
+            thresholdValues(i) = round(graythresh(app.getImage(i)) * 255);
             parfor_progress;
         end
         parfor_progress(0);
@@ -559,11 +558,11 @@ hDialog = msgbox(...
     {'Performing Binarisation,', 'please wait...'}, ...
     'Binarisation');
 
-nImages = length(images);
+nFrames = frameNumber(app);
 
 % add black border around each image, to ensure continuous contours
-parfor_progress(nImages);
-for k = 1:nImages
+parfor_progress(nFrames);
+for k = 1:nFrames
     images{k} = imAddBlackBorder(images{k});
     parfor_progress;
 end
@@ -579,11 +578,11 @@ hDialog = msgbox(...
     'Contour');
 
 % allocate memory for contour array
-contours = cell(nImages, 1);
+contours = cell(nFrames, 1);
 
 % compute contours from gray scale images
-parfor_progress(nImages);
-for i = 1:nImages
+parfor_progress(nFrames);
+for i = 1:nFrames
     contours{i} = segmentContour(images{i}, thres(i));
     parfor_progress;
 end

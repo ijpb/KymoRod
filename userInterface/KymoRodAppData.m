@@ -33,9 +33,6 @@ classdef KymoRodAppData < handle
         inputImagesDir = '';
         inputImagesFilePattern = '*.*';
         
-        %         % in case of color images, which channel should be used for analysis
-        %         imageSegmentationChannel = 'red';
-        
         % flag indicating whether images are loaded in memory or read from
         % files only when necessary
         inputImagesLazyLoading = false;
@@ -45,20 +42,6 @@ classdef KymoRodAppData < handle
         lastIndex = 1;
         indexStep = 1;
         
-        %         % spatial calibration of input images
-        %         pixelSize = 1000 / 253;
-        %         % The unit name for spatial calibration. Default value is 'µm'
-        %         pixelSizeUnit = 'µm';
-        
-        %         % time interval between two frames. Default value is 10.
-        %         timeInterval = 10;
-        %         % The unit name for time interval. Default value is 'min'
-        %         timeIntervalUnit = 'min';
-        
-        %         % the method for computing threshold on each image
-        %         % Can be one of {'maxEntropy'}, 'Otsu'.
-        %         thresholdMethod = 'maxEntropy';
-        
         % the list of threshold values used to segment images
         thresholdValues = [];
         
@@ -66,19 +49,12 @@ classdef KymoRodAppData < handle
         % manual correction
         baseThresholdValues = [];
         
-        %         % length of window for smoothing coutours. Default value is 20.
-        %         contourSmoothingSize = 20;
-        
         % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
         contourList = {};
         
         % list of contours after rescaling, and translation wrt skeleton
         % origin (old CT).
         scaledContourList = {};
-        
-        %         % location of the first point of the skeleton. Can be one of
-        %         % 'bottom', 'top', 'left', 'right'.
-        %         firstPointLocation = 'bottom';
         
         % list of skeletons, one curve by cell, in pixel unit (old SKVerif)
         skeletonList = {};
@@ -92,23 +68,6 @@ classdef KymoRodAppData < handle
         
         % coordinates of the first point of the skeleton for each image
         originPosition = {};
-        
-        %         % smoothing window size for computation of curvature.
-        %         % Default value is 10.
-        %         curvatureSmoothingSize = 10;
-        
-        %         % size of first correlation window (in pixels). Default value is 5.
-        %         windowSize1 = 5;
-        %
-        %         % size of second correlation window (in pixels). Not used anymore?
-        %         windowSize2 = 20;
-        
-        %         % length of displacement (in pixels). Default value is 2.
-        %         displacementStep = 2;
-        
-        %         % the number of points used to discretize signal on each skeleton.
-        %         % Default value is 500.
-        %         finalResultLength = 500;
         
         % the curvilinear abscissa of each skeleton, in a cell array
         abscissaList;
@@ -162,6 +121,11 @@ classdef KymoRodAppData < handle
             else
                 image = this.imageList{index};
             end
+        end
+        
+        function n = frameNumber(this)
+            % return the total number of images selected for processing
+            n = length(this.imageNameList);
         end
         
         function readAllImages(this)

@@ -64,7 +64,7 @@ else
 end
 
 frameIndex  = app.currentFrameIndex;
-nFrames     = length(app.imageList);
+nFrames     = frameNumber(app);
 
 % setup widgets
 set(handles.currentFrameSlider, 'Min', 1);
@@ -75,7 +75,7 @@ set(handles.currentFrameSlider, 'SliderStep', sliderStep);
 
 % compute current segmented image
 seuil = app.thresholdValues(frameIndex);
-segmentedImage = app.imageList{frameIndex} > seuil;
+segmentedImage = app.getImage(frameIndex) > seuil;
 contour = app.contourList{frameIndex};
 
 % apply smoothing on current contour
@@ -195,7 +195,7 @@ app.currentFrameIndex = frameIndex;
 updateCurrentDisplay(handles);
 
 % update display of current frame index
-nFrames = length(app.imageList);
+nFrames = frameNumber(app);
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
@@ -295,7 +295,7 @@ frameIndex = app.currentFrameIndex;
 
 % compute current segmented image
 seuil = app.thresholdValues(frameIndex);
-segmentedImage = app.imageList{frameIndex} > seuil;
+segmentedImage = getImage(app, frameIndex) > seuil;
 
 % apply smoothing on current contour
 contour = app.contourList{frameIndex};
@@ -337,23 +337,23 @@ organShape = directionList{val};
 originDirection = app.settings.firstPointLocation;
 
 % number of images
-nImages = length(contourList);
+nFrames = frameNumber(app);
 
 % allocate memory for results
-CT      = cell(nImages, 1);
-SK      = cell(nImages, 1);
-shift   = cell(nImages, 1);
-rad     = cell(nImages, 1);
-CTVerif = cell(nImages, 1);
-SKVerif = cell(nImages, 1);
+CT      = cell(nFrames, 1);
+SK      = cell(nFrames, 1);
+shift   = cell(nFrames, 1);
+rad     = cell(nFrames, 1);
+CTVerif = cell(nFrames, 1);
+SKVerif = cell(nFrames, 1);
 
 disp('Skeletonization');
 hDialog = msgbox(...
     {'Computing skeletons from contours,', 'please wait...'}, ...
     'Skeletonization');
 
-parfor_progress(nImages);
-for i = 1:nImages
+parfor_progress(nFrames);
+for i = 1:nFrames
     % extract current contour
     contour = contourList{i};
     if smooth ~= 0

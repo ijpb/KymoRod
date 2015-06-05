@@ -721,7 +721,7 @@ readAllImages();
 % extract global data
 app = getappdata(0, 'app');
 
-nFrames = length(app.imageList);
+nFrames = frameNumber(app);
 app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
