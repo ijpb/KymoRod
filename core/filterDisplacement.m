@@ -1,10 +1,10 @@
-function Eab = filterDisplacement(E2)
+function Eab = filterDisplacement(E)
 % FILTERDISPLACEMENT Smooth the curve and remove errors using kernel smoothers
 %
-%   Eab = filterDisplacement(E2)
+%   Eab = filterDisplacement(E)
 %   (rewritten from 'aberrant3')
 %
-%   E2  a N-by-2 array containing the curvilinear abscissa and the
+%   E  a N-by-2 array containing the curvilinear abscissa and the
 %       displacement computed for a series of points
 %   
 %   Eab a N-by-2 array containing the curvilinear abscissa and the
@@ -20,24 +20,40 @@ function Eab = filterDisplacement(E2)
 %   HISTORY
 %   2014-04-16 : Add comments about the file
 
-% allocate memory for result
-E = E2;
 
-% ?
+%% Global settings
+
+% neighborhood along x position
 LX = .1;
+
+% difference in values
 LY = 1e-2;
 
-% shifts curve to start at zero
-Smin = E2(1,1);
-E(:,1) = E2(:,1) - Smin;
+% discretization step
+dx = 5e-3;
+
+
+%% Pre-processing
+
+% shifts curvilinear abscissa to start at zero
+Smin = E(1,1);
+E(:,1) = E(:,1) - Smin;
+
+%% Curve smoothing
 
 % apply curve smoothing
-[X, Y]= smoothAndFilterDisplacement(E, LX, LY, 5e-3);
+[X, Y] = smoothAndFilterDisplacement(E, LX, LY, dx);
+if any(size(X) ~= size(Y))
+    warning('arrays X and Y do not have same size...');
+end
+
+
+%% Post-processing
 
 % add initial curvilinear abscissa
-Eab(:,1) = X + Smin;
-Eab(:,2) = Y;
+Eab = [X + Smin, Y];
 
+% 
 %if length(Eab(:,2))>60
 %    Eab(:,2)=moving_average(Eab(:,2),30);
 %end
