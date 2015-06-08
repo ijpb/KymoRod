@@ -67,6 +67,14 @@ else
     error('StartElongation should be called with an KymoRodAppData object');
 end
 
+% setup handles with application settings
+settings = app.settings;
+set(handles.smoothingLengthEdit,        'String', num2str(settings.curvatureSmoothingSize));
+set(handles.pointNumberEdit,            'String', num2str(settings.finalResultLength));
+set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
+set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
+set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -96,13 +104,22 @@ delete(gcf);
 KymoRodMenuDialog(app);
 
 
-function smoothingLengthEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function smoothingLengthEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 % hObject    handle to smoothingLengthEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'String') returns contents of smoothingLengthEdit as text
 %        str2double(get(hObject,'String')) returns contents of smoothingLengthEdit as a double
+
+str  = get(handles.smoothingLengthEdit, 'String');
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app = getappdata(0, 'app');
+app.settings.curvatureSmoothingSize = val;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -118,13 +135,22 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'String') returns contents of pointNumberEdit as text
 %        str2double(get(hObject,'String')) returns contents of pointNumberEdit as a double
+
+str  = get(handles.pointNumberEdit, 'String');
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app = getappdata(0, 'app');
+app.settings.finalResultLength = val;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -140,7 +166,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -148,6 +174,14 @@ function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<D
 % Hints: get(hObject,'String') returns contents of correlationWindowSize1Edit as text
 %        str2double(get(hObject,'String')) returns contents of correlationWindowSize1Edit as a double
 
+str  = get(handles.correlationWindowSize1Edit, 'String');
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app = getappdata(0, 'app');
+app.settings.windowSize1 = val;
 
 % --- Executes during object creation, after setting all properties.
 function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
@@ -163,7 +197,7 @@ end
 
 
 
-function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 % hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -171,6 +205,14 @@ function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<D
 % Hints: get(hObject,'String') returns contents of correlationWindowSize2Edit as text
 %        str2double(get(hObject,'String')) returns contents of correlationWindowSize2Edit as a double
 
+str  = get(handles.correlationWindowSize2Edit, 'String');
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app = getappdata(0, 'app');
+app.settings.windowSize2 = val;
 
 % --- Executes during object creation, after setting all properties.
 function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
@@ -186,7 +228,7 @@ end
 
 
 
-function displacementStepEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function displacementStepEdit_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSL>
 % hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -194,6 +236,14 @@ function displacementStepEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,I
 % Hints: get(hObject,'String') returns contents of displacementStepEdit as text
 %        str2double(get(hObject,'String')) returns contents of displacementStepEdit as a double
 
+str  = get(handles.displacementStepEdit, 'String');
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app = getappdata(0, 'app');
+app.settings.displacementStep = val;
 
 % --- Executes during object creation, after setting all properties.
 function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
@@ -214,7 +264,8 @@ function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Reset the defulat parameters
+% TODO: rewrite tu update settings
+% Reset the default parameters
 set(handles.smoothingLengthEdit,        'String', num2str(10));
 set(handles.pointNumberEdit,            'String', num2str(500));
 set(handles.correlationWindowSize1Edit, 'String', num2str(5));
@@ -247,58 +298,27 @@ pause(0.01);
 
 % get global data
 app     = getappdata(0, 'app');
-SK      = app.scaledSkeletonList;
-R       = app.radiusList;
-t0      = app.settings.timeInterval;
+% SK      = app.scaledSkeletonList;
+% R       = app.radiusList;
+% t0      = app.settings.timeInterval;
 
-tic;
-
-% Take the parameters given by the user
-iw  = get(handles.smoothingLengthEdit, 'String');
-nx  = get(handles.pointNumberEdit, 'String');
-ws  = get(handles.correlationWindowSize1Edit, 'String');
-ws2 = get(handles.correlationWindowSize2Edit, 'String');
-step = get(handles.displacementStepEdit, 'String');
-
-if length(iw) == 0 || length(nx) ==0 || length(ws) == 0 || length(ws2) ==0 || length(step) ==0  %#ok
-    warning('Edit must not be empty');
-    return;
-end
-
-iw  = str2num(iw);%#ok
-nx  = str2num(nx);%#ok
-ws  = str2num(ws);%#ok
-ws2 = str2num(ws2);%#ok
-step = str2num(step);%#ok
-
-if isempty(nx) || isempty(iw) || isempty(ws) || isempty(ws2) || isempty(step)
-    warning('Value must be a number');
-    return;
-end
-
-if iw < 0 || nx < 0 || ws < 0 || ws2 < 0 || step < 0
-    warning('Value must be positive');
-    return;
-end
-
-
-% store new settings in Application Data
-app.settings.curvatureSmoothingSize = iw;
-app.settings.windowSize1 = ws;
-app.settings.windowSize2 = ws2;
-app.settings.displacementStep = step;
-app.settings.finalResultLength = nx;
-
+iw      = app.settings.curvatureSmoothingSize;
+ws      = app.settings.windowSize1;
+ws2     = app.settings.windowSize2;
+step    = app.settings.displacementStep;
+nx      = app.settings.finalResultLength;
 
 % Start the program
 
+tic;
+
 % Curvature
-disp('Curvature');
-[S, A, C] = computeCurvatureAll(SK, iw);
+disp('Compute angles and curvature');
+[S, A, C] = computeCurvatureAll(app.scaledSkeletonList, iw);
 
 % Alignment of all the results
 disp('Alignment of curves');
-Sa = alignAbscissa(S, R);
+Sa = alignAbscissa(S, app.radiusList);
 
 % Displacement (may require some time...)
 disp('Displacement');
@@ -306,13 +326,13 @@ E = computeDisplacementPxAll(app.skeletonList, Sa, app.imageList, ws, step);
 
 % Elongation
 disp('Elongation');
-[Elg, E2] = computeElongationAll(E, t0, step, ws2);
+[Elg, E2] = computeElongationAll(E, app.settings.timeInterval, step, ws2);
 
 %  Space-time mapping
 ElgE1 = reconstruct_Elg2(nx, Elg);
 CE1 = reconstruct_Elg2(nx, C, Sa);
 AE1 = reconstruct_Elg2(nx, A, Sa);
-RE1 = reconstruct_Elg2(nx, R, Sa);
+RE1 = reconstruct_Elg2(nx, app.radiusList, Sa);
 
 dt = toc;
 disp(sprintf('Computation of elongation took %f mn', dt / 60)); %#ok<DSPS>
