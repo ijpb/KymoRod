@@ -449,6 +449,82 @@ classdef KymoRodAppData < handle
     end
     
     
+    %% Displacement and Elongation computation
+    
+    methods
+        function computeCurvaturesDisplacementAndElongation(this)
+            
+            % Curvature and normalisation of abscissa
+            computeCurvaturesAndAbscissa(this);
+            
+            % Displacement (may require some time...)
+            computeDisplacements(this);
+            
+            % Elongation
+            computeElongations(this);
+
+            setProcessingStep(this, 'kymograph');
+        end
+        
+        function computeCurvaturesAndAbscissa(this)
+            % compute curvature curve of all skeletons
+            
+            disp('Compute angles and curvature');
+
+            % Compute smoothed curvature curves
+            smooth  = this.settings.curvatureSmoothingSize;
+            [S, A, C] = computeCurvatureAll(this.scaledSkeletonList, smooth);
+            
+            % Alignment of all the results
+            disp('Alignment of curves');
+            Sa = alignAbscissa(S, this.radiusList);
+            
+            % store within class
+            this.abscissaList        = Sa;
+            this.verticalAngleList   = A;
+            this.curvatureList       = C;
+        end
+        
+        function computeDisplacements(this)
+            % Displacement (may require some time...)
+
+            disp('Displacement');
+            Sa = this.abscissaList;
+            ws      = this.settings.windowSize1;
+            step    = this.settings.displacementStep;
+            
+            E = computeDisplacementPxAll(this.skeletonList, Sa, this.imageList, ws, step);
+            
+            this.displacementList = E;
+        end
+        
+        function computeElongations(this)
+
+            % Elongation
+            disp('Elongation');
+            E       = this.displacementList;
+            ws2     = this.settings.windowSize2;
+            nx      = this.settings.finalResultLength;
+            step    = this.settings.displacementStep;
+            [Elg, E2] = computeElongationAll(E, this.settings.timeInterval, step, ws2);
+            
+            %  Space-time mapping
+            ElgE1 = reconstruct_Elg2(nx, Elg);
+            Sa = this.abscissaList;
+            CE1 = reconstruct_Elg2(nx, this.curvatureList, Sa);
+            AE1 = reconstruct_Elg2(nx, this.verticalAngleList, Sa);
+            RE1 = reconstruct_Elg2(nx, this.radiusList, Sa);
+            
+            this.smoothedDisplacementList = E2;
+            this.elongationList      = Elg;
+            
+            this.elongationImage     = ElgE1;
+            this.curvatureImage      = CE1;
+            this.verticalAngleImage  = AE1;
+            this.radiusImage         = RE1;
+        end
+    end
+    
     %% Input / output methods
     methods
         function saveSettings(this, fileName)

@@ -264,7 +264,7 @@ function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% TODO: rewrite tu update settings
+% TODO: rewrite to update settings
 % Reset the default parameters
 set(handles.smoothingLengthEdit,        'String', num2str(10));
 set(handles.pointNumberEdit,            'String', num2str(500));
@@ -298,57 +298,11 @@ pause(0.01);
 
 % get global data
 app     = getappdata(0, 'app');
-% SK      = app.scaledSkeletonList;
-% R       = app.radiusList;
-% t0      = app.settings.timeInterval;
-
-iw      = app.settings.curvatureSmoothingSize;
-ws      = app.settings.windowSize1;
-ws2     = app.settings.windowSize2;
-step    = app.settings.displacementStep;
-nx      = app.settings.finalResultLength;
-
-% Start the program
 
 tic;
-
-% Curvature
-disp('Compute angles and curvature');
-[S, A, C] = computeCurvatureAll(app.scaledSkeletonList, iw);
-
-% Alignment of all the results
-disp('Alignment of curves');
-Sa = alignAbscissa(S, app.radiusList);
-
-% Displacement (may require some time...)
-disp('Displacement');
-E = computeDisplacementPxAll(app.skeletonList, Sa, app.imageList, ws, step);
-
-% Elongation
-disp('Elongation');
-[Elg, E2] = computeElongationAll(E, app.settings.timeInterval, step, ws2);
-
-%  Space-time mapping
-ElgE1 = reconstruct_Elg2(nx, Elg);
-CE1 = reconstruct_Elg2(nx, C, Sa);
-AE1 = reconstruct_Elg2(nx, A, Sa);
-RE1 = reconstruct_Elg2(nx, app.radiusList, Sa);
-
+computeCurvaturesDisplacementAndElongation(app);
 dt = toc;
 disp(sprintf('Computation of elongation took %f mn', dt / 60)); %#ok<DSPS>
-
-% store results in Application Data
-app.abscissaList        = Sa;
-app.verticalAngleList   = A;
-app.curvatureList       = C;
-app.displacementList    = E;
-app.smoothedDisplacementList = E2;
-app.elongationList      = Elg;
-
-app.elongationImage     = ElgE1;
-app.curvatureImage      = CE1;
-app.verticalAngleImage  = AE1;
-app.radiusImage         = RE1;
 
 setProcessingStep(app, 'kymograph');
 
