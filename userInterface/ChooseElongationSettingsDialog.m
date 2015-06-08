@@ -75,6 +75,10 @@ set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1))
 set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
 set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
 
+% To start the programm
+set(handles.validateSettingsButton, 'Enable', 'On')
+set(handles.validateSettingsButton, 'String', 'Compute Elongations');
+
 % Update handles structure
 guidata(hObject, handles);
 
