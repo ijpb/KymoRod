@@ -150,7 +150,7 @@ set(handles.smoothValueEdit, 'String', num2str(smooth));
 
 % update app data 
 app.settings.contourSmoothingSize = smooth;
-setProcessingStep(app, 'contour');
+setProcessingStep(app, ProcessingStep.Contour);
 
 setappdata(0, 'app', app);
 
@@ -192,7 +192,7 @@ set(handles.smoothValueSlider, 'Value', smooth);
 % update app data 
 app.settings.contourSmoothingSize = smooth;
 
-setProcessingStep(app, 'contour');
+setProcessingStep(app, ProcessingStep.Contour);
 
 setappdata(0, 'app', app);
 

@@ -224,6 +224,8 @@ set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 setappdata(0, 'app', app);
 
+setProcessingStep(app, ProcessingStep.Threshold);
+
 % update display
 frameIndexSlider_Callback(hObject, eventdata, handles);
 
@@ -255,6 +257,8 @@ set(handles.currentFrameThresholdLabel, 'String', string);
 seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
 imshow(seg);
+
+setProcessingStep(app, ProcessingStep.Threshold);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -405,7 +409,7 @@ imshow(seg);
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
 set(handles.updateAutomaticThresholdButton, 'String', 'Update threshold');
 
-setProcessingStep(app, 'threshold');
+setProcessingStep(app, ProcessingStep.Threshold);
 
 
 %% Widgets for manual threshold
@@ -463,7 +467,7 @@ string = sprintf('Threshold for frame %d is %d', frameIndex, ...
     round(thresholdValues(frameIndex)));
 set(handles.currentFrameThresholdLabel, 'String', string);
 
-setProcessingStep(app, 'threshold');
+setProcessingStep(app, ProcessingStep.Threshold);
 
 
 % --- Executes during object creation, after setting all properties.

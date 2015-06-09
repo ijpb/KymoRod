@@ -62,9 +62,10 @@ set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
 
 app = varargin{1};
+setappdata(0, 'app', app);
 
 % if some data are already initialized, display widgets
-if ~strcmp(getProcessingStep(app), 'none')
+if getProcessingStep(app) > ProcessingStep.None
     % need to refresh image list from file information
     folderName  = app.inputImagesDir;
     filePattern = app.inputImagesFilePattern;
@@ -76,7 +77,6 @@ if ~strcmp(getProcessingStep(app), 'none')
     handles = updateFramePreview(handles);
 end
 
-setappdata(0, 'app', app);
 
 % setup some widgets with current settings
 settings = app.settings;
@@ -216,8 +216,6 @@ function updateImageNameList(handles)
 % extract app data
 app = getappdata(0, 'app');
 
-setProcessingStep(app, 'selection');
-
 % read new list
 folderName  = app.inputImagesDir;
 filePattern = app.inputImagesFilePattern;
@@ -240,6 +238,8 @@ if isempty(imageNames)
 
     return;
 end
+
+setProcessingStep(app, ProcessingStep.Selection);
 
 % choose to display color image selection
 info = imfinfo(fullfile(folderName, imageNames{1}));
@@ -473,6 +473,9 @@ set(handles.frameIndexStepEdit, 'Visible', 'Off');
 set(handles.keepAllFramesRadioButton, 'Value', 1);
 set(handles.selectFrameIndicesRadioButton, 'Value', 0);
 
+app = getappdata(0, 'app');
+setProcessingStep(app, ProcessingStep.Selection);
+
 guidata(hObject, handles);
 
 % --- Executes on button press in selectFrameIndicesRadioButton.
@@ -496,6 +499,9 @@ set(handles.frameIndexStepEdit, 'Visible', 'On');
 set(handles.keepAllFramesRadioButton,'Value', 0);
 set(handles.selectFrameIndicesRadioButton, 'Value', 1);
 
+app = getappdata(0, 'app');
+setProcessingStep(app, ProcessingStep.Selection);
+
 guidata(hObject, handles);
 
 
@@ -515,6 +521,8 @@ val = max(val, 1);
 
 app = getappdata(0, 'app');
 app.firstIndex = val;
+
+setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);
@@ -552,6 +560,8 @@ val = min(val, nFiles);
 app = getappdata(0, 'app');
 app.lastIndex = val;
 
+setProcessingStep(app, ProcessingStep.Selection);
+
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);
 
@@ -583,6 +593,8 @@ val = parseValue(string);
 
 app = getappdata(0, 'app');
 app.indexStep = val;
+
+setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);

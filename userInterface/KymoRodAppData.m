@@ -10,17 +10,9 @@ classdef KymoRodAppData < handle
         settings;
         
         % Step of processing, to know which data are initialized, and which
-        % ones need to be computed.
-        %
-        % Valid steps:
-        % 'none'
-        % 'selection'
-        % 'threshold'
-        % 'contour'
-        % 'skeleton'
-        % 'elongation'
-        % 'kymograph'
-        processingStep = 'none';
+        % ones need to be computed. Default is "None".
+        % See the class ProcessingStep for details.
+        processingStep = ProcessingStep.None;
         
         % index of current frame for display
         currentFrameIndex = 1;
@@ -121,31 +113,50 @@ classdef KymoRodAppData < handle
         function setProcessingStep(this, newStep)
             % changes the current processing step, and clear outdated variables
             
-            switch lower(newStep)
-                case 'none'
+            % to comply with previous version
+            if ischar(newStep)
+                warning('Specifying processing step as a string is obsolete');
+                
+                switch lower(newStep)
+                    case 'none',        newStep = ProcessingStep.None;
+                    case 'selection',   newStep = ProcessingStep.Selection;
+                    case 'threshold',   newStep = ProcessingStep.Threshold;
+                    case 'contour',     newStep = ProcessingStep.Contour;
+                    case 'skeleton',    newStep = ProcessingStep.Skeleton;
+                    case 'elongation',  newStep = ProcessingStep.Elongation;
+                    case 'kymograph',   newStep = ProcessingStep.Kymograph;
+                    otherwise
+                        error(['Unrecognised processing step: ' newStep]);
+                end
+                
+            end
+
+            % update inner data depending on processing step
+            switch newStep
+                case ProcessingStep.None
                     % clear all data, including input image info
                     clearImageData();
                     
-                case 'selection'
+                case ProcessingStep.Selection
                     % select new image batch: clear all computed data
                     clearSegmentationData();
                     
-                case 'threshold'
+                case ProcessingStep.Threshold
                     clearContourData();
                     
-                case 'contour'
+                case ProcessingStep.Contour
                     clearSkeletonData();
                     
-                case 'skeleton'
+                case ProcessingStep.Skeleton
                     % skeletons are updated. Need to recompute displacement
                     % and elongation data
                     clearElongationData();
                     
-                case 'elongation'
+                case ProcessingStep.Elongation
                     % ??? should add displacement step ?
-                    clearResultImages();
+%                     clearResultImages();
                     
-                case 'kymograph'
+                case ProcessingStep.Kymograph
                     % final processing step: nothing to clear!
                     
                 otherwise
@@ -270,7 +281,7 @@ classdef KymoRodAppData < handle
         function computeThresholdValues(this)
             % compute threshold values for all images
             
-            if ismember(this.processingStep, {'none'})
+            if this.processingStep == ProcessingStep.None
                 error('need to have images selected');
             end
             
@@ -312,7 +323,7 @@ classdef KymoRodAppData < handle
                 close(hDialog);
             end
 
-            setProcessingStep(this, 'threshold');
+            setProcessingStep(this, ProcessingStep.Threshold);
         end
     end
     
@@ -320,7 +331,7 @@ classdef KymoRodAppData < handle
 
     methods
         function contour = getContour(this, index)
-            if ismember(this.processingStep, {'none', 'selection', 'threshold'})
+            if this.processingStep < ProcessingStep.Contour
                 error('need to have contours computed');
             end
             contour = this.contourList{index};
@@ -329,7 +340,7 @@ classdef KymoRodAppData < handle
         function computeContours(this)
             % compute the contour for each image
             
-            if ismember(this.processingStep, {'none', 'selection'})
+            if this.processingStep < ProcessingStep.Threshold
                 error('need to have threshold computed');
             end
             
@@ -363,7 +374,7 @@ classdef KymoRodAppData < handle
                 close(hDialog);
             end
             
-            setProcessingStep(this, 'contour');
+            setProcessingStep(this, ProcessingStep.Contour);
         end
     end
    
@@ -372,8 +383,7 @@ classdef KymoRodAppData < handle
 
     methods
         function skel = getSkeleton(this, index)
-            if ismember(this.processingStep, {'none', 'selection', ...
-                    'threshold', 'contour'})
+            if this.processingStep < ProcessingStep.Skeleton
                 error('need to have skeletons computed');
             end
             skel = this.skeletonList{index};
@@ -381,6 +391,10 @@ classdef KymoRodAppData < handle
         
         function computeSkeletons(this)
             % compute all skeletons from smoothed contours
+            
+            if this.processingStep < ProcessingStep.Contour
+                error('need to have contours computed');
+            end
             
             % number of images
             nFrames = frameNumber(this);
@@ -444,7 +458,7 @@ classdef KymoRodAppData < handle
                 close(hDialog);
             end
     
-            setProcessingStep(this, 'skeleton');
+            setProcessingStep(this, ProcessingStep.Skeleton);
         end
     end
     
@@ -453,6 +467,10 @@ classdef KymoRodAppData < handle
     
     methods
         function computeCurvaturesDisplacementAndElongation(this)
+            
+            if this.processingStep < ProcessingStep.Skeleton
+                error('need to have skeletons computed');
+            end
             
             % Curvature and normalisation of abscissa
             computeCurvaturesAndAbscissa(this);
@@ -463,7 +481,7 @@ classdef KymoRodAppData < handle
             % Elongation
             computeElongations(this);
 
-            setProcessingStep(this, 'kymograph');
+            setProcessingStep(this, ProcessingStep.Elongation);
         end
         
         function computeCurvaturesAndAbscissa(this)

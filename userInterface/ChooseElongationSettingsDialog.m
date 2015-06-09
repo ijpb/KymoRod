@@ -125,6 +125,8 @@ end
 app = getappdata(0, 'app');
 app.settings.curvatureSmoothingSize = val;
 
+setProcessingStep(app, ProcessingStep.Skeleton);
+
 
 % --- Executes during object creation, after setting all properties.
 function smoothingLengthEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
@@ -155,6 +157,8 @@ end
 
 app = getappdata(0, 'app');
 app.settings.finalResultLength = val;
+
+setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -187,6 +191,9 @@ end
 app = getappdata(0, 'app');
 app.settings.windowSize1 = val;
 
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
 % --- Executes during object creation, after setting all properties.
 function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
@@ -198,7 +205,6 @@ function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
@@ -217,6 +223,8 @@ end
 
 app = getappdata(0, 'app');
 app.settings.windowSize2 = val;
+
+setProcessingStep(app, ProcessingStep.Skeleton);
 
 % --- Executes during object creation, after setting all properties.
 function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
@@ -248,6 +256,8 @@ end
 
 app = getappdata(0, 'app');
 app.settings.displacementStep = val;
+
+setProcessingStep(app, ProcessingStep.Skeleton);
 
 % --- Executes during object creation, after setting all properties.
 function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
@@ -308,7 +318,7 @@ computeCurvaturesDisplacementAndElongation(app);
 dt = toc;
 disp(sprintf('Computation of elongation took %f mn', dt / 60)); %#ok<DSPS>
 
-setProcessingStep(app, 'kymograph');
+setProcessingStep(app, ProcessingStep.Kymograph);
 
 setappdata(0, 'app', app);
 

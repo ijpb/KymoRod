@@ -96,7 +96,6 @@ set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
 set(handles.validateSkeletonButton,     'Value', 0);
 set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 0);
 set(handles.displayKymographButton,     'Value', 0);
 
 
@@ -113,7 +112,6 @@ set(handles.validateThresholdButton,    'Value', 1);
 set(handles.validateContourButton,      'Value', 0);
 set(handles.validateSkeletonButton,     'Value', 0);
 set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 0);
 set(handles.displayKymographButton,     'Value', 0);
 
 
@@ -130,7 +128,6 @@ set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 1);
 set(handles.validateSkeletonButton,     'Value', 0);
 set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 0);
 set(handles.displayKymographButton,     'Value', 0);
 
 % --- Executes on button press in validateSkeletonButton.
@@ -146,7 +143,6 @@ set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
 set(handles.validateSkeletonButton,     'Value', 1);
 set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 0);
 set(handles.displayKymographButton,     'Value', 0);
 
 % --- Executes on button press in elongationButton.
@@ -162,24 +158,6 @@ set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
 set(handles.validateSkeletonButton,     'Value', 0);
 set(handles.elongationButton,           'Value', 1);
-set(handles.specificElongationButton,   'Value', 0);
-set(handles.displayKymographButton,     'Value', 0);
-
-
-% --- Executes on button press in specificElongationButton.
-function specificElongationButton_Callback(hObject, eventdata, handles)%#ok
-% hObject    handle to specificElongationButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of specificElongationButton
-
-set(handles.imagesSelectionButton,      'Value', 0);
-set(handles.validateThresholdButton,    'Value', 0);
-set(handles.validateContourButton,      'Value', 0);
-set(handles.validateSkeletonButton,     'Value', 0);
-set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 1);
 set(handles.displayKymographButton,     'Value', 0);
 
 
@@ -196,7 +174,6 @@ set(handles.validateThresholdButton,    'Value', 0);
 set(handles.validateContourButton,      'Value', 0);
 set(handles.validateSkeletonButton,     'Value', 0);
 set(handles.elongationButton,           'Value', 0);
-set(handles.specificElongationButton,   'Value', 0);
 set(handles.displayKymographButton,     'Value', 1);
 
 
