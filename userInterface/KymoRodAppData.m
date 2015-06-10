@@ -1,6 +1,8 @@
 classdef KymoRodAppData < handle
-    % Data Class for Application "KymoRod"
-    %
+    % Class for Application "KymoRod"
+    % 
+    % This class contains a reference to the current settings, the data
+    % currently loaded, and most processing methods.
     
     %% Properties
     properties
@@ -504,16 +506,62 @@ classdef KymoRodAppData < handle
         end
         
         function computeDisplacements(this)
-            % Displacement (may require some time...)
+            % Compute displacements between all couples of frames
 
             disp('Displacement');
-            Sa = this.abscissaList;
-            ws      = this.settings.windowSize1;
+            nFrames = frameNumber(this);
             step    = this.settings.displacementStep;
             
-            E = computeDisplacementPxAll(this.skeletonList, Sa, this.imageList, ws, step);
+            % allocate memory for result
+            this.displacementList = cell(nFrames-step, 1);
+
+            parfor_progress(nFrames);
+            parfor i = 1:nFrames - step
+                % index of next skeleton
+                i2 = i + step;
+
+                % compute displacement between current couple of frames
+                computeFrameDisplacement(this, i, i2);
+                parfor_progress;
+                
+            end
+            parfor_progress(0);
+        end
+        
+        function computeFrameDisplacement(this, i, i2)
+            % Computes displacement between frames i and i2, and update
+            % corresponding displacment.
+            %
+            % assumes the class field 'displacementList' is already
+            % initialized to the required size.
+
+            assert(i <= length(this.displacementList), ...
+                'Class field ''displacementList'' is not correctly initialized');
+            ws = this.settings.windowSize1;
             
-            this.displacementList = E;
+            % local data
+            SK1 = this.skeletonList{i};
+            SK2 = this.skeletonList{i2};
+            S1  = this.abscissaList{i};
+            S2  = this.abscissaList{i2};
+            img1 = getImage(this, i);
+            img2 = getImage(this, i2);
+                
+            % check if the two skeletons are large enough
+            if length(SK1) > 2*80 && length(SK2) > 2*80
+                E = computeDisplacementPx(SK1, SK2, S1, S2, img1, img2, ws);
+                
+                % check result is large enough
+                if size(E, 1) == 1
+                    E = [1 0;1 1];
+                end
+            else
+                % case of too small skeletons
+                E = [1 0; 1 1];
+            end
+            
+            % store result
+            this.displacementList{i} = E;
         end
         
         function computeElongations(this)
@@ -541,6 +589,7 @@ classdef KymoRodAppData < handle
             this.verticalAngleImage  = AE1;
             this.radiusImage         = RE1;
         end
+        
     end
     
     %% Input / output methods
