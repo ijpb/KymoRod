@@ -391,22 +391,11 @@ switch valPopUp
     case 4, type = 'verticalAngle';
 end
 
-% % select current frame and convert to image
-% f = getframe(handles.kymographAxes);
-% im = frame2im(f);
 hf = figure; 
 set(gca, 'fontsize', 14);
 showKymograph(app, type);
 print(hf, fullfile(pathName, fileName), '-dpng');
 close(hf);
-
-% % select current frame and convert to image
-% f = getframe(handles.kymographAxes);
-% im = frame2im(f);
-% 
-% % save image into selected file
-% imwrite(im, fullfile(pathName, fileName), 'png');
-
 
 
 % --- Executes on button press in saveAsTiffButton.
@@ -434,17 +423,11 @@ switch valPopUp
     case 4, type = 'verticalAngle';
 end
 
-% % select current frame and convert to image
-% f = getframe(handles.kymographAxes);
-% im = frame2im(f);
 hf = figure; 
 set(gca, 'fontsize', 14);
 showKymograph(app, type);
 print(hf, fullfile(pathName, fileName), '-dtiff');
 close(hf);
-
-% % save image into selected file
-% imwrite(im, fullfile(pathName, fileName), 'tif');
 
 
 % --- Executes on button press in saveAllDataButton.
