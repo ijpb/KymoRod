@@ -218,6 +218,21 @@ classdef KymoRodAppData < handle
         end
     end
     
+    %% Compute everything
+    
+    methods
+        function computeAll(this)
+            % Computes everything assuming settings and image info are correct 
+            computeImageNames(this);
+            computeThresholdValues(this);
+            computeContours(this);
+            computeSkeletons(this);
+            computeCurvaturesAndAbscissa(this);
+            computeDisplacements(this);
+            computeElongations(this);
+        end
+    end
+    
     
     %% Image selection
     methods
@@ -401,11 +416,7 @@ classdef KymoRodAppData < handle
             if ishandle(hDialog)
                 close(hDialog);
             end
-            
-            if ishandle(hDialog)
-                close(hDialog);
-            end
-            
+
             setProcessingStep(this, ProcessingStep.Contour);
         end
     end
@@ -512,8 +523,6 @@ classdef KymoRodAppData < handle
             
             % Elongation
             computeElongations(this);
-
-            setProcessingStep(this, ProcessingStep.Elongation);
         end
         
         function computeCurvaturesAndAbscissa(this)
@@ -606,7 +615,7 @@ classdef KymoRodAppData < handle
         end
         
         function computeElongations(this)
-            % Compute elongation cures for all skeleton curves
+            % Compute elongation curves for all skeleton curves
 
             % Elongation
             disp('Elongation');
@@ -622,6 +631,8 @@ classdef KymoRodAppData < handle
             
             %  Space-time mapping
             this.elongationImage = reconstruct_Elg2(nx, Elg);
+
+            setProcessingStep(this, ProcessingStep.Elongation);
         end
     end
     
