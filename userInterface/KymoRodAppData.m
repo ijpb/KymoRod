@@ -29,7 +29,7 @@ classdef KymoRodAppData < handle
         
         % flag indicating whether images are loaded in memory or read from
         % files only when necessary
-        inputImagesLazyLoading = false;
+        inputImagesLazyLoading = true;
         
         % informations to select images from input directory
         firstIndex = 1;
@@ -235,6 +235,30 @@ classdef KymoRodAppData < handle
             end
         end
         
+        function computeImageNames(this)
+            % update list of image names from input directory and indices
+
+            % read all files in specified directory
+            inputDir = this.inputImagesDir;
+            pattern  = this.inputImagesFilePattern;
+            fileList = dir(fullfile(inputDir, pattern));
+            
+            % ensure no directory is load (can happen under linux)
+            fileList = fileList(~[fileList.isdir]);
+            
+            % select images corresponding to indices selection
+            fileIndices = this.firstIndex:this.indexStep:this.lastIndex;
+            fileList = fileList(fileIndices);
+            nFrames = length(fileList);
+            
+            % allocate memory for local variables
+            this.imageNameList = cell(nFrames, 1);
+            for i = 1:nFrames
+                fileName = fileList(i).name;
+                this.imageNameList{i} = fileName;
+            end
+        end
+        
         function readAllImages(this)
             % load all images based on settings
             % refresh imageList and imageNameList
@@ -260,10 +284,16 @@ classdef KymoRodAppData < handle
                 this.imageNameList{i} = fileName;
                 img = imread(fullfile(this.inputImagesDir, fileName));
                 
-                % keep only the red channel of color images
+                % in case of color image, select which channel should be kept
                 if ndims(img) > 2 %#ok<ISMAT>
-                    % TODO: use imageSegmentationChannel field
-                    img = img(:,:,1);
+                    switch lower(app.settings.imageSegmentationChannel)
+                        case 'red',     img = img(:,:,1); 
+                        case 'green',   img = img(:,:,2); 
+                        case 'blue',    img = img(:,:,3); 
+                        case 'intensity', img = rgb2gray(img);
+                        otherwise
+                            error(['could not recognise channel name: ' channelName]);
+                    end
                 end
                 this.imageList{i} = img;
             end

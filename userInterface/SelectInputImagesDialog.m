@@ -22,7 +22,7 @@ function varargout = SelectInputImagesDialog(varargin)
 
 % Edit the above text to modify the response to help SelectInputImagesDialog
 
-% Last Modified by GUIDE v2.5 24-Mar-2015 16:28:48
+% Last Modified by GUIDE v2.5 10-Jun-2015 10:21:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -84,6 +84,8 @@ set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
 set(handles.spatialResolutionUnitEdit, 'String', settings.pixelSizeUnit);
 set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));
 set(handles.timeIntervalUnitEdit, 'String', settings.timeIntervalUnit);
+
+set(handles.lazyLoadingCheckbox, 'Value', app.inputImagesLazyLoading);
 
 
 % Choose default command line output for SelectInputImagesDialog
@@ -669,6 +671,19 @@ string = sprintf('frame %d / %d (%s)', frameIndex, frameNumber, currentImageName
 set(handles.currentFrameLabel, 'String', string);
 
 
+% --- Executes on button press in lazyLoadingCheckbox.
+function lazyLoadingCheckbox_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to lazyLoadingCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of lazyLoadingCheckbox
+
+value = get(handles.lazyLoadingCheckbox, 'Value');
+app = getappdata(0, 'app');
+app.inputImagesLazyLoading = value > 0;
+
+
 % --- Executes on slider movement.
 function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to framePreviewSlider (see GCBO)
@@ -728,71 +743,15 @@ function selectImagesButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-readAllImages();
+% readAllImages();
 
 % extract global data
 app = getappdata(0, 'app');
+
+computeImageNames(app);
 
 nFrames = frameNumber(app);
 app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
 ChooseThresholdDialog(app);
-
-
-function readAllImages(handles)
-% load all images based on settings
-% refresh imageList and imageNameList
-
-% extract global data
-app = getappdata(0, 'app');
-
-% read all files in specified directory
-inputDir = app.inputImagesDir;
-fileList = dir(fullfile(inputDir, app.inputImagesFilePattern));
-
-% ensure no directory is load (can happen under linux)
-fileList = fileList(~[fileList.isdir]);
-
-% select images corresponding to indices selection
-fileIndices = app.firstIndex:app.indexStep:app.lastIndex;
-fileList = fileList(fileIndices);
-nFrames = length(fileList);
-
-% allocate memory for local variables
-imageList = cell(nFrames, 1);
-imageNameList = cell(nFrames, 1);
-
-% channel to use for color images
-channelName = app.settings.imageSegmentationChannel;
-
-disp('Read input images...');
-parfor_progress(nFrames);
-
-% read each image
-parfor i = 1:nFrames
-    fileName = fileList(i).name;
-    imageNameList{i} = fileName;
-    img = imread(fullfile(inputDir, fileName));
-
-    % keep only the red channel of color images
-    if ndims(img) > 2 %#ok<ISMAT>
-        switch lower(channelName)
-            case 'red', img = img(:,:,1); 
-            case 'green', img = img(:,:,2); 
-            case 'blue', img = img(:,:,3); 
-            case 'intensity', img = rgb2gray(img);
-            otherwise
-                error(['could not recognise channel name: ' channelName]);
-        end
-    end
-    imageList{i} = img;
-    
-    parfor_progress;
-end
-
-parfor_progress(0);
-
-app.imageList = imageList;
-app.imageNameList = imageNameList;
-
