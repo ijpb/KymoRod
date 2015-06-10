@@ -33,8 +33,6 @@ function [branches, diam, order] = skeletonBranches(V, deg, adjList, dist, jp, j
 
 persistent N SQ4 diam2 order2;
 
-hold on;
-
 % initialization during first call
 if parent == 0 && m == 0
     % index of current branch. First branch has index 1 by definition.

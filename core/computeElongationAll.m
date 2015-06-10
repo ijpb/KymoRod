@@ -26,9 +26,12 @@ function [Elg, E2] = computeElongationAll(E, t0, step, ws)
 %   HISTORY
 %   2014-04-16 : Add comments about the file
 
+% initialize results
 E2 = E;
-parfor_progress(length(E));
+Elg = cell(length(E), 1);
 
+% iterate over displacement curves
+parfor_progress(length(E));
 parfor i = 1:length(E)
    
     if length(E{i}) > 20

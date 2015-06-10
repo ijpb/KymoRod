@@ -23,7 +23,7 @@ function CT = segmentContour(img, thres)
 %   2014-12-08 rewrite using less memory and avoiding code duplication
 
 % Compute all contours at isovalue given by threshold
-C = contour(img, [thres, thres]);
+C = contourc(double(img), [thres, thres]);
 
 % size of the contour matrix array
 nCoords = size(C, 2);
