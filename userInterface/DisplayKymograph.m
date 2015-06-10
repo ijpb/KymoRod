@@ -64,8 +64,8 @@ end
 
 % extract data for display
 ind = app.currentFrameIndex;
-contour     = app.contourList{ind};
-skeleton    = app.skeletonList{ind};
+contour = getContour(app, ind);
+skeleton = getSkeleton(app, ind);
 
 % Display current image
 axes(handles.imageAxes); hold on;
@@ -124,7 +124,6 @@ function mainMenuMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSD>
 app = getappdata(0, 'app');
 delete(gcf);
 KymoRodMenuDialog(app);
-
 
 
 % --- Executes on button press in showColoredSkeletonCheckBox.
@@ -198,11 +197,11 @@ app = getappdata(0, 'app');
 
 % coordinates of current skeleton
 frameIndex = app.currentFrameIndex;
-skeleton = app.skeletonList{frameIndex};
+skeleton = getSkeleton(app, frameIndex);
 xdata = skeleton(:,1);
 ydata = skeleton(:,2);
 
-
+% switch depending on value to display
 valPopUp = get(handles.kymographTypePopup, 'Value');
 switch valPopUp
     case 1
@@ -275,8 +274,8 @@ app.currentFrameIndex = frameIndex;
 
 % extract data for current frame
 img = app.getImage(frameIndex);
-contour     = app.contourList{frameIndex};
-skeleton    = app.skeletonList{frameIndex};
+contour = getContour(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex);
 
 % update display
 axes(handles.imageAxes);

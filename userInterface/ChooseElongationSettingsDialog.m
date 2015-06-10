@@ -57,8 +57,6 @@ function ChooseElongationSettingsDialog_OpeningFcn(hObject, eventdata, handles, 
 handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
-    disp('init from KymoRodAppData');
-    
     app = varargin{1};
     setappdata(0, 'app', app);
  

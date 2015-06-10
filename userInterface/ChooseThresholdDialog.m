@@ -57,8 +57,6 @@ handles.output = hObject;
 
 if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
     % should be the canonical way of calling the program
-    
-    disp('validate threshold from app');
     app = varargin{1};    
 else
     error('requires 4 input arguments, with a KymoRodAppData as fourth argument');
