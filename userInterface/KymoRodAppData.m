@@ -487,7 +487,7 @@ classdef KymoRodAppData < handle
         end
         
         function computeCurvaturesAndAbscissa(this)
-            % compute curvature curve of all skeletons
+            % compute curvilinear abscissa, angle and curvature of all skeletons
             
             disp('Compute angles and curvature');
 
@@ -503,6 +503,17 @@ classdef KymoRodAppData < handle
             this.abscissaList        = Sa;
             this.verticalAngleList   = A;
             this.curvatureList       = C;
+            
+            computeCurvaturesAndAbscissaImages(this);
+        end
+        
+        function computeCurvaturesAndAbscissaImages(this)
+            nx  = this.settings.finalResultLength;
+            Sa  = this.abscissaList;
+            
+            this.curvatureImage     = reconstruct_Elg2(nx, this.curvatureList, Sa);
+            this.verticalAngleImage = reconstruct_Elg2(nx, this.verticalAngleList, Sa);
+            this.radiusImage        = reconstruct_Elg2(nx, this.radiusList, Sa);
         end
         
         function computeDisplacements(this)
@@ -565,6 +576,7 @@ classdef KymoRodAppData < handle
         end
         
         function computeElongations(this)
+            % Compute elongation cures for all skeleton curves
 
             % Elongation
             disp('Elongation');
@@ -573,23 +585,14 @@ classdef KymoRodAppData < handle
             nx      = this.settings.finalResultLength;
             step    = this.settings.displacementStep;
             [Elg, E2] = computeElongationAll(E, this.settings.timeInterval, step, ws2);
-            
-            %  Space-time mapping
-            ElgE1 = reconstruct_Elg2(nx, Elg);
-            Sa = this.abscissaList;
-            CE1 = reconstruct_Elg2(nx, this.curvatureList, Sa);
-            AE1 = reconstruct_Elg2(nx, this.verticalAngleList, Sa);
-            RE1 = reconstruct_Elg2(nx, this.radiusList, Sa);
-            
+
+            % store results
             this.smoothedDisplacementList = E2;
             this.elongationList      = Elg;
             
-            this.elongationImage     = ElgE1;
-            this.curvatureImage      = CE1;
-            this.verticalAngleImage  = AE1;
-            this.radiusImage         = RE1;
+            %  Space-time mapping
+            this.elongationImage = reconstruct_Elg2(nx, Elg);
         end
-        
     end
     
     %% Input / output methods
