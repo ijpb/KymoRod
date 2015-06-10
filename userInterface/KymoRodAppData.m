@@ -627,10 +627,8 @@ classdef KymoRodAppData < handle
     
     %% Input / output methods
     methods
-        function saveSettings(this, fileName)
+        function write(this, fileName)
             % Save the different options used to compute kymographs
-            
-            % TODO: should be rewritten according to new Settings class
             
             % open in text mode, erasing content if it exists
             f = fopen(fileName, 'w+t');
@@ -640,19 +638,21 @@ classdef KymoRodAppData < handle
             end
             
             % write header
-            fprintf(f, '# KymoRod Settings\n');
-            fprintf(f, '# %s\n', datestr(now,0));
+            fprintf(f, '# KymoRod Analysis Info\n');
+            fprintf(f, '# saved: %s\n', datestr(now,0));
+            
+            % save also modification date of the main class          
+            baseDir = fileparts(which('KymoRodAppData'));
+            fileInfo = dir(fullfile(baseDir, 'KymoRodAppData.m'));
+            fprintf(f, '# KymoRodAppData version: %s\n', fileInfo.date);
             fprintf(f, '\n');
             
-            
+            % 
+            fprintf(f, '# ----- Image File Infos -----\n\n');
+
             % informations to retrieve input image
             fprintf(f, 'inputImagesDir = %s\n', this.inputImagesDir);
             fprintf(f, 'inputImagesFilePattern = %s\n', this.inputImagesFilePattern);
-            fprintf(f, 'imageSegmentationChannel = %s\n', this.settings.imageSegmentationChannel);
-            
-            string = KymoRodAppData.booleanToString(this.inputImagesLazyLoading);
-            fprintf(f, 'inputImagesLazyLoading = %s\n', string);
-            fprintf(f, '\n');
             
             % informations to select images from input directory
             fprintf(f, 'firstIndex = %d\n', this.firstIndex);
@@ -660,40 +660,26 @@ classdef KymoRodAppData < handle
             fprintf(f, 'indexStep = %d\n', this.indexStep);
             fprintf(f, '\n');
             
-            % spatial calibration of input images
-            fprintf(f, 'pixelSize = %f\n', this.settings.pixelSize);
-            fprintf(f, 'pixelSizeUnit = %s\n', this.settings.pixelSizeUnit);
+            string = KymoRodAppData.booleanToString(this.inputImagesLazyLoading);
+            fprintf(f, 'inputImagesLazyLoading = %s\n', string);
             fprintf(f, '\n');
             
-            % time interval between two frames
-            fprintf(f, 'timeInterval = %f\n', this.settings.timeInterval);
-            fprintf(f, 'timeIntervalUnit = %s\n', this.settings.timeIntervalUnit);
-            fprintf(f, '\n');
+            % 
+            fprintf(f, '# ----- Generic Settings -----\n\n');
+
+            writeSettings(this.settings, f);
             
-            % length of window for smoothing coutours
-            fprintf(f, 'thresholdMethod = %s\n', this.settings.thresholdMethod);
-            nImages = length(this.imageNameList);
-            pattern = ['thresholdValues =' repmat(' %d', 1, nImages) '\n'];
+            fprintf(f, '# ----- Dataset-specific settings -----\n\n');
+
+            nFrames = frameNumber(this);
+            pattern = ['thresholdValues =' repmat(' %d', 1, nFrames) '\n'];
             fprintf(f, pattern, this.thresholdValues);
             fprintf(f, '\n');
             
-            % length of window for smoothing coutours
-            fprintf(f, 'contourSmoothingSize = %d\n', this.settings.contourSmoothingSize);
-            fprintf(f, '\n');
-            
-            % smoothing window size for computation of curvature
-            fprintf(f, 'curvatureSmoothingSize = %d\n', this.settings.curvatureSmoothingSize);
-            fprintf(f, '\n');
-            
-            % info for computation of elongation
-            fprintf(f, 'windowSize1 = %d\n', this.settings.windowSize1);
-            fprintf(f, 'windowSize2 = %d\n', this.settings.windowSize2);
-            fprintf(f, 'displacementStep = %d\n', this.settings.displacementStep);
-            fprintf(f, 'finalResultLength = %d\n', this.settings.finalResultLength);
-            fprintf(f, '\n');
-            
+            fprintf(f, '# ----- Workflow infos -----\n\n');
+
             % info about current step of the process
-            fprintf(f, 'currentStep = %s\n', this.processingStep);
+            fprintf(f, 'currentStep = %s\n', char(this.processingStep));
             fprintf(f, 'currentFrameIndex = %d\n', this.currentFrameIndex);
             fprintf(f, '\n');
             
@@ -706,7 +692,7 @@ classdef KymoRodAppData < handle
     
     %% Static methods
     methods (Static)
-        function app = readFromFile(fileName)
+        function app = read(fileName)
             % Initialize a new instance of "KymoRodAppData" from saved file
             
             % create new empty appdata class
@@ -762,36 +748,40 @@ classdef KymoRodAppData < handle
                         app.indexStep = str2double(value);
                         
                     case lower('pixelSize')
-                        app.pixelSize = str2double(value);
+                        app.settings.pixelSize = str2double(value);
                     case lower('pixelSizeUnit')
-                        app.pixelSizeUnit = value;
+                        app.settings.pixelSizeUnit = value;
                         
                     case lower('timeInterval')
-                        app.timeInterval = str2double(value);
+                        app.settings.timeInterval = str2double(value);
                     case lower('timeIntervalUnit')
-                        app.timeIntervalUnit = value;
+                        app.settings.timeIntervalUnit = value;
                         
                     case lower('thresholdMethod')
-                        app.thresholdMethod = value;
+                        app.settings.thresholdMethod = value;
                     case lower('thresholdValues')
                         tokens = strsplit(value, ' ');
                         app.thresholdValues = str2num(char(tokens')); %#ok<ST2NM>
                         
                     case lower('contourSmoothingSize')
-                        app.contourSmoothingSize = str2double(value);
+                        app.settings.contourSmoothingSize = str2double(value);
                     case lower('curvatureSmoothingSize')
-                        app.curvatureSmoothingSize = str2double(value);
+                        app.settings.curvatureSmoothingSize = str2double(value);
+                        
+                    case lower('firstPointLocation')
+                        app.settings.firstPointLocation = value;
+                        
                     case lower('windowSize1')
-                        app.windowSize1 = str2double(value);
+                        app.settings.windowSize1 = str2double(value);
                     case lower('windowSize2')
-                        app.windowSize2 = str2double(value);
+                        app.settings.windowSize2 = str2double(value);
                     case lower('displacementStep')
-                        app.displacementStep = str2double(value);
+                        app.settings.displacementStep = str2double(value);
                     case lower('finalResultLength')
-                        app.finalResultLength = str2double(value);
+                        app.settings.finalResultLength = str2double(value);
                         
                     case {lower('processingStep'), lower('currentStep')}
-                        app.processingStep = value;
+                        app.processingStep = ProcessingStep.parse(value);
                     case lower('currentFrameIndex')
                         app.currentFrameIndex = str2double(value);
                         

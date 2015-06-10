@@ -22,9 +22,6 @@ classdef KymoRodSettings < handle
         % Can be one of {'maxEntropy'}, 'Otsu'.
         thresholdMethod = 'maxEntropy';
         
-        % coordinates of the first point of the skeleton for each image
-        originPosition = {};
-        
         % length of window for smoothing coutours. Default value is 20.
         contourSmoothingSize = 20;
         
@@ -81,6 +78,16 @@ classdef KymoRodSettings < handle
             fprintf(f, '# %s\n', datestr(now,0));
             fprintf(f, '\n');
             
+            % write current settings
+            writeSettings(this, f);
+            
+            % close the file
+            fclose(f);
+        end
+        
+        function writeSettings(this, f)
+            % write current settings into an opened file 
+             
             % spatial calibration of input images
             fprintf(f, 'pixelSize = %f\n', this.pixelSize);
             fprintf(f, 'pixelSizeUnit = %s\n', this.pixelSizeUnit);
@@ -98,19 +105,20 @@ classdef KymoRodSettings < handle
             fprintf(f, 'contourSmoothingSize = %d\n', this.contourSmoothingSize);
             fprintf(f, '\n');
             
+            % information for computation of skeletons
+            fprintf(f, 'firstPointLocation = %s\n', this.firstPointLocation);
+            fprintf(f, '\n');
+           
             % smoothing window size for computation of curvature
             fprintf(f, 'curvatureSmoothingSize = %d\n', this.curvatureSmoothingSize);
+            fprintf(f, 'finalResultLength = %d\n', this.finalResultLength);
             fprintf(f, '\n');
             
             % info for computation of elongation
+            fprintf(f, 'displacementStep = %d\n', this.displacementStep);
             fprintf(f, 'windowSize1 = %d\n', this.windowSize1);
             fprintf(f, 'windowSize2 = %d\n', this.windowSize2);
-            fprintf(f, 'displacementStep = %d\n', this.displacementStep);
-            fprintf(f, 'finalResultLength = %d\n', this.finalResultLength);
             fprintf(f, '\n');
-        
-            % close the file
-            fclose(f);
         end
         
     end % end of I/O non static methods
@@ -183,16 +191,30 @@ classdef KymoRodSettings < handle
                     case lower('curvatureSmoothingSize')
                         settings.curvatureSmoothingSize = str2double(value);
                         
+                    case lower('finalResultLength')
+                        settings.finalResultLength = str2double(value);
+                    
+                    case lower('displacementStep')
+                        settings.displacementStep = str2double(value);
                     case lower('windowSize1')
                         settings.windowSize1 = str2double(value);
                     case lower('windowSize2')
                         settings.windowSize2 = str2double(value);
-                    case lower('displacementStep')
-                        settings.displacementStep = str2double(value);
                         
-                    case lower('finalResultLength')
-                        settings.finalResultLength = str2double(value);
-                    
+                    % do not process parameters previously stored in
+                    % .settings files.
+                    case lower({...
+                            'inputImagesDir', ...
+                            'inputImagesFilePattern', ...
+                            'inputImagesLazyLoading', ...
+                            'firstIndex', ...
+                            'lastIndex', ...
+                            'indexStep', ...
+                            'thresholdValues', ...
+                            'currentStep', ...
+                            'currentFrameIndex', ...
+                            })
+                        
                     otherwise
                         warning(['Unrecognized parameter: ' key]);
                 end

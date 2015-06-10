@@ -36,5 +36,30 @@ enumeration
     Kymograph(80)
 end
 
+methods (Static)
+    function step = parse(value)
+        % Identifies processing step from char array.
+        %
+        % Example:
+        % step = ProcessingStep.parse('Skeleton');
+        
+        if ~ischar(value)
+            error('requires a character array as input argument');
+        end
+        
+        switch lower(value)
+            case 'none',        step = ProcessingStep.None;
+            case 'selection',   step = ProcessingStep.Selection;
+            case 'threshold',   step = ProcessingStep.Threshold;
+            case 'contour',     step = ProcessingStep.Contour;
+            case 'skeleton',    step = ProcessingStep.Skeleton;
+            case 'elongation',  step = ProcessingStep.Elongation;
+            case 'kymograph',   step = ProcessingStep.Kymograph;
+            otherwise
+                error('Unrecognised Processing step name: %s', value);
+        end
+    end
+end
+
 end % end classdef
 

@@ -445,9 +445,13 @@ app.imageList = {};
 save(filePath, 'app');
 app.imageList = imgTemp;
 
-% save settings of application, to retrieve them easily
+% save all informations of experiment, to retrieve them easily
+filePath = fullfile(pathName, [baseName '-infos.txt']);
+write(app, filePath);
+
+% save settings of experiment, to apply them to another experiment
 filePath = fullfile(pathName, [baseName '-settings.txt']);
-saveSettings(app, filePath);
+write(app.settings, filePath);
 
 % initialize row names
 nFrames = frameNumber(app);
