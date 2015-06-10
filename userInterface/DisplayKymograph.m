@@ -380,12 +380,32 @@ if fileName == 0
     return;
 end
 
-% select current frame and convert to image
-f = getframe(handles.kymographAxes);
-im = frame2im(f);
+app = getappdata(0, 'app');
 
-% save image into selected file
-imwrite(im, fullfile(pathName, fileName), 'png');
+% Choose the type of kymograph to display
+valPopUp = get(handles.kymographTypePopup, 'Value');
+switch valPopUp
+    case 1, type = 'elongation';
+    case 2, type = 'radius';
+    case 3, type = 'curvature';
+    case 4, type = 'verticalAngle';
+end
+
+% % select current frame and convert to image
+% f = getframe(handles.kymographAxes);
+% im = frame2im(f);
+hf = figure; 
+set(gca, 'fontsize', 14);
+showKymograph(app, type);
+print(hf, fullfile(pathName, fileName), '-dpng');
+close(hf);
+
+% % select current frame and convert to image
+% f = getframe(handles.kymographAxes);
+% im = frame2im(f);
+% 
+% % save image into selected file
+% imwrite(im, fullfile(pathName, fileName), 'png');
 
 
 
@@ -403,12 +423,28 @@ if fileName == 0
     return;
 end
 
-% select current frame and convert to image
-f = getframe(handles.kymographAxes);
-im = frame2im(f);
+app = getappdata(0, 'app');
 
-% save image into selected file
-imwrite(im, fullfile(pathName, fileName), 'tif');
+% Choose the type of kymograph to display
+valPopUp = get(handles.kymographTypePopup, 'Value');
+switch valPopUp
+    case 1, type = 'elongation';
+    case 2, type = 'radius';
+    case 3, type = 'curvature';
+    case 4, type = 'verticalAngle';
+end
+
+% % select current frame and convert to image
+% f = getframe(handles.kymographAxes);
+% im = frame2im(f);
+hf = figure; 
+set(gca, 'fontsize', 14);
+showKymograph(app, type);
+print(hf, fullfile(pathName, fileName), '-dtiff');
+close(hf);
+
+% % save image into selected file
+% imwrite(im, fullfile(pathName, fileName), 'tif');
 
 
 % --- Executes on button press in saveAllDataButton.

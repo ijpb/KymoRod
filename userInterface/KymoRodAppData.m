@@ -636,6 +636,53 @@ classdef KymoRodAppData < handle
         end
     end
     
+    
+    %% Display methods
+
+    methods
+        function varargout = showKymograph(this, type)
+            % Display the kymograph result on a new figure
+            
+            if nargin < 2
+                type = 'elongation';
+            end
+            
+            switch type
+                case 'elongation', img = this.elongationImage;
+                case 'radius', img = this.radiusImage;
+                case 'curvature', img = this.curvatureImage;
+                case 'verticalAngle', img = this.verticalAngleImage;
+            end
+
+            % compute display extent for elongation kymograph
+            minCaxis = min(img(:));
+            maxCaxis = max(img(:));
+            
+            % compute references for x and y axes
+            timeInterval = this.settings.timeInterval;
+            xdata = (0:(size(img, 2)-1)) * timeInterval * this.indexStep;
+            Sa = this.abscissaList{end};
+            ydata = linspace(Sa(1), Sa(end), this.settings.finalResultLength);
+            
+            % display current kymograph
+            hImg = imagesc(xdata, ydata, img);
+            
+            % setup display
+            set(gca, 'YDir', 'normal');
+            caxis([minCaxis, maxCaxis]); colorbar;
+            colormap jet;
+            
+            % annotate
+            xlabel(sprintf('Time (%s)', this.settings.timeIntervalUnit));
+            ylabel(sprintf('Geodesic position (%s)', this.settings.pixelSizeUnit));
+            title(type);
+            
+            if nargout > 0
+                varargout = {hImg};
+            end
+        end
+    end
+    
     %% Input / output methods
     methods
         function write(this, fileName)
