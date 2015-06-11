@@ -465,7 +465,7 @@ save(filePath, 'app');
 app.imageList = imgTemp;
 
 % save all informations of experiment, to retrieve them easily
-filePath = fullfile(pathName, [baseName '-infos.txt']);
+filePath = fullfile(pathName, [baseName '-kymo.txt']);
 write(app, filePath);
 
 % save settings of experiment, to apply them to another experiment
