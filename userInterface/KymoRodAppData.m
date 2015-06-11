@@ -686,7 +686,7 @@ classdef KymoRodAppData < handle
     %% Input / output methods
     methods
         function write(this, fileName)
-            % Save the different options used to compute kymographs
+            % Save in a text file the different options used to compute kymographs
             
             % open in text mode, erasing content if it exists
             f = fopen(fileName, 'w+t');
@@ -745,13 +745,22 @@ classdef KymoRodAppData < handle
             fclose(f);
         end
         
+         function save(this, fileName)
+             % save instance fields in a .mat file
+             
+             % convert to a structure to save fields
+             warning('off', 'MATLAB:structOnObject');
+             appStruct = struct(this); %#ok<NASGU>
+             
+             save(fileName, '-struct', 'appStruct');
+         end
     end % I/O Methods
     
     
     %% Static methods
     methods (Static)
         function app = read(fileName)
-            % Initialize a new instance of "KymoRodAppData" from saved file
+            % Initialize a new instance of "KymoRodAppData" from saved text file
             
             % create new empty appdata class
             app = KymoRodAppData();
@@ -850,6 +859,29 @@ classdef KymoRodAppData < handle
             
             % close file
             fclose(f);
+        end
+        
+        function app = load(fileName)
+            
+            % creates empty instance
+            app = KymoRodAppData();
+            
+            % load fields from within the mat file
+            data = load(fileName);
+            
+            % find field names
+            fieldNames = fields(app);
+            
+            % populate class fields from fields stored in file
+            for i = 1:length(fieldNames)
+                fieldName = fieldNames{i};
+                app.(fieldName) = data.(fieldName);
+            end
+            
+            % post-processing
+            if ~app.inputImagesLazyLoading && ismepty(app.imagesList)
+                readAllImages(app);
+            end
         end
     end
     

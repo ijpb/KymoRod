@@ -452,7 +452,7 @@ end
 disp('Saving...');
 
 % retrieve application data
-app     = getappdata(0, 'app');
+app = getappdata(0, 'app');
 
 % filename of mat file
 [emptyPath, baseName, ext] = fileparts(fileName); %#ok<ASGLU>
@@ -461,8 +461,12 @@ filePath = fullfile(pathName, [baseName '.mat']);
 % save full application data as mat file, without image data
 imgTemp = app.imageList;
 app.imageList = {};
-save(filePath, 'app');
+save(app, filePath);
 app.imageList = imgTemp;
+% imgTemp = app.imageList;
+% app.imageList = {};
+% save(filePath, 'app');
+% app.imageList = imgTemp;
 
 % save all informations of experiment, to retrieve them easily
 filePath = fullfile(pathName, [baseName '-kymo.txt']);

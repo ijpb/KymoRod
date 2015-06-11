@@ -81,7 +81,8 @@ function loadAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEF
 
 % open a dialog to select input image folder, restricting type to images
 [fileName, folderName] = uigetfile(...
-    {'*-kymo.txt', 'KymoRod Files';...
+    {'*.mat', 'KymoRod Data Files';...
+    '*-kymo.txt', 'KymoRod Info Files';...
     '*.*','All Files' }, ...
     'Select KymoRod Analysis');
       
@@ -92,9 +93,18 @@ end
 
 close(handles.mainFigure);
 
-app = KymoRodAppData.read(fullfile(folderName, fileName));
-setProcessingStep(app, ProcessingStep.Selection);
-SelectInputImagesDialog(app);
+[path, name, ext] = fileparts(fileName); %#ok<ASGLU>
+if strcmp(ext, '.mat')
+    app = KymoRodAppData.load(fullfile(folderName, fileName));
+    SelectInputImagesDialog(app);
+    
+elseif strcmp(ext, '.txt')
+    app = KymoRodAppData.read(fullfile(folderName, fileName));
+    setProcessingStep(app, ProcessingStep.Selection);
+    SelectInputImagesDialog(app);
+else
+    error('Can not manage files with extension %s', ext);
+end
 
 % --- Executes on button press in newAnalysisButton.
 function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
