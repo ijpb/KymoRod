@@ -89,12 +89,12 @@ classdef KymoRodSettings < handle
             % write current settings into an opened file 
              
             % spatial calibration of input images
-            fprintf(f, 'pixelSize = %f\n', this.pixelSize);
+            fprintf(f, 'pixelSize = %g\n', this.pixelSize);
             fprintf(f, 'pixelSizeUnit = %s\n', this.pixelSizeUnit);
             fprintf(f, '\n');
             
             % time interval between two frames
-            fprintf(f, 'timeInterval = %f\n', this.timeInterval);
+            fprintf(f, 'timeInterval = %g\n', this.timeInterval);
             fprintf(f, 'timeIntervalUnit = %s\n', this.timeIntervalUnit);
             fprintf(f, '\n');
         
@@ -222,6 +222,28 @@ classdef KymoRodSettings < handle
             
             % close file
             fclose(f);
+        end
+        
+        function res = fromStruct(data)
+            % Initialize a new instance of "KymoRodSettings" from a struct
+            
+            % initialize new instance
+            res = KymoRodSettings();
+            
+            % setup instance state with struct fields
+            res.imageSegmentationChannel    = data.imageSegmentationChannel;
+            res.pixelSize                   = data.pixelSize;
+            res.pixelSizeUnit               = data.pixelSizeUnit;
+            res.timeInterval                = data.timeInterval;
+            res.timeIntervalUnit            = data.timeIntervalUnit;
+            res.thresholdMethod             = data.thresholdMethod;
+            res.contourSmoothingSize        = data.contourSmoothingSize;
+            res.firstPointLocation          = data.firstPointLocation;
+            res.curvatureSmoothingSize      = data.curvatureSmoothingSize;
+            res.windowSize1                 = data.windowSize1;
+            res.windowSize2                 = data.windowSize2;
+            res.displacementStep            = data.displacementStep;
+            res.finalResultLength           = data.finalResultLength;
         end
     end
     

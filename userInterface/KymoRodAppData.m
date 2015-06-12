@@ -4,6 +4,12 @@ classdef KymoRodAppData < handle
     % This class contains a reference to the current settings, the data
     % currently loaded, and most processing methods.
     
+    %% Static Properties
+    properties (Constant)
+        % identifier of class version, used for saving and loading files
+        serialVersion = 0.8;
+    end
+    
     %% Properties
     properties
         
@@ -750,8 +756,13 @@ classdef KymoRodAppData < handle
              
              % convert to a structure to save fields
              warning('off', 'MATLAB:structOnObject');
-             appStruct = struct(this); %#ok<NASGU>
+             appStruct = struct(this); 
              
+             % also convert fields that are classes to structs or char
+             appStruct.settings = struct(this.settings);
+             appStruct.processingStep = char(this.processingStep);
+             
+             % save as a struct
              save(fileName, '-struct', 'appStruct');
          end
     end % I/O Methods
@@ -862,20 +873,20 @@ classdef KymoRodAppData < handle
         end
         
         function app = load(fileName)
-            
-            % creates empty instance
-            app = KymoRodAppData();
-            
+           
             % load fields from within the mat file
             data = load(fileName);
             
-            % find field names
-            fieldNames = fields(app);
+            if ~isfield(data, 'serialVersion')
+                error('Require a KymoRod binary file from at least version 0.8');
+            end
             
-            % populate class fields from fields stored in file
-            for i = 1:length(fieldNames)
-                fieldName = fieldNames{i};
-                app.(fieldName) = data.(fieldName);
+            switch data.serialVersion
+                case 0.8
+                    app = KymoRodAppData.load_V08(data);
+                otherwise
+                    error('Could not parse file with version %f', ...
+                         data.serialVersion);
             end
             
             % post-processing
@@ -883,6 +894,49 @@ classdef KymoRodAppData < handle
                 readAllImages(app);
             end
         end
+        
+        function app = load_V08(data)
+            % Initialize a new instance from a structure 
+            
+            % creates empty instance
+            app = KymoRodAppData();
+
+            % parse settings from structure        
+            app.settings = KymoRodSettings.fromStruct(data.settings);
+            
+            % copy parameters
+            app.imageList               = data.imageList;
+            app.imageNameList           = data.imageNameList;
+            app.inputImagesDir          = data.inputImagesDir;
+            app.inputImagesFilePattern  = data.inputImagesFilePattern;
+            app.inputImagesLazyLoading  = data.inputImagesLazyLoading;
+            app.firstIndex              = data.firstIndex;
+            app.lastIndex               = data.lastIndex;
+            app.indexStep               = data.indexStep;
+            app.thresholdValues         = data.thresholdValues;
+            app.baseThresholdValues     = data.baseThresholdValues;
+            app.contourList             = data.contourList;
+            app.scaledContourList       = data.scaledContourList;
+            app.skeletonList            = data.skeletonList;
+            app.scaledSkeletonList      = data.scaledSkeletonList;
+            app.radiusList              = data.radiusList;
+            app.originPosition          = data.originPosition;
+            app.abscissaList            = data.abscissaList;
+            app.verticalAngleList       = data.verticalAngleList;
+            app.curvatureList           = data.curvatureList;
+            app.displacementList        = data.displacementList;
+            app.smoothedDisplacementList= data.smoothedDisplacementList;
+            app.elongationList          = data.elongationList;
+            app.radiusImage             = data.radiusImage;
+            app.verticalAngleImage      = data.verticalAngleImage;
+            app.curvatureImage          = data.curvatureImage;
+            app.elongationImage         = data.elongationImage;
+            app.currentFrameIndex       = data.currentFrameIndex;
+            
+           app.processingStep           = ProcessingStep.parse(data.processingStep);
+
+        end
+        
     end
     
     % some utility methods
