@@ -55,7 +55,7 @@ function DisplayKymograph_OpeningFcn(hObject, eventdata, handles, varargin) %#ok
 % Choose default command line output for DisplayKymograph
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
+if nargin == 4 && isa(varargin{1}, 'KymoRod')
     app = varargin{1};
     setappdata(0, 'app', app);
 else

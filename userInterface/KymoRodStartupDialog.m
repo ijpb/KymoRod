@@ -95,11 +95,11 @@ close(handles.mainFigure);
 
 [path, name, ext] = fileparts(fileName); %#ok<ASGLU>
 if strcmp(ext, '.mat')
-    app = KymoRodAppData.load(fullfile(folderName, fileName));
+    app = KymoRod.load(fullfile(folderName, fileName));
     SelectInputImagesDialog(app);
     
 elseif strcmp(ext, '.txt')
-    app = KymoRodAppData.read(fullfile(folderName, fileName));
+    app = KymoRod.read(fullfile(folderName, fileName));
     setProcessingStep(app, ProcessingStep.Selection);
     SelectInputImagesDialog(app);
 else
@@ -115,7 +115,7 @@ function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFN
 close(handles.mainFigure);
 
 % create new empty application data structure
-app = KymoRodAppData;
+app = KymoRod;
 
 % open first dialog of application
 SelectInputImagesDialog(app);
@@ -139,7 +139,7 @@ end
 
 close(handles.mainFigure);
 
-app = KymoRodAppData;
+app = KymoRod;
 settings = KymoRodSettings.read(fullfile(folderName, fileName));
 app.settings = settings;
 SelectInputImagesDialog(app);

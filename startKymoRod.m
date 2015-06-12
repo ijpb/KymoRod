@@ -15,7 +15,7 @@ function startKymoRod(varargin)
 % Copyright 2014 INRA - Cepia Software Platform.
 
 % create new empty application data structure
-app = KymoRodAppData;
+app = KymoRod();
 
 % [path, name] = fileparts(mfilename('fullpath'));
 path = fileparts(mfilename('fullpath'));

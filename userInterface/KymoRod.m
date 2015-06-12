@@ -1,4 +1,4 @@
-classdef KymoRodAppData < handle
+classdef KymoRod < handle
     % Class for Application "KymoRod"
     % 
     % This class contains a reference to the current settings, the data
@@ -103,7 +103,7 @@ classdef KymoRodAppData < handle
     
     %% Constructor
     methods
-        function this = KymoRodAppData(varargin)
+        function this = KymoRod(varargin)
             % Create a new data structure for storing application data
             
             % initialize new default settings
@@ -706,9 +706,9 @@ classdef KymoRodAppData < handle
             fprintf(f, '# saved: %s\n', datestr(now,0));
             
             % save also modification date of the main class          
-            baseDir = fileparts(which('KymoRodAppData'));
-            fileInfo = dir(fullfile(baseDir, 'KymoRodAppData.m'));
-            fprintf(f, '# KymoRodAppData version: %s\n', fileInfo.date);
+            baseDir = fileparts(which('KymoRod'));
+            fileInfo = dir(fullfile(baseDir, 'KymoRod.m'));
+            fprintf(f, '# KymoRod version: %s\n', fileInfo.date);
             fprintf(f, '\n');
             
             % 
@@ -724,7 +724,7 @@ classdef KymoRodAppData < handle
             fprintf(f, 'indexStep = %d\n', this.indexStep);
             fprintf(f, '\n');
             
-            string = KymoRodAppData.booleanToString(this.inputImagesLazyLoading);
+            string = KymoRod.booleanToString(this.inputImagesLazyLoading);
             fprintf(f, 'inputImagesLazyLoading = %s\n', string);
             fprintf(f, '\n');
             
@@ -771,10 +771,10 @@ classdef KymoRodAppData < handle
     %% Static methods
     methods (Static)
         function app = read(fileName)
-            % Initialize a new instance of "KymoRodAppData" from saved text file
+            % Initialize a new instance of "KymoRod" from saved text file
             
             % create new empty appdata class
-            app = KymoRodAppData();
+            app = KymoRod();
             
             % open in text reading mode
             f = fopen(fileName, 'rt');
@@ -883,7 +883,7 @@ classdef KymoRodAppData < handle
             
             switch data.serialVersion
                 case 0.8
-                    app = KymoRodAppData.load_V08(data);
+                    app = KymoRod.load_V08(data);
                 otherwise
                     error('Could not parse file with version %f', ...
                          data.serialVersion);
@@ -899,7 +899,7 @@ classdef KymoRodAppData < handle
             % Initialize a new instance from a structure 
             
             % creates empty instance
-            app = KymoRodAppData();
+            app = KymoRod();
 
             % parse settings from structure        
             app.settings = KymoRodSettings.fromStruct(data.settings);

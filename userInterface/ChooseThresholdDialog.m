@@ -55,11 +55,11 @@ function ChooseThresholdDialog_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for ChooseThresholdDialog
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'KymoRodAppData')
+if nargin == 4 && isa(varargin{1}, 'KymoRod')
     % should be the canonical way of calling the program
     app = varargin{1};    
 else
-    error('requires 4 input arguments, with a KymoRodAppData as fourth argument');
+    error('requires 4 input arguments, with a KymoRod as fourth argument');
 end
 
 % update current process state
