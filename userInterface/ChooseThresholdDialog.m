@@ -88,8 +88,10 @@ set(handles.autoThresholdFinalEdit, 'Visible', 'on');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
 set(handles.manualThresholdSlider, 'Visible', 'off');
 
-% pre-compute threshold values
-computeThresholdValues(app);
+% eventually pre-compute threshold values
+if getProcessingStep(app) < ProcessingStep.Threshold
+    computeThresholdValues(app);
+end
 
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Min', 1); 
@@ -508,8 +510,10 @@ set(handles.validateTresholdButton, 'String', 'Please wait...')
 pause(0.01);
 
 % retrieve application data
-app     = getappdata(0, 'app');
-computeContours(app);
+app = getappdata(0, 'app');
+if getProcessingStep(app) < ProcessingStep.Contour
+    computeContours(app);
+end
 
 delete(gcf);
 

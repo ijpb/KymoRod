@@ -22,7 +22,7 @@ function varargout = SelectInputImagesDialog(varargin)
 
 % Edit the above text to modify the response to help SelectInputImagesDialog
 
-% Last Modified by GUIDE v2.5 10-Jun-2015 10:21:34
+% Last Modified by GUIDE v2.5 12-Jun-2015 17:33:48
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -213,13 +213,13 @@ function updateImageNameList(handles)
 % extract app data
 app = getappdata(0, 'app');
 
-% read new list
+% read new list of image names, used to compute frame number
 folderName  = app.inputImagesDir;
 filePattern = app.inputImagesFilePattern;
 imageNames  = readImageNameList(folderName, filePattern);
 app.imageNameList = imageNames;
 
-if isempty(imageNames)
+if isempty(app.imageNameList)
     errordlg({'The chosen directory contains no file.', ...
         'Please choose another one'}, ...
         'Empty Directory Error', 'modal');
@@ -239,7 +239,7 @@ end
 setProcessingStep(app, ProcessingStep.Selection);
 
 % choose to display color image selection
-info = imfinfo(fullfile(folderName, imageNames{1}));
+info = imfinfo(fullfile(app.inputImagesDir, app.imageNameList{1}));
 if strcmpi(info(1).ColorType, 'grayscale')
     set(handles.imageChannelLabel, 'Enable', 'Off');
     set(handles.imageChannelPopup, 'Enable', 'Off');
@@ -249,8 +249,7 @@ else
 end
 
 % init image selection indices
-frameNumber = length(imageNames);
-app.inputImagesFilePattern = filePattern;
+frameNumber = length(app.imageNameList);
 app.firstIndex = 1;
 app.lastIndex = frameNumber;
 app.indexStep = 1;
@@ -338,6 +337,7 @@ set(handles.firstFrameIndexEdit, 'String', num2str(app.firstIndex));
 set(handles.lastFrameIndexEdit, 'String', num2str(app.lastIndex));
 set(handles.frameIndexStepEdit, 'String', num2str(app.indexStep));
 
+set(handles.wholeWorkflowButton, 'Visible', 'On');
 set(handles.selectImagesButton, 'Visible', 'On');
 
 
@@ -730,7 +730,21 @@ if frameNumber > 1
     set(handles.framePreviewSlider, 'Visible', 'On');
 end
 
-%% Validate images and continue
+%% Validation buttons
+
+% --- Executes on button press in wholeWorkflowButton.
+function wholeWorkflowButton_Callback(hObject, eventdata, handles)
+% hObject    handle to wholeWorkflowButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% extract global data
+app = getappdata(0, 'app');
+computeAll(app);
+
+delete(gcf);
+DisplayKymograph(app);
+
 
 % --- Executes on button press in selectImagesButton.
 function selectImagesButton_Callback(hObject, eventdata, handles)
@@ -750,3 +764,4 @@ app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
 ChooseThresholdDialog(app);
+
