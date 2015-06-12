@@ -264,7 +264,7 @@ classdef KymoRod < handle
             pattern  = this.inputImagesFilePattern;
             fileList = dir(fullfile(inputDir, pattern));
             
-            % ensure no directory is load (can happen under linux)
+            % ensure no directory is load
             fileList = fileList(~[fileList.isdir]);
             
             % select images corresponding to indices selection
@@ -287,7 +287,7 @@ classdef KymoRod < handle
             % read all files in specified directory
             fileList = dir(fullfile(this.inputImagesDir, this.inputImagesFilePattern));
             
-            % ensure no directory is load (can happen under linux)
+            % ensure no directory is load
             fileList = fileList(~[fileList.isdir]);
             
             % select images corresponding to indices selection

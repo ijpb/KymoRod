@@ -66,11 +66,6 @@ setappdata(0, 'app', app);
 
 % if some data are already initialized, display widgets
 if getProcessingStep(app) > ProcessingStep.None
-    % need to refresh image list from file information
-    folderName  = app.inputImagesDir;
-    filePattern = app.inputImagesFilePattern;
-    app.imageNameList = readImageNameList(folderName, filePattern);
-    
     % update visibility and content of widgets
     makeAllWidgetsVisible(handles);
     updateFrameSliderBounds(handles);
