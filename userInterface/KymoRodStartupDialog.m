@@ -97,7 +97,15 @@ close(handles.mainFigure);
 % from a text file
 [path, name, ext] = fileparts(fileName); %#ok<ASGLU>
 if strcmp(ext, '.mat')
-    app = KymoRod.load(fullfile(folderName, fileName));
+    warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
+    try
+        app = KymoRod.load(fullfile(folderName, fileName));
+    catch ME
+        h = errordlg(ME.message, 'Loading Error', 'modal');
+        uiwait(h);
+        KymoRodStartupDialog();
+        return;
+    end
     
     % assumes only 'complete' analyses can be saved, and call the dialog for
     % showing results
@@ -112,7 +120,9 @@ elseif strcmp(ext, '.txt')
     SelectInputImagesDialog(app);
 
 else
-    error('Can not manage files with extension %s', ext);
+    msg = sprintf('Can not manage file with extension %s', ext);
+    h = errordlg(msg, 'Loading Error', 'modal');
+    uiwait(h);
 end
 
 
@@ -129,7 +139,7 @@ app = KymoRod();
 
 % initialize with default directory
 path = fileparts(mfilename('fullpath'));
-app.inputImagesDir = fullfile(path, '..', '..', 'sampleImages', '01');
+app.inputImagesDir = fullfile(path, '..', '..', '..', 'sampleImages', '01');
 
 % open first dialog of application
 SelectInputImagesDialog(app);
