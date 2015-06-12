@@ -14,12 +14,12 @@ function startKymoRod(varargin)
 % Created: 2014-10-13,    using Matlab 8.3.0.532 (R2014a)
 % Copyright 2014 INRA - Cepia Software Platform.
 
-% create new empty application data structure
-app = KymoRod();
-
-% [path, name] = fileparts(mfilename('fullpath'));
-path = fileparts(mfilename('fullpath'));
-app.inputImagesDir = fullfile(path, '..', '..', 'sampleImages', '01');
+% % create new empty application data structure
+% app = KymoRod();
+% 
+% % [path, name] = fileparts(mfilename('fullpath'));
+% path = fileparts(mfilename('fullpath'));
+% app.inputImagesDir = fullfile(path, '..', '..', 'sampleImages', '01');
 
 % open first dialog of application
-SelectInputImagesDialog(app);
+KymoRodStartupDialog;

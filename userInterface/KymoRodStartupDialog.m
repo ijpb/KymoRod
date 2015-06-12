@@ -93,18 +93,28 @@ end
 
 close(handles.mainFigure);
 
+% depending in file format, either use binary reading, or read parameters
+% from a text file
 [path, name, ext] = fileparts(fileName); %#ok<ASGLU>
 if strcmp(ext, '.mat')
     app = KymoRod.load(fullfile(folderName, fileName));
-    SelectInputImagesDialog(app);
+    
+    % assumes only 'complete' analyses can be saved, and call the dialog for
+    % showing results
+    DisplayKymograph(app);
     
 elseif strcmp(ext, '.txt')
     app = KymoRod.read(fullfile(folderName, fileName));
     setProcessingStep(app, ProcessingStep.Selection);
+    
+    % in case of reading from a text, binary data are not saved and need to
+    % be recomputed
     SelectInputImagesDialog(app);
+
 else
     error('Can not manage files with extension %s', ext);
 end
+
 
 % --- Executes on button press in newAnalysisButton.
 function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -115,10 +125,15 @@ function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFN
 close(handles.mainFigure);
 
 % create new empty application data structure
-app = KymoRod;
+app = KymoRod();
+
+% initialize with default directory
+path = fileparts(mfilename('fullpath'));
+app.inputImagesDir = fullfile(path, '..', '..', 'sampleImages', '01');
 
 % open first dialog of application
 SelectInputImagesDialog(app);
+
 
 % --- Executes on button press in loadSettingsButton.
 function loadSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
