@@ -339,7 +339,7 @@ classdef KymoRod < handle
             end
             
             nImages = frameNumber(this);
-            this.thresholdValues = zeros(nImages, 1);
+            this.baseThresholdValues = zeros(nImages, 1);
             
             % Compute the contour
             disp('Segmentation');
@@ -352,7 +352,7 @@ classdef KymoRod < handle
                 case 'maxEntropy'
                     parfor_progress(nImages);
                     for i = 1 : nImages
-                        this.thresholdValues(i) = ...
+                        this.baseThresholdValues(i) = ...
                             maxEntropyThreshold(this.getImage(i));
                         parfor_progress;
                     end
@@ -361,7 +361,7 @@ classdef KymoRod < handle
                 case 'Otsu'
                     parfor_progress(nImages);
                     for i = 1 : nImages
-                        this.thresholdValues(i) = ...
+                        this.baseThresholdValues(i) = ...
                             round(graythresh(this.getImage(i)) * 255);
                         parfor_progress;
                     end
@@ -371,6 +371,9 @@ classdef KymoRod < handle
                     error(['Could not recognize threshold method: ' ...
                         this.settings.thresholdMethod]);
             end
+            
+            % reset current threshold to base values
+            this.thresholdValues = this.baseThresholdValues;
             
             if ishandle(hDialog)
                 close(hDialog);
@@ -892,6 +895,9 @@ classdef KymoRod < handle
             % post-processing
             if ~app.inputImagesLazyLoading && ismepty(app.imagesList)
                 readAllImages(app);
+            end
+            if isempty(app.baseThresholdValues)
+                app.baseThresholdValues = app.thresholdValues;
             end
         end
         
