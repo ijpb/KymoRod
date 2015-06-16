@@ -74,8 +74,7 @@ sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.currentFrameSlider, 'SliderStep', sliderStep); 
 
 % compute current segmented image
-seuil = app.thresholdValues(frameIndex);
-segmentedImage = app.getImage(frameIndex) > seuil;
+segmentedImage = app.getSegmentedImage(frameIndex);
 contour = app.contourList{frameIndex};
 
 % apply smoothing on current contour
@@ -302,8 +301,7 @@ app = getappdata(0, 'app');
 frameIndex = app.currentFrameIndex;
 
 % compute current segmented image
-seuil = app.thresholdValues(frameIndex);
-segmentedImage = getImage(app, frameIndex) > seuil;
+segmentedImage = getSegmentedImage(app, frameIndex);
 
 % apply smoothing on current contour
 contour = app.contourList{frameIndex};

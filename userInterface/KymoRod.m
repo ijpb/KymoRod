@@ -256,6 +256,18 @@ classdef KymoRod < handle
             end
         end
         
+        function image = getSegmentableImage(this, index)
+            % Return the image that can be used for computing segmentation
+            image = getImage(this, index);
+            if ndims(image) > 2 %#ok<ISMAT>
+                switch lower(this.settings.imageSegmentationChannel)
+                    case 'red',     image = image(:,:,1);
+                    case 'green',   image = image(:,:,2);
+                    case 'blue',    image = image(:,:,3);
+                end
+            end
+        end
+        
         function computeImageNames(this)
             % update list of image names from input directory and indices
 
@@ -326,7 +338,7 @@ classdef KymoRod < handle
 
     methods
         function seg = getSegmentedImage(this, index)
-            img = getImage(this, index);
+            img = getSegmentableImage(this, index);
             thresh = this.thresholdValues(index);
             seg = img > thresh;
         end
@@ -352,8 +364,8 @@ classdef KymoRod < handle
                 case 'maxEntropy'
                     parfor_progress(nImages);
                     for i = 1 : nImages
-                        this.baseThresholdValues(i) = ...
-                            maxEntropyThreshold(this.getImage(i));
+                        img = getSegmentableImage(this, i);
+                        this.baseThresholdValues(i) = maxEntropyThreshold(img);
                         parfor_progress;
                     end
                     parfor_progress(0);
@@ -361,8 +373,9 @@ classdef KymoRod < handle
                 case 'Otsu'
                     parfor_progress(nImages);
                     for i = 1 : nImages
+                        img = getSegmentableImage(this, i);
                         this.baseThresholdValues(i) = ...
-                            round(graythresh(this.getImage(i)) * 255);
+                            round(graythresh(img) * 255);
                         parfor_progress;
                     end
                     parfor_progress(0);
@@ -414,9 +427,10 @@ classdef KymoRod < handle
             parfor_progress(nFrames);
             for i = 1:nFrames
                 % add black border around each image, to ensure continuous contours
-                image = imAddBlackBorder(getImage(this, i));
+                img = getSegmentableImage(this, i);
+                img = imAddBlackBorder(img);
                 threshold = this.thresholdValues(i);
-                this.contourList{i} = segmentContour(image, threshold);
+                this.contourList{i} = segmentContour(img, threshold);
                 
                 parfor_progress;
             end
@@ -518,6 +532,15 @@ classdef KymoRod < handle
     %% Displacement and Elongation computation
     
     methods
+        function img = getImageForDisplacement(this, index)
+            % returns the image for computing displacement.
+            % In case of color image, returns the green channel by default.
+            img = getImage(this, index);
+            if ndims(img) > 2 %#ok<ISMAT>
+                img = img(:,:,2);
+            end
+        end
+        
         function computeCurvaturesDisplacementAndElongation(this)
             
             if this.processingStep < ProcessingStep.Skeleton
@@ -603,8 +626,8 @@ classdef KymoRod < handle
             SK2 = this.skeletonList{i2};
             S1  = this.abscissaList{i};
             S2  = this.abscissaList{i2};
-            img1 = getImage(this, i);
-            img2 = getImage(this, i2);
+            img1 = getImageForDisplacement(this, i);
+            img2 = getImageForDisplacement(this, i2);
                 
             % check if the two skeletons are large enough
             if length(SK1) > 2*80 && length(SK2) > 2*80
