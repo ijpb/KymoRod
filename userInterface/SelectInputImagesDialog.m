@@ -144,6 +144,9 @@ end
 set(handles.inputImageFolderEdit, 'String', folderName);
 app.inputImagesDir = folderName;
 
+if isfield(handles, 'currentFrameImage')
+    handles = rmfield(handles, 'currentFrameImage');
+end
 updateImageNameList(handles);
 
 % --- Executes on button change in channelSelectionPanel
