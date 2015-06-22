@@ -63,14 +63,14 @@ else
 end
 
 % extract data for display
-ind = app.currentFrameIndex;
-contour = getContour(app, ind);
-skeleton = getSkeleton(app, ind);
+frameIndex = app.currentFrameIndex;
+contour = getSmoothedContour(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex);
 
 % Display current image
 axes(handles.imageAxes); hold on;
 % display grayscale image as RGB, to avoid colormap problems
-img = getImage(app, ind);
+img = getImage(app, frameIndex);
 if ndims(img) == 2 %#ok<ISMAT>
     img = repmat(img, [1 1 3]);
 end
@@ -281,7 +281,7 @@ img = app.getImage(frameIndex);
 if ndims(img) == 2 %#ok<ISMAT>
     img = repmat(img, [1 1 3]);
 end
-contour = getContour(app, frameIndex);
+contour = getSmoothedContour(app, frameIndex);
 skeleton = getSkeleton(app, frameIndex);
 
 % update display

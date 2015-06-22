@@ -406,6 +406,15 @@ classdef KymoRod < handle
             contour = this.contourList{index};
         end
         
+        function contour = getSmoothedContour(this, index)
+            if this.processingStep < ProcessingStep.Contour
+                error('need to have contours computed');
+            end
+            contour = this.contourList{index};
+            smooth = this.settings.contourSmoothingSize;
+            contour = smoothContour(contour, smooth);
+        end
+        
         function computeContours(this)
             % compute the contour for each image
             
