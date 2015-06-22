@@ -70,7 +70,11 @@ skeleton = getSkeleton(app, ind);
 % Display current image
 axes(handles.imageAxes); hold on;
 % display grayscale image as RGB, to avoid colormap problems
-handles.imageHandle     = imshow(repmat(getImage(app, ind), [1 1 3]));
+img = getImage(app, ind);
+if ndims(img) == 2 %#ok<ISMAT>
+    img = repmat(img, [1 1 3]);
+end
+handles.imageHandle     = imshow(img);
 
 % draw geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
@@ -274,12 +278,15 @@ app.currentFrameIndex = frameIndex;
 
 % extract data for current frame
 img = app.getImage(frameIndex);
+if ndims(img) == 2 %#ok<ISMAT>
+    img = repmat(img, [1 1 3]);
+end
 contour = getContour(app, frameIndex);
 skeleton = getSkeleton(app, frameIndex);
 
 % update display
 axes(handles.imageAxes);
-set(handles.imageHandle, 'CData', repmat(img, [1 1 3]));
+set(handles.imageHandle, 'CData', img);
 set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
 
