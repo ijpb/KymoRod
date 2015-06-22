@@ -303,6 +303,16 @@ set(handles.frameSelectionPanel, 'Visible', 'On');
 set(handles.inputImageFolderEdit, 'String', app.inputImagesDir);
 set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
 
+% choose to display color image selection
+info = imfinfo(fullfile(app.inputImagesDir, app.imageNameList{1}));
+if strcmpi(info(1).ColorType, 'grayscale')
+    set(handles.imageChannelLabel, 'Enable', 'Off');
+    set(handles.imageChannelPopup, 'Enable', 'Off');
+else
+    set(handles.imageChannelLabel, 'Enable', 'On');
+    set(handles.imageChannelPopup, 'Enable', 'On');
+end
+
 % update calibration widgets
 settings = app.settings;
 set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
