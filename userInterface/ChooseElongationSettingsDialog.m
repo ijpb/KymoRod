@@ -66,14 +66,9 @@ else
 end
 
 % setup handles with application settings
-settings = app.settings;
-set(handles.smoothingLengthEdit,        'String', num2str(settings.curvatureSmoothingSize));
-set(handles.pointNumberEdit,            'String', num2str(settings.finalResultLength));
-set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
-set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
-set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
+updateWidgets(app, handles);
 
-% To start the programm
+% enable button for next step
 set(handles.validateSettingsButton, 'Enable', 'On')
 set(handles.validateSettingsButton, 'String', 'Compute Elongations');
 
@@ -93,6 +88,16 @@ function varargout = ChooseElongationSettingsDialog_OutputFcn(hObject, eventdata
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+function updateWidgets(app, handles)
+
+% setup handles with application settings
+settings = app.settings;
+set(handles.smoothingLengthEdit,        'String', num2str(settings.curvatureSmoothingSize));
+set(handles.pointNumberEdit,            'String', num2str(settings.finalResultLength));
+set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
+set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
+set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
 
 
 % --------------------------------------------------------------------
@@ -237,7 +242,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function displacementStepEdit_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSL>
 % hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -276,14 +280,22 @@ function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% TODO: rewrite to update settings
-% Reset the default parameters
-set(handles.smoothingLengthEdit,        'String', num2str(10));
-set(handles.pointNumberEdit,            'String', num2str(500));
-set(handles.correlationWindowSize1Edit, 'String', num2str(5));
-set(handles.correlationWindowSize2Edit, 'String', num2str(30));
-set(handles.displacementStepEdit,       'String', num2str(2));
+% get settings object of app
+app = getappdata(0, 'app');
+settings = app.settings;
 
+% Reset to default parameters
+settings.curvatureSmoothingSize = 10;
+settings.finalResultLength = 500;
+settings.windowSize1 = 5;
+settings.windowSize2 = 30;
+settings.displacementStep = 2;
+
+% update processing step
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+% refresh display
+updateWidgets(app, handles);
 
 
 % --- Executes on button press in backToSkeletonButton.
@@ -317,8 +329,6 @@ dt = toc;
 disp(sprintf('Computation of elongation took %f mn', dt / 60)); %#ok<DSPS>
 
 setProcessingStep(app, ProcessingStep.Kymograph);
-
-setappdata(0, 'app', app);
 
 delete(gcf);
 
