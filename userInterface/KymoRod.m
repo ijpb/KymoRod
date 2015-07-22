@@ -13,6 +13,9 @@ classdef KymoRod < handle
     %% Properties
     properties
         
+        % an instance of log4m, for logging.
+        logger;
+        
         % the set of settings for the different processing steps
         % as an instance of KymoRodSettings.
         settings;
@@ -106,8 +109,21 @@ classdef KymoRod < handle
         function this = KymoRod(varargin)
             % Create a new data structure for storing application data
             
+            % creates '.kymorod' directory if it does not exist
+            logdir = fullfile(getuserdir, '.kymorod');
+            if ~exist(logdir, 'dir')
+                mkdir(logdir);
+            end
+            
+            % create logger to user log file
+            logFile = fullfile(getuserdir, '.kymorod', 'kymorod.log');
+            this.logger = log4m.getLogger(logFile);
+
+            this.logger.info('KymoRod', 'Create new KymoRod instance');
+            
             % initialize new default settings
             this.settings = KymoRodSettings;
+            
         end
     end
     
@@ -138,6 +154,10 @@ classdef KymoRod < handle
                 end
                 
             end
+            
+            this.logger.info('KymoRod.setProcessingStep', ...
+                ['Set processing step to ' char(newStep)]);
+            
 
             % update inner data depending on processing step
             switch newStep
@@ -346,6 +366,9 @@ classdef KymoRod < handle
         function computeThresholdValues(this)
             % compute threshold values for all images
             
+            this.logger.info('KymoRod.computeThresholdValues', ...
+                'Compute Image Thresholds');
+            
             if this.processingStep == ProcessingStep.None
                 error('need to have images selected');
             end
@@ -418,6 +441,9 @@ classdef KymoRod < handle
         function computeContours(this)
             % compute the contour for each image
             
+            this.logger.info('KymoRod.computeContours', ...
+                'Compute binary images contours');
+            
             if this.processingStep < ProcessingStep.Threshold
                 error('need to have threshold computed');
             end
@@ -467,6 +493,9 @@ classdef KymoRod < handle
         function computeSkeletons(this)
             % compute all skeletons from smoothed contours
             
+            this.logger.info('KymoRod.computeSkeletons', ...
+                'Compute skeletons from contours');
+
             if this.processingStep < ProcessingStep.Contour
                 error('need to have contours computed');
             end
@@ -551,7 +580,7 @@ classdef KymoRod < handle
         end
         
         function computeCurvaturesDisplacementAndElongation(this)
-            
+
             if this.processingStep < ProcessingStep.Skeleton
                 error('need to have skeletons computed');
             end
@@ -570,6 +599,8 @@ classdef KymoRod < handle
             % compute curvilinear abscissa, angle and curvature of all skeletons
             
             disp('Compute angles and curvature');
+            this.logger.info('KymoRod.computeCurvaturesAndAbscissa', ...
+                'Compute curvatures, angles, and curvilinear abscissa');
 
             % Compute smoothed curvature curves
             smooth  = this.settings.curvatureSmoothingSize;
@@ -600,6 +631,9 @@ classdef KymoRod < handle
             % Compute displacements between all couples of frames
 
             disp('Displacement');
+            this.logger.info('KymoRod.computeDisplacements', ...
+                'Compute displacements');
+
             nFrames = frameNumber(this);
             step    = this.settings.displacementStep;
             
@@ -660,6 +694,9 @@ classdef KymoRod < handle
 
             % Elongation
             disp('Elongation');
+            this.logger.info('KymoRod.computeElongations', ...
+                'Compute elongations');
+
             E       = this.displacementList;
             ws2     = this.settings.windowSize2;
             nx      = this.settings.finalResultLength;
@@ -671,6 +708,8 @@ classdef KymoRod < handle
             this.elongationList      = Elg;
             
             %  Space-time mapping
+            this.logger.info('KymoRod.computeElongations', ...
+                'Reconstruct elongation kymograph');
             this.elongationImage = reconstruct_Elg2(nx, Elg);
 
             setProcessingStep(this, ProcessingStep.Elongation);
@@ -729,6 +768,9 @@ classdef KymoRod < handle
         function write(this, fileName)
             % Save in a text file the different options used to compute kymographs
             
+            this.logger.info('KymoRod.write', ...
+                ['Save kymorod object in file: ' fileName]);
+
             % open in text mode, erasing content if it exists
             f = fopen(fileName, 'w+t');
             if f == -1
