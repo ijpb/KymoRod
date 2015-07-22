@@ -67,6 +67,9 @@ end
 % update current process state
 setappdata(0, 'app', app);
 
+app.logger.info('SmoothContourDialog.m', ...
+    'Open dialog: SmoothContourDialog');
+
 % retrieve app data
 nFrames = frameNumber(app);
 index   = app.currentFrameIndex;
@@ -145,6 +148,9 @@ app  = getappdata(0, 'app');
 % Take the value from the slide bar, rounded to have an integer
 smooth = round(get(handles.smoothValueSlider, 'Value')); 
 
+app.logger.info('SmoothContourDialog.m', ...
+    ['Set smoothing value to ' smoothString]);
+
 % set the smooth
 set(handles.smoothValueEdit, 'String', num2str(smooth));
 
@@ -182,9 +188,13 @@ function smoothValueEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 %        str2double(get(hObject,'String')) returns contents of smoothValueEdit as a double
 
 app  = getappdata(0, 'app');
+smoothString = get(handles.smoothValueEdit, 'String');
 
-% Take the value from the slide bar, rounded to have an integer
-smooth = str2double(get(handles.smoothValueEdit, 'String')); 
+app.logger.info('SmoothContourDialog.m', ...
+    ['Set smoothing value to ' smoothString]);
+
+% Take the value from the slider, rounded to have an integer
+smooth = round(str2double(smoothString));
 
 % set the smooth
 set(handles.smoothValueSlider, 'Value', smooth);
@@ -273,6 +283,10 @@ function backToTresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSD,D
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
+
+app.logger.info('SmoothContourDialog.m', ...
+    'Back to threshold dialog');
+
 delete(gcf);
 ChooseThresholdDialog(app);
 
@@ -284,5 +298,9 @@ function validateContourButton_Callback(hObject, eventdata, handles) %#ok<INUSD,
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
+
+app.logger.info('SmoothContourDialog.m', ...
+    'Validate contour smoothing');
+
 delete(gcf);
 ValidateSkeleton(app);

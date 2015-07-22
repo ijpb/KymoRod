@@ -65,6 +65,10 @@ else
     error('StartElongation should be called with an KymoRod object');
 end
 
+app.logger.info('ChooseElongationSettingsDialog_OpeningFcn', ...
+    'Open dialog "ChooseElongationSettingsDialog"');
+
+
 % setup handles with application settings
 updateWidgets(app, handles);
 
@@ -120,12 +124,16 @@ function smoothingLengthEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,IN
 %        str2double(get(hObject,'String')) returns contents of smoothingLengthEdit as a double
 
 str  = get(handles.smoothingLengthEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of smoothingLength to ' str]);
+
 val  = str2double(str);
 if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app = getappdata(0, 'app');
 app.settings.curvatureSmoothingSize = val;
 
 setProcessingStep(app, ProcessingStep.Skeleton);
@@ -153,14 +161,17 @@ function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 %        str2double(get(hObject,'String')) returns contents of pointNumberEdit as a double
 
 str  = get(handles.pointNumberEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of finalResultLength to ' str]);
+
 val  = str2double(str);
 if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app = getappdata(0, 'app');
 app.settings.finalResultLength = val;
-
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -186,14 +197,17 @@ function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<D
 %        str2double(get(hObject,'String')) returns contents of correlationWindowSize1Edit as a double
 
 str  = get(handles.correlationWindowSize1Edit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of windowSize1 to ' str]);
+
 val  = str2double(str);
 if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app = getappdata(0, 'app');
 app.settings.windowSize1 = val;
-
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -219,14 +233,17 @@ function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<D
 %        str2double(get(hObject,'String')) returns contents of correlationWindowSize2Edit as a double
 
 str  = get(handles.correlationWindowSize2Edit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of windowSize2 to ' str]);
+
 val  = str2double(str);
 if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app = getappdata(0, 'app');
 app.settings.windowSize2 = val;
-
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 % --- Executes during object creation, after setting all properties.
@@ -251,14 +268,16 @@ function displacementStepEdit_Callback(hObject, eventdata, handles)  %#ok<DEFNU,
 %        str2double(get(hObject,'String')) returns contents of displacementStepEdit as a double
 
 str  = get(handles.displacementStepEdit, 'String');
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of displacement step to ' str]);
+
 val  = str2double(str);
 if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app = getappdata(0, 'app');
 app.settings.displacementStep = val;
-
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 % --- Executes during object creation, after setting all properties.
@@ -270,7 +289,7 @@ function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,
 % Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+    set(hObject, 'BackgroundColor', 'white');
 end
 
 
@@ -282,9 +301,11 @@ function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,
 
 % get settings object of app
 app = getappdata(0, 'app');
-settings = app.settings;
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    'Choose default settings');
 
 % Reset to default parameters
+settings = app.settings;
 settings.curvatureSmoothingSize = 10;
 settings.finalResultLength = 500;
 settings.windowSize1 = 5;
@@ -321,7 +342,7 @@ set(handles.validateSettingsButton, 'String', 'Wait please...')
 pause(0.01);
 
 % get global data
-app     = getappdata(0, 'app');
+app = getappdata(0, 'app');
 
 tic;
 computeCurvaturesDisplacementAndElongation(app);

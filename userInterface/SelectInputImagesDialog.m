@@ -64,6 +64,9 @@ set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
 app = varargin{1};
 setappdata(0, 'app', app);
 
+app.logger.info('SelectInputImagesDialog.m', ...
+    'Open dialog "SelectInputImagesDialog"');
+
 % if some data are already initialized, display widgets
 if getProcessingStep(app) > ProcessingStep.None
     % update visibility and content of widgets
@@ -140,6 +143,9 @@ if fileName == 0;
     return;
 end
 
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change input image folder to ' folderName]);
+
 % update inner variables and GUI
 set(handles.inputImageFolderEdit, 'String', folderName);
 app.inputImagesDir = folderName;
@@ -164,6 +170,10 @@ function filePatternEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 app = getappdata(0, 'app');
 string = get(handles.filePatternEdit, 'String');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change input images file pattern to ' string]);
+
 app.inputImagesFilePattern = string;
 disp(['update file pattern: ' string]);
 
@@ -196,6 +206,10 @@ app = getappdata(0, 'app');
 stringArray = get(handles.imageChannelPopup, 'String');
 value = get(handles.imageChannelPopup, 'Value');
 channelString = strtrim(stringArray(value,:));
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change image segmentation channel to ' channelString]);
+
 app.settings.imageSegmentationChannel = channelString;
 
 % --- Executes during object creation, after setting all properties.
@@ -215,6 +229,9 @@ function updateImageNameList(handles)
 
 % extract app data
 app = getappdata(0, 'app');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    'Update image name list');
 
 % read new list of image names, used to compute frame number
 folderName  = app.inputImagesDir;
@@ -366,6 +383,10 @@ function spatialResolutionEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 app = getappdata(0, 'app');
 resolString = get(handles.spatialResolutionEdit, 'String');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change spatial resolution to ' resolString]);
+
 resol = str2double(resolString);
 app.settings.pixelSize = resol;
 
@@ -394,6 +415,10 @@ function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles) %#ok<IN
 
 app = getappdata(0, 'app');
 unitString = get(handles.spatialResolutionUnitEdit, 'String');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change spatial resolution unit to ' unitString]);
+
 app.settings.pixelSizeUnit = unitString;
 
 % --- Executes during object creation, after setting all properties.
@@ -418,8 +443,11 @@ function timeIntervalEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 %        str2double(get(hObject,'String')) returns contents of timeIntervalEdit as a double
 
 app = getappdata(0, 'app');
-
 timeString = get(handles.timeIntervalEdit, 'String');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change time interval between frames to ' timeString]);
+
 time = str2double(timeString);
 app.settings.timeInterval = time;
 
@@ -446,6 +474,10 @@ function timeIntervalUnitEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 app = getappdata(0, 'app');
 unitString = get(handles.timeIntervalUnitEdit, 'String');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change time interval unit to ' unitString]);
+
 app.settings.timeIntervalUnit = unitString;
 
 
@@ -523,15 +555,18 @@ function firstFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % Hints: get(hObject,'String') returns contents of firstFrameIndexEdit as text
 %        str2double(get(hObject,'String')) returns contents of firstFrameIndexEdit as a double
 
+app = getappdata(0, 'app');
 string = strtrim(get(hObject, 'String'));
-val = parseValue(string);
 
-% ensure value has valid bounds
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change first frame index to ' string]);
+
+% convert string to valid index
+val = parseValue(string);
 val = max(val, 1);
 
-app = getappdata(0, 'app');
+% update app data
 app.firstIndex = val;
-
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
@@ -560,16 +595,17 @@ function lastFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % Hints: get(hObject,'String') returns contents of lastFrameIndexEdit as text
 %        str2double(get(hObject,'String')) returns contents of lastFrameIndexEdit as a double
 
-string = strtrim(get(hObject, 'String'));
-val = parseValue(string);
-
 app = getappdata(0, 'app');
+string = strtrim(get(hObject, 'String'));
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change last frame index to ' string]);
+
+val = parseValue(string);
 nFiles = length(app.imageNameList);
 val = min(val, nFiles);
 
-app = getappdata(0, 'app');
 app.lastIndex = val;
-
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
@@ -599,11 +635,14 @@ function frameIndexStepEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 %        str2double(get(hObject,'String')) returns contents of frameIndexStepEdit as a double
 
 string = strtrim(get(hObject, 'String'));
-val = parseValue(string);
 
 app = getappdata(0, 'app');
-app.indexStep = val;
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change frame index step to ' string]);
 
+val = parseValue(string);
+
+app.indexStep = val;
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
@@ -689,6 +728,10 @@ function lazyLoadingCheckbox_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 value = get(handles.lazyLoadingCheckbox, 'Value');
 app = getappdata(0, 'app');
+
+app.logger.info('SelectInputImagesDialog.m', ...
+    ['Change lazy loading to ' char(value)]);
+
 app.inputImagesLazyLoading = value > 0;
 
 
@@ -753,6 +796,9 @@ function wholeWorkflowButton_Callback(hObject, eventdata, handles)
 
 % extract global data
 app = getappdata(0, 'app');
+app.logger.info('SelectInputImagesDialog.m', ...
+    'Compute the whole workflow');
+
 computeAll(app);
 
 delete(gcf);

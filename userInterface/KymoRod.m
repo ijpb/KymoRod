@@ -118,8 +118,15 @@ classdef KymoRod < handle
             % create logger to user log file
             logFile = fullfile(getuserdir, '.kymorod', 'kymorod.log');
             this.logger = log4m.getLogger(logFile);
-
-            this.logger.info('KymoRod', 'Create new KymoRod instance');
+            
+            % setup log levels
+            setLogLevel(this.logger, log4m.DEBUG);
+            setCommandWindowLevel(this.logger, log4m.WARN);
+            
+            % log the object instanciation
+            versionString = num2str(KymoRod.serialVersion);
+            this.logger.info('KymoRod', ...
+                ['Create new KymoRod instance, V-' versionString]);
             
             % initialize new default settings
             this.settings = KymoRodSettings;
@@ -155,7 +162,7 @@ classdef KymoRod < handle
                 
             end
             
-            this.logger.info('KymoRod.setProcessingStep', ...
+            this.logger.debug('KymoRod.setProcessingStep', ...
                 ['Set processing step to ' char(newStep)]);
             
 

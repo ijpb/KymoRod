@@ -62,6 +62,9 @@ else
     error('requires 4 input arguments, with a KymoRod as fourth argument');
 end
 
+app.logger.info('ChooseThresholdDialog.m', ...
+    'Open the dialog: ChooseThresholdDialog');
+
 % update current process state
 setappdata(0, 'app', app);
 
@@ -199,6 +202,10 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles) %#o
 % Hint: get(hObject,'Value') returns toggle state of automaticThresholdRadioButton
 
 app = getappdata(0, 'app');
+
+app.logger.info('ChooseThresholdDialog.m', ...
+    'Choose automatic threshold');
+
 frameIndex = app.currentFrameIndex;
 
 set(handles.manualThresholdRadioButton, 'Value', 0);
@@ -244,8 +251,12 @@ frameIndex = app.currentFrameIndex;
 
 ind = get(handles.thresholdMethodPopup, 'Value');
 methodList = {'maxEntropy', 'Otsu'};
-app.settings.thresholdMethod = methodList{ind};
+methodName = methodList{ind};
 
+app.logger.info('ChooseThresholdDialog.m', ...
+    ['Set threshold method: ' methodName]);
+
+app.settings.thresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
 % display threshold of current frame
@@ -355,6 +366,10 @@ addThres = get(handles.autoThresholdValueEdit, 'String');
 start   = get(handles.autoThresholdStartEdit, 'String');
 fin     = get(handles.autoThresholdFinalEdit, 'String');
 
+app.logger.info('ChooseThresholdDialog.m', ...
+    sprintf('add threshold value %s to frames %s to %s', ...
+    addThres, start, fin));
+
 if length(start) ~= 0    %#ok isempty does'nt work i dont know why
     start = str2num(start);%#ok
 else
@@ -421,6 +436,9 @@ function manualThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %M
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of manualThresholdRadioButton
+
+app.logger.info('ChooseThresholdDialog.m', ...
+    'Choose manual threshold method');
 
 set(handles.automaticThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'on');
@@ -490,6 +508,10 @@ function backToSelectionButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
+
+app.logger.info('ChooseThresholdDialog.m', ...
+    'Back to image selection');
+
 delete(gcf);
 SelectInputImagesDialog(app);
 
@@ -511,6 +533,9 @@ pause(0.01);
 
 % retrieve application data
 app = getappdata(0, 'app');
+app.logger.info('ChooseThresholdDialog.m', ...
+    'Validate threshold');
+
 if getProcessingStep(app) < ProcessingStep.Contour
     computeContours(app);
 end

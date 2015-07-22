@@ -63,6 +63,9 @@ else
     error('Deprecated way of calling ValidateSkeleton');
 end
 
+app.logger.info('ValidateSkeleton.m', ...
+    'Open dialog: ValidateSkeleton');
+
 frameIndex  = app.currentFrameIndex;
 nFrames     = frameNumber(app);
 
@@ -250,8 +253,11 @@ val2 = get(handles.firstSkeletonPointPopup, 'Value');
 stringList = get(handles.firstSkeletonPointPopup, 'String');
 originDirection = stringList{val2};
 
-% store in app settings
 app = getappdata(0, 'app');
+app.logger.info('ValidateSkeleton.m', ...
+    ['Change skeleton first point to ' originDirection]);
+
+% store in app settings
 app.settings.firstPointLocation = originDirection;
 
 % --- Executes during object creation, after setting all properties.
@@ -345,7 +351,9 @@ set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 set(handles.saveSkeletonDataButton, 'String', 'Wait please...');
 pause(0.01);
 
-app = getappdata(0, 'app'); %#ok<NASGU>
+app = getappdata(0, 'app');
+app.logger.info('ValidateSkeleton.m', ...
+    'Save Skeleton data');
 
 % To open the directory who the user want to save the data
 [fileName, pathName] = uiputfile('*.mat', 'Save App Data', 'appData.mat'); 
@@ -370,6 +378,10 @@ function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
+
+app.logger.info('ValidateSkeleton.m', ...
+    'Back to contour smoothing');
+
 delete (gcf);
 SmoothContourDialog(app);
 
@@ -381,5 +393,9 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
+
+app.logger.info('ValidateSkeleton.m', ...
+    'Validate skeletons');
+
 delete(gcf);
 ChooseElongationSettingsDialog(app);
