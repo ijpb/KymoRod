@@ -68,9 +68,15 @@ app.logger.info('ChooseThresholdDialog.m', ...
 % update current process state
 setappdata(0, 'app', app);
 
-frameIndex = app.currentFrameIndex;
+% setup figure menu
+gui = KymoRodGui(app);
+buildFigureMenu(gui, hObject);
 
+% retrieve app data
+frameIndex = app.currentFrameIndex;
 nFrames = frameNumber(app);
+
+% update widgets
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameIndexLabel, 'String', string);
 

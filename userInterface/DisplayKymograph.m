@@ -62,6 +62,10 @@ else
     error('Run DisplayKymograph using deprecated call');
 end
 
+% setup figure menu
+gui = KymoRodGui(app);
+buildFigureMenu(gui, hObject);
+
 % extract data for display
 frameIndex = app.currentFrameIndex;
 contour = getSmoothedContour(app, frameIndex);

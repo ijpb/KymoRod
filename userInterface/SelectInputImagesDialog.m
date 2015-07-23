@@ -57,15 +57,19 @@ if nargin ~= 4 || ~isa(varargin{1}, 'KymoRod')
     error('Requires an KymoRod object as input argument');
 end
 
-% some gui listener adjustments
-set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
-    @channelSelectionPanel_SelectionChangeFcn);
-
 app = varargin{1};
 setappdata(0, 'app', app);
 
 app.logger.info('SelectInputImagesDialog.m', ...
     'Open dialog "SelectInputImagesDialog"');
+
+% setup figure menu
+gui = KymoRodGui(app);
+buildFigureMenu(gui, hObject);
+
+% some gui listener adjustments
+set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
+    @channelSelectionPanel_SelectionChangeFcn);
 
 % if some data are already initialized, display widgets
 if getProcessingStep(app) > ProcessingStep.None

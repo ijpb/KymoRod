@@ -68,6 +68,9 @@ end
 app.logger.info('ChooseElongationSettingsDialog_OpeningFcn', ...
     'Open dialog "ChooseElongationSettingsDialog"');
 
+% setup figure menu
+gui = KymoRodGui(app);
+buildFigureMenu(gui, hObject);
 
 % setup handles with application settings
 updateWidgets(app, handles);

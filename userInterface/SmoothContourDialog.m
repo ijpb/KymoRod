@@ -70,6 +70,10 @@ setappdata(0, 'app', app);
 app.logger.info('SmoothContourDialog.m', ...
     'Open dialog: SmoothContourDialog');
 
+% setup figure menu
+gui = KymoRodGui(app);
+buildFigureMenu(gui, hObject);
+
 % retrieve app data
 nFrames = frameNumber(app);
 index   = app.currentFrameIndex;
