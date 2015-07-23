@@ -59,20 +59,122 @@ methods
         % create standard menu hierarchy
         fileMenu = uimenu('parent', hFigure, 'Label', 'Files');
         uimenu('parent', fileMenu, ...
-            'Label', 'Process Step Menu', ...
-            'Callback', @this.mainMenuCallback);
+            'Label', 'Load...', ...
+            'Callback', @this.loadAppDataMenuCallback);
+        uimenu('parent', fileMenu, ...
+            'Label', 'Save As...', ...
+            'Callback', @this.saveAppDataMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Quit', ...
             'Separator', 'On', ...
             'Callback', @this.quitMenuCallback);
         
-%         editMenu = uimenu('parent', hFigure, 'Label', 'Edit');
+        editMenu = uimenu('parent', hFigure, 'Label', 'Edit');
+        uimenu('parent', editMenu, ...
+            'Label', 'Process Step Menu', ...
+            'Callback', @this.mainMenuCallback);
         
         helpMenu = uimenu('parent', hFigure, 'Label', 'Help');
         uimenu('parent', helpMenu, ...
             'Label', 'About...', ...
             'Callback', @this.aboutMenuCallback);
         
+    end
+    
+    function loadAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        disp('Loading...');
+        
+        % open a dialog to select input image folder, restricting type to images
+        [fileName, folderName] = uigetfile(...
+            {'*.mat', 'KymoRod Data Files';...
+            '*-kymo.txt', 'KymoRod Info Files';...
+            '*.*','All Files' }, ...
+            'Select KymoRod Analysis');
+        
+        % check if cancel button was selected
+        if fileName == 0;
+            return;
+        end
+        
+        % depending in file format, either use binary reading, or read parameters
+        % from a text file
+        [path, name, ext] = fileparts(fileName); %#ok<ASGLU>
+        if strcmp(ext, '.mat')
+            warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
+            try
+                newApp = KymoRod.load(fullfile(folderName, fileName));
+            catch ME
+                h = errordlg(ME.message, 'Loading Error', 'modal');
+                uiwait(h);
+                return;
+            end
+            
+            % assumes only 'complete' analyses can be saved, and call the dialog for
+            % showing results
+            switch getProcessingStep(newApp)
+                case {ProcessingStep.None, ProcessingStep.Selection}
+                    SelectInputImagesDialog(newApp);
+                
+                case ProcessingStep.Threshold
+                    ChooseThresholdDialog(newApp);
+                    
+                case ProcessingStep.Contour
+                    SmoothContourDialog(newApp);
+                
+                case ProcessingStep.Skeleton
+                    ValidateSkeleton(newApp);
+                    
+                case ProcessingStep.Kymograph
+                    DisplayKymograph(newApp);
+                    
+                otherwise
+                    SelectInputImagesDialog(newApp);
+            end
+            DisplayKymograph(newApp);
+            
+        elseif strcmp(ext, '.txt')
+            newApp = KymoRod.read(fullfile(folderName, fileName));
+            setProcessingStep(newApp, ProcessingStep.Selection);
+            
+            % in case of reading from a text, binary data are not saved and need to
+            % be recomputed
+            SelectInputImagesDialog(newApp);
+            
+        else
+            msg = sprintf('Can not manage file with extension %s', ext);
+            h = errordlg(msg, 'Loading Error', 'modal');
+            uiwait(h);
+        end
+    end
+    
+    function saveAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        disp('Saving...');
+        
+        % To open the directory who the user want to save the data
+        [fileName, pathName] = uiputfile('*.mat', ...
+            'Save KymoRod data');
+        
+        if pathName == 0
+            return;
+        end
+        
+        % filename of mat file
+        [emptyPath, baseName, ext] = fileparts(fileName); %#ok<ASGLU>
+        filePath = fullfile(pathName, [baseName '.mat']);
+        
+        % temporarily remove image list from app data
+        imgTemp = this.app.imageList;
+        this.app.imageList = {};
+
+        % save full application data as mat file, without image data
+        save(this.app, filePath);
+        
+        % replace image list within app data
+        this.app.imageList = imgTemp;
+        
+        % save all informations of experiment, to retrieve them easily
+        filePath = fullfile(pathName, [baseName '-kymorod.txt']);
+        write(this.app, filePath);
     end
     
     function mainMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>

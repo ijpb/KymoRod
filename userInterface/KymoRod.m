@@ -870,6 +870,9 @@ classdef KymoRod < handle
     methods (Static)
         function app = read(fileName)
             % Initialize a new instance of "KymoRod" from saved text file
+            %
+            % See also
+            %    load, write
             
             % create new empty appdata class
             app = KymoRod();
@@ -971,7 +974,11 @@ classdef KymoRod < handle
         end
         
         function app = load(fileName)
-           
+            % Initialize a new KymoRod instance from a saved binary file
+            %
+            % See also
+            %   read, save
+            
             % load fields from within the mat file
             data = load(fileName);
             
