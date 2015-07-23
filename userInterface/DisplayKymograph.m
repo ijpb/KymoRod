@@ -202,13 +202,17 @@ app = getappdata(0, 'app');
 % coordinates of current skeleton
 frameIndex = app.currentFrameIndex;
 skeleton = getSkeleton(app, frameIndex);
-xdata = skeleton(:,1);
-ydata = skeleton(:,2);
+xdata = skeleton(:, 1);
+ydata = skeleton(:, 2);
 
 % switch depending on value to display
 valPopUp = get(handles.kymographTypePopup, 'Value');
 switch valPopUp
     case 1
+        % make sure frame index is valid for elongation data
+        frameIndex = min(frameIndex, length(app.elongationList));
+        skeleton = getSkeleton(app, frameIndex);
+        
         % extract the values of elongation
         elg = app.elongationList{frameIndex};
         values = elg(:, 2);
@@ -220,8 +224,8 @@ switch valPopUp
         for i = 1:length(inds)
             inds(i) = find(abscissa > elg(i,1), 1, 'first');
         end
-        xdata = skeleton(inds,1);
-        ydata = skeleton(inds,2);
+        xdata = skeleton(inds, 1);
+        ydata = skeleton(inds, 2);
 
     case 2, values = app.radiusList{frameIndex};
     case 3, values = app.curvatureList{frameIndex};
@@ -239,8 +243,10 @@ inds = floor((values - vmin) * 255 / (vmax - vmin)) + 1;
 inds = max(min(inds, 256), 1);
 colors = cmap(inds, :);
 
-set(handles.colorSkelHandle, 'XData', xdata, 'YData', ydata, 'CData', colors);
-
+if isfield(handles, 'colorSkelHandle')
+    set(handles.colorSkelHandle, ...
+        'XData', xdata, 'YData', ydata, 'CData', colors);
+end
 
 % --- Executes on mouse press over axes background.
 function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
