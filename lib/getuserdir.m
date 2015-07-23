@@ -5,12 +5,13 @@ function userDir = getuserdir
 %
 %   Example:
 %      getuserdir() returns on windows
-%           C:\Documents and Settings\MyName\Eigene Dateien
+%           C:\Documents and Settings\MyName
 
 if ispc
-    userDir = winqueryreg('HKEY_CURRENT_USER',...
-        ['Software\Microsoft\Windows\CurrentVersion\' ...
-         'Explorer\Shell Folders'],'Personal');
+%     userDir = winqueryreg('HKEY_CURRENT_USER',...
+%         ['Software\Microsoft\Windows\CurrentVersion\' ...
+%          'Explorer\Shell Folders'],'Personal');
+    userDir = getenv('userprofile');
 else
     userDir = char(java.lang.System.getProperty('user.home'));
 end
