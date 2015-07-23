@@ -640,7 +640,13 @@ classdef KymoRod < handle
             disp('Displacement');
             this.logger.info('KymoRod.computeDisplacements', ...
                 'Compute displacements');
-
+            
+            % settings
+            ws = this.settings.windowSize1;
+            L = 4 * ws * this.settings.pixelSize / 1000;
+            this.logger.debug('KymoRod.computeDisplacements', ...
+                sprintf('Value of L=%f', L));
+            
             nFrames = frameNumber(this);
             step    = this.settings.displacementStep;
             
@@ -669,7 +675,6 @@ classdef KymoRod < handle
 
             assert(i <= length(this.displacementList), ...
                 'Class field ''displacementList'' is not correctly initialized');
-            ws = this.settings.windowSize1;
             
             % local data
             SK1 = this.skeletonList{i};
@@ -678,17 +683,26 @@ classdef KymoRod < handle
             S2  = this.abscissaList{i2};
             img1 = getImageForDisplacement(this, i);
             img2 = getImageForDisplacement(this, i2);
+            
+            % settings
+            ws = this.settings.windowSize1;
+            L = 4 * ws * this.settings.pixelSize / 1000;
                 
             % check if the two skeletons are large enough
             if length(SK1) > 2*80 && length(SK2) > 2*80
-                E = computeDisplacementPx(SK1, SK2, S1, S2, img1, img2, ws);
+%                 E = computeDisplacementPx(SK1, SK2, S1, S2, img1, img2, ws);
+                E = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, L);
                 
                 % check result is large enough
                 if size(E, 1) == 1
+                    this.logger.warn('KymoRod.computeFrameDisplacement', ...
+                        sprintf('Displacement from frame %d to frame %d resulted in small array', i, i2));
                     E = [1 0;1 1];
                 end
             else
                 % case of too small skeletons
+                this.logger.warn('KymoRod.computeFrameDisplacement', ...
+                    sprintf('Skeletons %d or %d has not enough vertices', i, i2));
                 E = [1 0; 1 1];
             end
             
@@ -706,17 +720,17 @@ classdef KymoRod < handle
 
             E       = this.displacementList;
             ws2     = this.settings.windowSize2;
-            nx      = this.settings.finalResultLength;
             step    = this.settings.displacementStep;
             [Elg, E2] = computeElongationAll(E, this.settings.timeInterval, step, ws2);
 
             % store results
             this.smoothedDisplacementList = E2;
-            this.elongationList      = Elg;
+            this.elongationList = Elg;
             
             %  Space-time mapping
             this.logger.info('KymoRod.computeElongations', ...
                 'Reconstruct elongation kymograph');
+            nx = this.settings.finalResultLength;
             this.elongationImage = reconstruct_Elg2(nx, Elg);
 
             setProcessingStep(this, ProcessingStep.Elongation);
@@ -1020,7 +1034,7 @@ classdef KymoRod < handle
             app.elongationImage         = data.elongationImage;
             app.currentFrameIndex       = data.currentFrameIndex;
             
-           app.processingStep           = ProcessingStep.parse(data.processingStep);
+            app.processingStep          = ProcessingStep.parse(data.processingStep);
 
         end
         
