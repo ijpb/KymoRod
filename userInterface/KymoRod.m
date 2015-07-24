@@ -988,6 +988,12 @@ classdef KymoRod < handle
                 error('Require a KymoRod binary file from at least version 0.8');
             end
             
+            % special case of 0.8 version
+            if isnumeric(data.serialVersion)
+                data.serialVersion = '0.8.0';
+            end
+            
+            % parse version number from version string
             version = VersionNumber(data.serialVersion);
             if version.major == 0 && version.minor == 8
                 app = KymoRod.load_V_0_8(data);
