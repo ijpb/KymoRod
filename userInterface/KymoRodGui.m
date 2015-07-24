@@ -96,6 +96,9 @@ methods
             return;
         end
         
+        this.app.logger.info('KymoRodGUI.loadAppDataMenuCallback', ...
+            ['Open saved analysis from file ' fullfile(folderName, fileName)]);
+        
         % depending in file format, either use binary reading, or read parameters
         % from a text file
         [path, name, ext] = fileparts(fileName); %#ok<ASGLU>

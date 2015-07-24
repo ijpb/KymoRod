@@ -7,7 +7,7 @@ classdef KymoRod < handle
     %% Static Properties
     properties (Constant)
         % identifier of class version, used for saving and loading files
-        serialVersion = 0.8;
+        serialVersion = VersionNumber(0, 8, 0);
     end
     
     %% Properties
@@ -124,7 +124,7 @@ classdef KymoRod < handle
             setCommandWindowLevel(this.logger, log4m.WARN);
             
             % log the object instanciation
-            versionString = num2str(KymoRod.serialVersion);
+            versionString = char(KymoRod.serialVersion);
             this.logger.info('KymoRod', ...
                 ['Create new KymoRod instance, V-' versionString]);
             
@@ -806,7 +806,8 @@ classdef KymoRod < handle
             % save also modification date of the main class          
             baseDir = fileparts(which('KymoRod'));
             fileInfo = dir(fullfile(baseDir, 'KymoRod.m'));
-            fprintf(f, '# KymoRod version: %s\n', fileInfo.date);
+            fprintf(f, '# KymoRod version: %s (%s)\n', ...
+                char(this.serialVersion), fileInfo.date);
             fprintf(f, '\n');
             
             % 
@@ -850,7 +851,7 @@ classdef KymoRod < handle
         end
         
          function save(this, fileName)
-             % save instance fields in a .mat file
+             % save instance fields in a .mat file, converting to struct
              
              % convert to a structure to save fields
              warning('off', 'MATLAB:structOnObject');
@@ -859,6 +860,7 @@ classdef KymoRod < handle
              % also convert fields that are classes to structs or char
              appStruct.settings = struct(this.settings);
              appStruct.processingStep = char(this.processingStep);
+             appStruct.serialVersion = char(this.serialVersion);
              
              % save as a struct
              save(fileName, '-struct', 'appStruct');
@@ -986,12 +988,12 @@ classdef KymoRod < handle
                 error('Require a KymoRod binary file from at least version 0.8');
             end
             
-            switch data.serialVersion
-                case 0.8
-                    app = KymoRod.load_V08(data);
-                otherwise
-                    error('Could not parse file with version %f', ...
-                         data.serialVersion);
+            version = VersionNumber(data.serialVersion);
+            if version.major == 0 && version.minor == 8
+                app = KymoRod.load_V_0_8(data);
+            else
+                error('Could not parse file with version %f', ...
+                    data.serialVersion);
             end
             
             % post-processing
@@ -1003,7 +1005,7 @@ classdef KymoRod < handle
             end
         end
         
-        function app = load_V08(data)
+        function app = load_V_0_8(data)
             % Initialize a new instance from a structure 
             
             % creates empty instance
