@@ -76,6 +76,13 @@ methods
         
         helpMenu = uimenu('parent', hFigure, 'Label', 'Help');
         uimenu('parent', helpMenu, ...
+            'Label', 'Display Log File Path', ...
+            'Callback', @this.displayLogFilePathMenuCallback);
+        uimenu('parent', helpMenu, ...
+            'Label', 'Show Log File', ...
+            'Callback', @this.showLogFileMenuCallback);
+        uimenu('parent', helpMenu, ...
+            'Separator', 'On', ...
             'Label', 'About...', ...
             'Callback', @this.aboutMenuCallback);
         
@@ -190,7 +197,34 @@ methods
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
     end
-    
+
+    function displayLogFilePathMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        path = this.app.logger.fullpath;
+        disp('Path to log file:');
+        disp(path);
+    end
+
+    function showLogFileMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        
+        % read all the lines of the log file
+        path = this.app.logger.fullpath;
+        f = fopen(path, 'rt');
+        lines = {};
+        line = fgetl(f);
+        while line ~= -1
+            lines = [lines; {line}]; %#ok<AGROW>
+            line = fgetl(f);
+        end
+        
+        % Create new figure, and add the set of lines read from the file
+        hf = figure('Name', 'KymoRod Log File', ...
+            'Toolbar', 'none', 'menubar', 'none');
+        uicontrol('Parent', hf, 'style', 'list', ...
+            'unit', 'normalized', 'position', [0 0 1 1], ...
+            'Min', 1, 'Max', Inf, ...
+            'String', lines);
+    end
+
     function aboutMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
         KymoRodAboutDialog;
     end
