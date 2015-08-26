@@ -127,7 +127,7 @@ classdef KymoRod < handle
             setCommandWindowLevel(this.logger, log4m.WARN);
             
             % log the object instanciation
-            versionString = char(KymoRod.serialVersion);
+            versionString = char(KymoRod.appliVersion);
             this.logger.info('KymoRod', ...
                 ['Create new KymoRod instance, V-' versionString]);
             
@@ -191,7 +191,6 @@ classdef KymoRod < handle
                     
                 case ProcessingStep.Elongation
                     % ??? should add displacement step ?
-%                     clearResultImages();
                     
                 case ProcessingStep.Kymograph
                     % final processing step: nothing to clear!

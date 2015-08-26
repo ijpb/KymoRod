@@ -99,22 +99,29 @@ close(handles.mainFigure);
 if strcmp(ext, '.mat')
     warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
     try
+        logger = log4m.getLogger;
+        logger.info('KymoRodStartupDialog', ...
+                ['Open analysis from file: ' fullfile(folderName, fileName)]);
         app = KymoRod.load(fullfile(folderName, fileName));
+        
     catch ME
+        logger = log4m.getLogger;
+        logger.error('KymoRodStartupDialog', ...
+                ME.message);
         h = errordlg(ME.message, 'Loading Error', 'modal');
         uiwait(h);
         KymoRodStartupDialog();
         return;
     end
     
-    app.logger.info('KymoRodGUI.loadAppDataMenuCallback', ...
-        ['Open saved analysis from file ' fullfile(folderName, fileName)]);
-
     % assumes only 'complete' analyses can be saved, and call the dialog for
     % showing results
     DisplayKymograph(app);
     
 elseif strcmp(ext, '.txt')
+    logger = log4m.getLogger;
+    logger.info('KymoRodStartupDialog', ...
+        ['Open analysis from file: ' fullfile(folderName, fileName)]);
     app = KymoRod.read(fullfile(folderName, fileName));
     setProcessingStep(app, ProcessingStep.Selection);
     
@@ -167,9 +174,18 @@ end
 
 close(handles.mainFigure);
 
-app = KymoRod;
+logger = log4m.getLogger;
+logger.info('KymoRodStartupDialog', ...
+    ['Read settings from file: ' fullfile(folderName, fileName)]);
+
+% read settings
 settings = KymoRodSettings.read(fullfile(folderName, fileName));
+
+% create new application, and setup its settings
+app = KymoRod;
 app.settings = settings;
+
+% choose input images
 SelectInputImagesDialog(app);
 
 
