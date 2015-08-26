@@ -107,6 +107,9 @@ if strcmp(ext, '.mat')
         return;
     end
     
+    app.logger.info('KymoRodGUI.loadAppDataMenuCallback', ...
+        ['Open saved analysis from file ' fullfile(folderName, fileName)]);
+
     % assumes only 'complete' analyses can be saved, and call the dialog for
     % showing results
     DisplayKymograph(app);

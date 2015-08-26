@@ -52,6 +52,11 @@ function KymoRodAboutDialog_OpeningFcn(hObject, eventdata, handles, varargin) %#
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to KymoRodAboutDialog (see VARARGIN)
 
+
+% Update some text handles with current information
+string = sprintf('Version %s', char(KymoRod.appliVersion));
+set(handles.versionText, 'string', string);
+
 % Choose default command line output for KymoRodAboutDialog
 handles.output = hObject;
 

@@ -6,6 +6,9 @@ classdef KymoRod < handle
     
     %% Static Properties
     properties (Constant)
+        % identifier of application version, for display in About dialog
+        appliVersion = VersionNumber(0, 9, 0);
+
         % identifier of class version, used for saving and loading files
         serialVersion = VersionNumber(0, 8, 0);
     end
@@ -130,7 +133,6 @@ classdef KymoRod < handle
             
             % initialize new default settings
             this.settings = KymoRodSettings;
-            
         end
     end
     
@@ -980,7 +982,7 @@ classdef KymoRod < handle
             %
             % See also
             %   read, save
-            
+                        
             % load fields from within the mat file
             data = load(fileName);
             
