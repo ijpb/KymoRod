@@ -865,7 +865,11 @@ classdef KymoRod < handle
              % also convert fields that are classes to structs or char
              appStruct.settings = struct(this.settings);
              appStruct.processingStep = char(this.processingStep);
+             appStruct.appliVersion = char(this.appliVersion);
              appStruct.serialVersion = char(this.serialVersion);
+             
+             % clear some unnecessary data
+             appStruct.logger = [];
              
              % save as a struct
              save(fileName, '-struct', 'appStruct');
