@@ -853,6 +853,10 @@ classdef KymoRod < handle
         
          function save(this, fileName)
              % save instance fields in a .mat file, converting to struct
+             %
+             % Example:
+             %    save(app, 'savedKymo.mat');
+             %    app2 = load('savedKymo.mat');
              
              % convert to a structure to save fields
              warning('off', 'MATLAB:structOnObject');
@@ -979,9 +983,13 @@ classdef KymoRod < handle
         function app = load(fileName)
             % Initialize a new KymoRod instance from a saved binary file
             %
+            % Example
+            %    save(app, 'savedKymo.mat');
+            %    app2 = load('savedKymo.mat');
+            %
             % See also
             %   read, save
-                        
+            
             % load fields from within the mat file
             data = load(fileName);
             
