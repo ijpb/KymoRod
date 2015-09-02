@@ -152,6 +152,7 @@ app  = getappdata(0, 'app');
 % Take the value from the slide bar, rounded to have an integer
 smooth = round(get(handles.smoothValueSlider, 'Value')); 
 
+smoothString = num2str(smooth);
 app.logger.info('SmoothContourDialog.m', ...
     ['Set smoothing value to ' smoothString]);
 
