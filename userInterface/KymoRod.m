@@ -808,7 +808,7 @@ classdef KymoRod < handle
             baseDir = fileparts(which('KymoRod'));
             fileInfo = dir(fullfile(baseDir, 'KymoRod.m'));
             fprintf(f, '# KymoRod version: %s (%s)\n', ...
-                char(this.serialVersion), fileInfo.date);
+                char(this.appliVersion), fileInfo.date);
             fprintf(f, '\n');
             
             % 
