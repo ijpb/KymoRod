@@ -373,8 +373,10 @@ hImg = imagesc(xdata, ydata, img);
 
 % setup display
 set(gca, 'YDir', 'normal', 'YTick', []);
-caxis([minCaxis, maxCaxis - val]); colorbar;
-colormap jet;
+if minCaxis < maxCaxis - val
+    caxis([minCaxis, maxCaxis - val]); 
+end
+colorbar; colormap jet;
 
 % add the function handle to capture mouse clicks
 set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
