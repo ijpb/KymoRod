@@ -652,22 +652,25 @@ classdef KymoRod < handle
             step    = this.settings.displacementStep;
             
             % allocate memory for result
-            this.displacementList = cell(nFrames-step, 1);
-
+            displList = cell(nFrames-step, 1);
+            
             parfor_progress(nFrames);
             parfor i = 1:nFrames - step
                 % index of next skeleton
                 i2 = i + step;
 
                 % compute displacement between current couple of frames
-                computeFrameDisplacement(this, i, i2);
+                displ = computeFrameDisplacement(this, i, i2);
+                displList{i} = displ;
                 parfor_progress;
                 
             end
             parfor_progress(0);
+            
+            this.displacementList = displList;
         end
         
-        function computeFrameDisplacement(this, i, i2)
+        function displ = computeFrameDisplacement(this, i, i2)
             % Computes displacement between frames i and i2, and update
             % corresponding displacment.
             %
@@ -691,7 +694,6 @@ classdef KymoRod < handle
                 
             % check if the two skeletons are large enough
             if length(SK1) > 2*80 && length(SK2) > 2*80
-%                 E = computeDisplacementPx(SK1, SK2, S1, S2, img1, img2, ws);
                 E = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, L);
                 
                 % check result is large enough
@@ -709,6 +711,7 @@ classdef KymoRod < handle
             
             % store result
             this.displacementList{i} = E;
+            displ = E;
         end
         
         function computeElongations(this)
