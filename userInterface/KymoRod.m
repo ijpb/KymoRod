@@ -677,8 +677,8 @@ classdef KymoRod < handle
             % assumes the class field 'displacementList' is already
             % initialized to the required size.
 
-            assert(i <= length(this.displacementList), ...
-                'Class field ''displacementList'' is not correctly initialized');
+%             assert(i <= length(this.displacementList), ...
+%                 'Class field ''displacementList'' is not correctly initialized');
             
             % local data
             SK1 = this.skeletonList{i};
@@ -710,7 +710,7 @@ classdef KymoRod < handle
             end
             
             % store result
-            this.displacementList{i} = E;
+%             this.displacementList{i} = E;
             displ = E;
         end
         
