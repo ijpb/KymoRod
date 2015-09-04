@@ -7,7 +7,7 @@ classdef KymoRod < handle
     %% Static Properties
     properties (Constant)
         % identifier of application version, for display in About dialog
-        appliVersion = VersionNumber(0, 9, 1);
+        appliVersion = VersionNumber(0, 9, 2);
 
         % identifier of class version, used for saving and loading files
         serialVersion = VersionNumber(0, 8, 0);
