@@ -55,6 +55,9 @@ function KymoRodStartupDialog_OpeningFcn(hObject, eventdata, handles, varargin) 
 % Choose default command line output for KymoRodStartupDialog
 handles.output = hObject;
 
+set(hObject, 'Name', 'KymoRod Startup Dialog');
+
+
 % Update handles structure
 guidata(hObject, handles);
 
