@@ -348,8 +348,8 @@ frameSelectionHandles = [...
     handles.lastFrameIndexLabel, handles.lastFrameIndexEdit, ...
     handles.frameIndexStepLabel, handles.frameIndexStepEdit  ];
 
-frameNumber = length(app.imageNameList);
-if app.firstIndex == 1 && app.lastIndex == frameNumber && app.indexStep == 1
+nFiles = getFileNumber(app);
+if app.firstIndex == 1 && app.lastIndex == nFiles && app.indexStep == 1
     set(handles.keepAllFramesRadioButton, 'Value', 1);
     set(handles.selectFrameIndicesRadioButton, 'Value', 0);
     % make file selection widgets invisible
@@ -362,9 +362,9 @@ else
     set(frameSelectionHandles, 'Visible', 'On');
 end
 
-string = sprintf('Keep All Frames (%d)', frameNumber);
+string = sprintf('Keep All Frames (%d)', nFiles);
 set(handles.keepAllFramesRadioButton, 'String', string);
-string = sprintf('Select a range among the %d frames', frameNumber);
+string = sprintf('Select a range among the %d frames', nFiles);
 set(handles.selectFrameIndicesRadioButton, 'String', string);
 
 set(handles.firstFrameIndexEdit, 'String', num2str(app.firstIndex));
@@ -605,8 +605,10 @@ string = strtrim(get(hObject, 'String'));
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change last frame index to ' string]);
 
+% compute number of image files
+nFiles = getFileNumber(app);
+
 val = parseValue(string);
-nFiles = length(app.imageNameList);
 val = min(val, nFiles);
 
 app.lastIndex = val;

@@ -31,7 +31,9 @@ classdef KymoRod < handle
         % index of current frame for display
         currentFrameIndex = 1;
         
-        % list of images to process
+        % list of images to process.
+        % If lazy loading option is set to true, this array will not be
+        % used.
         imageList = {};
         
         % informations to retrieve input image
@@ -318,6 +320,19 @@ classdef KymoRod < handle
                 fileName = fileList(i).name;
                 this.imageNameList{i} = fileName;
             end
+        end
+        
+        function nFiles = getFileNumber(this)
+            % compute the number of files matching input dir and name pattern
+
+            % read all files in specified directory
+            inputDir = this.inputImagesDir;
+            pattern  = this.inputImagesFilePattern;
+            fileList = dir(fullfile(inputDir, pattern));
+            
+            % ensure no directory is load
+            fileList = fileList(~[fileList.isdir]);
+            nFiles = length(fileList);
         end
         
         function readAllImages(this)
