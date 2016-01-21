@@ -162,7 +162,7 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<DEFNU
 
 app = getappdata(0, 'app');
 delete(gcf);
-ValidateSkeleton(app);
+ValidateSkeletonDialog(app);
 
 
 % --- Executes on button press in elongationButton.

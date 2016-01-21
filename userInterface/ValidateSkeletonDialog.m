@@ -1,35 +1,35 @@
-function varargout = ValidateSkeleton(varargin)
-% VALIDATESKELETON MATLAB code for ValidateSkeleton.fig
-%      VALIDATESKELETON, by itself, creates a new VALIDATESKELETON or raises the existing
+function varargout = ValidateSkeletonDialog(varargin)
+% VALIDATESKELETONDIALOG MATLAB code for ValidateSkeletonDialog.fig
+%      VALIDATESKELETONDIALOG, by itself, creates a new VALIDATESKELETONDIALOG or raises the existing
 %      singleton*.
 %
-%      H = VALIDATESKELETON returns the handle to a new VALIDATESKELETON or the handle to
+%      H = VALIDATESKELETONDIALOG returns the handle to a new VALIDATESKELETONDIALOG or the handle to
 %      the existing singleton*.
 %
-%      VALIDATESKELETON('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in VALIDATESKELETON.M with the given input arguments.
+%      VALIDATESKELETONDIALOG('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in VALIDATESKELETONDIALOG.M with the given input arguments.
 %
-%      VALIDATESKELETON('Property','Value',...) creates a new VALIDATESKELETON or raises the
+%      VALIDATESKELETONDIALOG('Property','Value',...) creates a new VALIDATESKELETONDIALOG or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ValidateSkeleton_OpeningFcn gets called.  An
+%      applied to the GUI before ValidateSkeletonDialog_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ValidateSkeleton_OpeningFcn via varargin.
+%      stop.  All inputs are passed to ValidateSkeletonDialog_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ValidateSkeleton
+% Edit the above text to modify the response to help ValidateSkeletonDialog
 
-% Last Modified by GUIDE v2.5 12-Nov-2014 13:53:39
+% Last Modified by GUIDE v2.5 21-Jan-2016 16:06:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ValidateSkeleton_OpeningFcn, ...
-                   'gui_OutputFcn',  @ValidateSkeleton_OutputFcn, ...
+                   'gui_OpeningFcn', @ValidateSkeletonDialog_OpeningFcn, ...
+                   'gui_OutputFcn',  @ValidateSkeletonDialog_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,8 +44,8 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before ValidateSkeleton is made visible.
-function ValidateSkeleton_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
+% --- Executes just before ValidateSkeletonDialog is made visible.
+function ValidateSkeletonDialog_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -60,11 +60,11 @@ if nargin == 4 && isa(varargin{1}, 'KymoRod')
     setappdata(0, 'app', app);
     
 else
-    error('Deprecated way of calling ValidateSkeleton');
+    error('Deprecated way of calling ValidateSkeletonDialog');
 end
 
-app.logger.info('ValidateSkeleton.m', ...
-    'Open dialog: ValidateSkeleton');
+app.logger.info('ValidateSkeletonDialog.m', ...
+    'Open dialog: ValidateSkeletonDialog');
 
 % setup figure menu
 gui = KymoRodGui(app);
@@ -157,7 +157,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ValidateSkeleton_OutputFcn(hObject, eventdata, handles) %#ok
+function varargout = ValidateSkeletonDialog_OutputFcn(hObject, eventdata, handles) %#ok
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -399,7 +399,7 @@ function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 
 app = getappdata(0, 'app');
 
-app.logger.info('ValidateSkeleton.m', ...
+app.logger.info('ValidateSkeletonDialog.m', ...
     'Validate skeletons');
 
 delete(gcf);

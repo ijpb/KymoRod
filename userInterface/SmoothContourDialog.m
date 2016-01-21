@@ -308,4 +308,4 @@ app.logger.info('SmoothContourDialog.m', ...
     'Validate contour smoothing');
 
 delete(gcf);
-ValidateSkeleton(app);
+ValidateSkeletonDialog(app);
