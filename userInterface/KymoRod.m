@@ -7,7 +7,8 @@ classdef KymoRod < handle
     %% Static Properties
     properties (Constant)
         % identifier of application version, for display in About dialog
-        appliVersion = VersionNumber(0, 9, 2);
+        % and for file releases
+        appliVersion = VersionNumber(0, 9, 3);
 
         % identifier of class version, used for saving and loading files
         serialVersion = VersionNumber(0, 8, 0);
@@ -32,8 +33,7 @@ classdef KymoRod < handle
         currentFrameIndex = 1;
         
         % list of images to process.
-        % If lazy loading option is set to true, this array will not be
-        % used.
+        % If lazy loading option is set to true, this array is not used.
         imageList = {};
         
         % informations to retrieve input image
