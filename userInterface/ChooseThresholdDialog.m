@@ -111,12 +111,6 @@ set(handles.frameIndexSlider, 'SliderStep', sliderStep);
 % display threshold of current frame
 displayCurrentFrameThreshold(handles);
 
-% % get threshold of current frame
-% set(handles.currentFrameThresholdLabel, 'Visible', 'On');
-% currentThreshold = int16(app.thresholdValues(frameIndex));
-% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-% set(handles.currentFrameThresholdLabel, 'String', string);
-
 % compute binarised image
 seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
@@ -201,10 +195,6 @@ setappdata(0, 'app', app);
 
 % display threshold level of current image
 displayCurrentFrameThreshold(handles);
-% currentThreshold = app.thresholdValues(frameIndex);
-% set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-% string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
-% set(handles.currentFrameThresholdLabel, 'String', string);
 
 % show info on current frame
 nFrames = frameNumber(app);
@@ -239,8 +229,6 @@ app = getappdata(0, 'app');
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose automatic threshold');
 
-% frameIndex = app.currentFrameIndex;
-
 set(handles.manualThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'off');
 set(handles.manualThresholdValueLabel, 'Visible', 'off');
@@ -254,20 +242,16 @@ set(handles.autoThresholdStartEdit, 'Visible', 'on');
 set(handles.autoThresholdFinalEdit, 'Visible', 'on');
 set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
 
-% compute thresholded images
+% compute new threshold values
 computeThresholdValues(app);
 
-displayCurrentFrameThreshold(handles);
-% currentThreshold = round(app.thresholdValues(frameIndex));
-% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-% set(handles.currentFrameThresholdLabel, 'String', string);
-set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-
+% update inner state of appli
 setappdata(0, 'app', app);
 
-setProcessingStep(app, ProcessingStep.Threshold);
+% update display with current info
+displayCurrentFrameThreshold(handles);
+set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
-% update display
 frameIndexSlider_Callback(hObject, eventdata, handles);
 
 
@@ -281,8 +265,8 @@ function thresholdMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL,D
 %        contents{get(hObject,'Value')} returns selected item from thresholdMethodPopup
 
 app = getappdata(0, 'app');
-frameIndex = app.currentFrameIndex;
 
+% choose new method for threshold
 ind = get(handles.thresholdMethodPopup, 'Value');
 methodList = {'maxEntropy', 'Otsu'};
 methodName = methodList{ind};
@@ -290,21 +274,19 @@ methodName = methodList{ind};
 app.logger.info('ChooseThresholdDialog.m', ...
     ['Set threshold method: ' methodName]);
 
+% update threshold information of application
 app.settings.thresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
 % display threshold of current frame
 displayCurrentFrameThreshold(handles);
-% currentThreshold = int16(app.thresholdValues(frameIndex));
-% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-% set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
+frameIndex = app.currentFrameIndex;
 seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
 imshow(seg);
 
-setProcessingStep(app, ProcessingStep.Threshold);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -445,9 +427,6 @@ end
 
 % update widgets with new values
 frameIndex = app.currentFrameIndex;
-% currentThreshold = app.thresholdValues(frameIndex);
-% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-% set(handles.currentFrameThresholdLabel, 'String', string);
 displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
@@ -511,6 +490,7 @@ nImages = frameNumber(app);
 thresholdValues = ones(nImages, 1) * val;
 
 app.thresholdValues = thresholdValues;
+setProcessingStep(app, ProcessingStep.Threshold);
 setappdata(0, 'app', app);
 
 % update widgets
@@ -518,11 +498,6 @@ set(handles.manualThresholdValueLabel, 'String', ...
     num2str(thresholdValues(frameIndex)));
 displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-% string = sprintf('Threshold for frame %d is %d', frameIndex, ...
-%     round(thresholdValues(frameIndex)));
-% set(handles.currentFrameThresholdLabel, 'String', string);
-
-setProcessingStep(app, ProcessingStep.Threshold);
 
 
 % --- Executes during object creation, after setting all properties.
