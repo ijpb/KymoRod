@@ -205,10 +205,17 @@ methods
     end
 
     function showLogFileMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        % Display the content of the log file in a new figure
+
+        % try to open log file
+        path = this.app.logger.fullpath;
+        [f, errMsg] = fopen(path, 'rt');
+        if f == -1
+            errordlg(errMsg, 'Show Log File Error', 'modal');
+            return;
+        end
         
         % read all the lines of the log file
-        path = this.app.logger.fullpath;
-        f = fopen(path, 'rt');
         lines = {};
         line = fgetl(f);
         while line ~= -1
