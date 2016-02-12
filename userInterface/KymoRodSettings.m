@@ -19,6 +19,14 @@ classdef KymoRodSettings < handle
         % The unit name for time interval. Default value is 'min'
         timeIntervalUnit = 'min';
         
+        % specify the smoothing method applied on gray-scale image before
+        % segmentation. Should be one of 'none', 'boxFilter', 'gaussian'
+        imageSmoothingMethod = 'boxFilter';
+        
+        % the radius of the smoothing filter applied on gray scale image
+        % before segmentation
+        imageSmoothingRadius = 2;
+        
         % the method for computing threshold on each image
         % Can be one of {'maxEntropy'}, 'Otsu'.
         thresholdMethod = 'maxEntropy';
@@ -109,8 +117,12 @@ classdef KymoRodSettings < handle
             fprintf(f, 'timeInterval = %g\n', this.timeInterval);
             fprintf(f, 'timeIntervalUnit = %s\n', this.timeIntervalUnit);
             fprintf(f, '\n');
-        
-            % length of window for smoothing coutours
+
+            % smoothing of images before threshold
+            fprintf(f, 'imageSmoothingMethod = %s\n', this.imageSmoothingMethod);
+            fprintf(f, 'imageSmoothingRadius = %d\n', this.imageSmoothingRadius);
+
+            % the method used for computing thresholds
             fprintf(f, 'thresholdMethod = %s\n', this.thresholdMethod);
             
             % length of window for smoothing coutours

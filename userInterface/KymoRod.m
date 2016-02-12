@@ -292,6 +292,7 @@ classdef KymoRod < handle
         
         function image = getSegmentableImage(this, index)
             % Return the image that can be used for computing segmentation
+            % (without smoothing)
             image = getImage(this, index);
             if ndims(image) > 2 %#ok<ISMAT>
                 switch lower(this.settings.imageSegmentationChannel)
@@ -385,9 +386,40 @@ classdef KymoRod < handle
 
     methods
         function seg = getSegmentedImage(this, index)
-            img = getSegmentableImage(this, index);
+            % Return the specified frame after smoothing and binarization
+            
+            img = getSmoothedImage(this, index);
             thresh = this.thresholdValues(index);
             seg = img > thresh;
+        end
+
+        function imgf = getSmoothedImage(this, index)
+            % Get the image after smoothing for use by threshold method.
+            
+            img = getSegmentableImage(this, index);
+            
+            switch this.settings.imageSmoothingMethod
+                case 'none'
+                    % no smoothing -> simply copy image
+                    imgf = img;
+                    
+                case 'boxFilter'
+                    % smooth with flat box filter
+                    radius = this.settings.imageSmoothingRadius;
+                    diam = 2 * radius + 1;
+                    imgf = imfilter(img, ones(diam, diam) / diam^2, 'replicate');
+                    
+                case 'gaussian'
+                    % smooth with gaussian filter
+                    radius = this.settings.imageSmoothingRadius;
+                    diam = 2 * radius + 1;
+                    h = fspecial('gaussian', [diam diam], radius);
+                    imgf = imfilter(img, h, 'replicate');
+                    
+                otherwise
+                    error(['Can not handle smoothing method: ' ...
+                        this.settings.imageSmoothingMethod]);
+            end
         end
         
         function computeThresholdValues(this)

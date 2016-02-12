@@ -22,7 +22,7 @@ function varargout = ChooseThresholdDialog(varargin)
 
 % Edit the above text to modify the response to help ChooseThresholdDialog
 
-% Last Modified by GUIDE v2.5 10-Feb-2015 13:00:01
+% Last Modified by GUIDE v2.5 12-Feb-2016 17:38:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -79,6 +79,17 @@ nFrames = frameNumber(app);
 % update widgets
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameIndexLabel, 'String', string);
+
+switch app.settings.imageSmoothingMethod
+    case 'none'
+        set(handles.imageSmoothingMethodPopup, 'Value', 1);
+    case 'boxFilter'
+        set(handles.imageSmoothingMethodPopup, 'Value', 2);
+    case 'gaussian'
+        set(handles.imageSmoothingMethodPopup, 'Value', 3);
+end
+string = num2str(app.settings.imageSmoothingRadius);
+set(handles.imageSmoothingRadiusEdit, 'String', string);
 
 set(handles.autoThresholdFinalEdit, 'String', num2str(nFrames));
 
@@ -158,6 +169,20 @@ end
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 
+function displayCurrentThresholdedImage(handles)
+% display threshold information of current frame
+
+% get app data
+app = getappdata(0, 'app');
+
+frameIndex = app.currentFrameIndex;
+
+seg = getSegmentedImage(app, frameIndex);
+axis(handles.currentFrameAxes);
+imshow(seg);
+
+
+
 %% Menu
 
 function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
@@ -168,6 +193,7 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 delete(gcf);
 KymoRodMenuDialog(app);
+
 
 
 %% Display of current frame
@@ -184,14 +210,14 @@ function frameIndexSlider_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 
 frameIndex = round(get(handles.frameIndexSlider, 'Value'));
-
-% compute and display segmented image
-bin = getSegmentedImage(app, frameIndex);
-axes(handles.currentFrameAxes)
-imshow(bin);
-
 app.currentFrameIndex = frameIndex;
 setappdata(0, 'app', app);
+
+% compute and display segmented image
+% bin = getSegmentedImage(app, frameIndex);
+% axes(handles.currentFrameAxes)
+% imshow(bin);
+displayCurrentThresholdedImage(handles);
 
 % display threshold level of current image
 displayCurrentFrameThreshold(handles);
@@ -211,6 +237,81 @@ function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFN
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+%% Widgets for image smoothing
+
+% --- Executes on selection change in imageSmoothingMethodPopup.
+function imageSmoothingMethodPopup_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+% hObject    handle to imageSmoothingMethodPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns imageSmoothingMethodPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from imageSmoothingMethodPopup
+
+app = getappdata(0, 'app');
+switch get(handles.imageSmoothingMethodPopup, 'Value')
+    case 1
+        app.settings.imageSmoothingMethod = 'none';
+    case 2
+        app.settings.imageSmoothingMethod = 'boxFilter';
+    case 3
+        app.settings.imageSmoothingMethod = 'gaussian';
+end
+
+displayCurrentThresholdedImage(handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function imageSmoothingMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+% hObject    handle to imageSmoothingMethodPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function imageSmoothingRadiusEdit_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
+% hObject    handle to imageSmoothingRadiusEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of imageSmoothingRadiusEdit as text
+%        str2double(get(hObject,'String')) returns contents of imageSmoothingRadiusEdit as a double
+
+app = getappdata(0, 'app');
+
+radius = str2double(get(hObject, 'String'));
+if isnan(radius)
+    return;
+end
+radius = round(radius);
+set(hObject, 'String', num2str(radius));
+
+app.settings.imageSmoothingRadius = radius;
+
+displayCurrentThresholdedImage(handles);
+
+
+
+% --- Executes during object creation, after setting all properties.
+function imageSmoothingRadiusEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+% hObject    handle to imageSmoothingRadiusEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
 
@@ -249,6 +350,7 @@ computeThresholdValues(app);
 setappdata(0, 'app', app);
 
 % update display with current info
+displayCurrentThresholdedImage(handles);
 displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
@@ -278,15 +380,10 @@ app.logger.info('ChooseThresholdDialog.m', ...
 app.settings.thresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
+displayCurrentThresholdedImage(handles);
+
 % display threshold of current frame
 displayCurrentFrameThreshold(handles);
-
-% compute binarised image
-frameIndex = app.currentFrameIndex;
-seg = getSegmentedImage(app, frameIndex);
-axis(handles.currentFrameAxes);
-imshow(seg);
-
 
 
 % --- Executes during object creation, after setting all properties.
@@ -426,14 +523,11 @@ for i = start : fin
 end
 
 % update widgets with new values
-frameIndex = app.currentFrameIndex;
 displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
-% compute binarised image
-seg = getSegmentedImage(app, frameIndex);
-axis(handles.currentFrameAxes);
-imshow(seg);
+% Update display of binarized image
+displayCurrentThresholdedImage(handles);
 
 % re-enable widgets
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
@@ -494,6 +588,7 @@ setProcessingStep(app, ProcessingStep.Threshold);
 setappdata(0, 'app', app);
 
 % update widgets
+displayCurrentThresholdedImage(handles);
 set(handles.manualThresholdValueLabel, 'String', ...
     num2str(thresholdValues(frameIndex)));
 displayCurrentFrameThreshold(handles);
@@ -556,4 +651,5 @@ end
 % switch the visible dialog to Smooth Contour
 delete(gcf);
 SmoothContourDialog(app);
+
 
