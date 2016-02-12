@@ -8,10 +8,10 @@ classdef KymoRod < handle
     properties (Constant)
         % identifier of application version, for display in About dialog
         % and for file releases
-        appliVersion = VersionNumber(0, 9, 4, 'SNAPSHOT');
+        appliVersion = VersionNumber(0, 10, 0, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
-        serialVersion = VersionNumber(0, 8, 0);
+        serialVersion = VersionNumber(0, 10, 0);
     end
     
     %% Properties
