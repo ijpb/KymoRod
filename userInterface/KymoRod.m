@@ -94,6 +94,10 @@ classdef KymoRod < handle
         
         elongationList;
         
+        % the type of kymograph used for display
+        % should be one of 'radius' (default), 'verticalAngle',
+        % 'curvature', 'elongation'.
+        kymographDisplayType = 'radius';
         
         % reconstructed image of skeleton radius in absissa and time
         radiusImage;
@@ -724,8 +728,6 @@ classdef KymoRod < handle
                 E = [1 0; 1 1];
             end
             
-            % store result
-%             this.displacementList{i} = E;
             displ = E;
         end
         
@@ -754,14 +756,71 @@ classdef KymoRod < handle
 
             setProcessingStep(this, ProcessingStep.Elongation);
         end
+        
+        function img = getKymographMatrix(this)
+            % Return the array of values representing the current kymograph
+            % (defined by this.kymographDisplayType)
+            
+            switch this.kymographDisplayType
+                case 'radius'
+                    img = this.radiusImage;
+                    
+                case 'verticalAngle'
+                    img = this.verticalAngleImage;
+                    
+                case 'curvature'
+                    img = this.curvatureImage;
+                    
+                case 'elongation'
+                    img = this.elongationImage;
+            end
+        end
     end
     
     
     %% Display methods
 
     methods
+        function varargout = showCurrentKymograph(this)
+            % Display the current kymograph on a new figure
+            
+            % get floating-point image corresponding to kymograph
+            img = getKymographMatrix(this);
+
+            % compute display extent for elongation kymograph
+            minCaxis = min(img(:));
+            maxCaxis = max(img(:));
+            
+            % compute references for x and y axes
+            timeInterval = this.settings.timeInterval;
+            xdata = (0:(size(img, 2)-1)) * timeInterval * this.indexStep;
+            Sa = this.abscissaList{end};
+            ydata = linspace(Sa(1), Sa(end), this.settings.finalResultLength);
+            
+            % display current kymograph
+            hImg = imagesc(xdata, ydata, img);
+            
+            % setup display
+            set(gca, 'YDir', 'normal');
+            caxis([minCaxis, maxCaxis]); colorbar;
+            colormap jet;
+            
+            % annotate
+            xlabel(sprintf('Time (%s)', this.settings.timeIntervalUnit));
+            ylabel(sprintf('Geodesic position (%s)', this.settings.pixelSizeUnit));
+            title(this.kymographDisplayType);
+            
+            if nargout > 0
+                varargout = {hImg};
+            end
+        end
+    end
+    
+    methods
         function varargout = showKymograph(this, type)
             % Display the kymograph result on a new figure
+            % 
+            % deprecated: use showCurrentKymograph instead
             
             if nargin < 2
                 type = 'elongation';
@@ -1029,7 +1088,7 @@ classdef KymoRod < handle
             if version.major == 0 && version.minor == 8
                 app = KymoRod.load_V_0_8(data);
             else
-                error('Could not parse file with version %f', ...
+                error('Could not parse file with serial version %f', ...
                     data.serialVersion);
             end
             
@@ -1043,7 +1102,8 @@ classdef KymoRod < handle
         end
         
         function app = load_V_0_8(data)
-            % Initialize a new instance from a structure 
+            % Initialize a new instance from a structure with 0.8 format
+            % (corresponds to KymoRod applications 0.8.x to 0.9.x)
             
             % creates empty instance
             app = KymoRod();
@@ -1052,6 +1112,8 @@ classdef KymoRod < handle
             app.settings = KymoRodSettings.fromStruct(data.settings);
             
             % copy parameters
+            app.processingStep          = ProcessingStep.parse(data.processingStep);
+            app.currentFrameIndex       = data.currentFrameIndex;
             app.imageList               = data.imageList;
             app.imageNameList           = data.imageNameList;
             app.inputImagesDir          = data.inputImagesDir;
@@ -1078,10 +1140,6 @@ classdef KymoRod < handle
             app.verticalAngleImage      = data.verticalAngleImage;
             app.curvatureImage          = data.curvatureImage;
             app.elongationImage         = data.elongationImage;
-            app.currentFrameIndex       = data.currentFrameIndex;
-            
-            app.processingStep          = ProcessingStep.parse(data.processingStep);
-
         end
         
     end

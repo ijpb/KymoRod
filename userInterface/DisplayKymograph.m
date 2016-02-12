@@ -66,10 +66,16 @@ end
 gui = KymoRodGui(app);
 buildFigureMenu(gui, hObject);
 
-% extract data for display
+% compute number of frames that can be displayed
+nFrames = frameNumber(app);
+if strcmp(app.kymographDisplayType, 'elongation')
+    % remove two frames for elongation kymographs
+    nFrames = nFrames - 2; 
+end
+
+% get index of current frame, eventually corrected by max frame number
 frameIndex = app.currentFrameIndex;
-contour = getSmoothedContour(app, frameIndex);
-skeleton = getSkeleton(app, frameIndex);
+frameIndex = min(frameIndex, nFrames);
 
 % Display current image
 axes(handles.imageAxes); hold on;
@@ -78,14 +84,16 @@ img = getImage(app, frameIndex);
 if ndims(img) == 2 %#ok<ISMAT>
     img = repmat(img, [1 1 3]);
 end
-handles.imageHandle     = imshow(img);
+handles.imageHandle = imshow(img);
 
 % setup slider for display of current frame
-nFrames = frameNumber(app);
-nFrames = nFrames - 2; % remove two frames for elongation kymographs
 set(handles.currentFrameSlider, 'Min', 1, 'Max', nFrames, 'Value', frameIndex); 
 sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.currentFrameSlider, 'SliderStep', sliderStep); 
+
+% get geometric data for annotations
+contour = getSmoothedContour(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex);
 
 % create handles for geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
@@ -95,8 +103,22 @@ handles.colorSkelHandle = scatter(skeleton(:, 1), skeleton(:, 2), ...
 handles.imageMarker     = drawMarker(skeleton(1, :), ...
     'd', 'Color', 'k', 'LineWidth', 1, 'MarkerFaceColor', 'w');
 
+% update the widget for choosing the type of kymograph
+switch lower(app.kymographDisplayType)
+    case 'radius'
+        set(handles.kymographTypePopup, 'Value', 1);
+    case 'verticalangle'
+        set(handles.kymographTypePopup, 'Value', 2);
+    case 'curvature' 
+        set(handles.kymographTypePopup, 'Value', 3);
+    case 'elongation'
+        set(handles.kymographTypePopup, 'Value', 4);
+    otherwise
+        warning(['Could not interpret kymograph type: ' app.kymographDisplayType]);
+end
+
 % compute display extent for elongation kymograph
-img = app.elongationImage;
+img = getKymographMatrix(app);
 minCaxis = min(img(:));
 maxCaxis = max(img(:));
 
@@ -243,10 +265,18 @@ app = getappdata(0, 'app');
 % Choose the kymograph to display
 valPopUp = get(handles.kymographTypePopup, 'Value');
 switch valPopUp
-    case 1, img = app.elongationImage;
-    case 2, img = app.radiusImage;
-    case 3, img = app.curvatureImage;
-    case 4, img = app.verticalAngleImage;
+    case 1
+        app.kymographDisplayType = 'radius';
+        img = app.radiusImage;
+    case 2
+        app.kymographDisplayType = 'verticalAngle';
+        img = app.verticalAngleImage;
+    case 3
+        app.kymographDisplayType = 'curvature';
+        img = app.curvatureImage;
+    case 4
+        app.kymographDisplayType = 'elongation';
+        img = app.elongationImage;
 end
 minCaxis = min(img(:));
 maxCaxis = max(img(:));
@@ -290,7 +320,10 @@ ydata = skeleton(:, 2);
 % switch depending on value to display
 valPopUp = get(handles.kymographTypePopup, 'Value');
 switch valPopUp
-    case 1
+    case 1, values = app.radiusList{frameIndex};
+    case 2, values = app.verticalAngleList{frameIndex};
+    case 3, values = app.curvatureList{frameIndex};
+    case 4
         % make sure frame index is valid for elongation data
         frameIndex = min(frameIndex, length(app.elongationList));
         skeleton = getSkeleton(app, frameIndex);
@@ -309,9 +342,6 @@ switch valPopUp
         xdata = skeleton(inds, 1);
         ydata = skeleton(inds, 2);
 
-    case 2, values = app.radiusList{frameIndex};
-    case 3, values = app.curvatureList{frameIndex};
-    case 4, values = app.verticalAngleList{frameIndex};
 end
 
 % extract bounds
@@ -435,17 +465,7 @@ app = getappdata(0, 'app');
 minCaxis = getappdata(0, 'minCaxis');
 maxCaxis = getappdata(0, 'maxCaxis');
 
-% a value to adjust kymograph contrast
-val = get(handles.slider1, 'Value');
-  
-% Choose the kymograph to display
-valPopUp = get(handles.kymographTypePopup, 'Value');
-switch valPopUp
-    case 1, img = app.elongationImage;
-    case 2, img = app.radiusImage;
-    case 3, img = app.curvatureImage;
-    case 4, img = app.verticalAngleImage;
-end
+img = getKymographMatrix(app);
 
 % display current kymograph
 timeInterval = app.settings.timeInterval;
@@ -454,6 +474,9 @@ ydata = 1:size(img, 1);
 axes(handles.kymographAxes);
 hImg = imagesc(xdata, ydata, img);
 
+% a value to adjust kymograph contrast
+val = get(handles.slider1, 'Value');
+  
 % setup display
 set(gca, 'YDir', 'normal', 'YTick', []);
 if minCaxis < maxCaxis - val
@@ -469,7 +492,7 @@ xlabel(sprintf('Time (%s)', app.settings.timeIntervalUnit));
 
 
 % --- Executes on button press in saveAsPngButton.
-function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to saveAsPngButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -484,24 +507,25 @@ end
 
 app = getappdata(0, 'app');
 
-% Choose the type of kymograph to display
-valPopUp = get(handles.kymographTypePopup, 'Value');
-switch valPopUp
-    case 1, type = 'elongation';
-    case 2, type = 'radius';
-    case 3, type = 'curvature';
-    case 4, type = 'verticalAngle';
-end
+% % Choose the type of kymograph to display
+% valPopUp = get(handles.kymographTypePopup, 'Value');
+% switch valPopUp
+%     case 1, type = 'elongation';
+%     case 2, type = 'radius';
+%     case 3, type = 'curvature';
+%     case 4, type = 'verticalAngle';
+% end
 
 hf = figure; 
 set(gca, 'fontsize', 14);
-showKymograph(app, type);
+% showKymograph(app, type);
+showCurrentKymograph(app);
 print(hf, fullfile(pathName, fileName), '-dpng');
 close(hf);
 
 
 % --- Executes on button press in saveAsTiffButton.
-function saveAsTiffButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function saveAsTiffButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to saveAsTiffButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -516,18 +540,19 @@ end
 
 app = getappdata(0, 'app');
 
-% Choose the type of kymograph to display
-valPopUp = get(handles.kymographTypePopup, 'Value');
-switch valPopUp
-    case 1, type = 'elongation';
-    case 2, type = 'radius';
-    case 3, type = 'curvature';
-    case 4, type = 'verticalAngle';
-end
+% % Choose the type of kymograph to display
+% valPopUp = get(handles.kymographTypePopup, 'Value');
+% switch valPopUp
+%     case 1, type = 'elongation';
+%     case 2, type = 'radius';
+%     case 3, type = 'curvature';
+%     case 4, type = 'verticalAngle';
+% end
 
 hf = figure; 
 set(gca, 'fontsize', 14);
-showKymograph(app, type);
+% showKymograph(app, type);
+showCurrentKymograph(app);
 print(hf, fullfile(pathName, fileName), '-dtiff');
 close(hf);
 
@@ -565,10 +590,6 @@ imgTemp = app.imageList;
 app.imageList = {};
 save(app, filePath);
 app.imageList = imgTemp;
-% imgTemp = app.imageList;
-% app.imageList = {};
-% save(filePath, 'app');
-% app.imageList = imgTemp;
 
 % save all informations of experiment, to retrieve them easily
 filePath = fullfile(pathName, [baseName '-kymo.txt']);
@@ -596,10 +617,10 @@ else
 end
 
 % save individual image arrays
-ElgE1   = app.elongationImage;
-CE1     = app.curvatureImage;
-AE1     = app.verticalAngleImage;
 RE1     = app.radiusImage;
+AE1     = app.verticalAngleImage;
+CE1     = app.curvatureImage;
+ElgE1   = app.elongationImage;
 
 % initialize col names: a list of values
 nPositions = app.settings.finalResultLength;
