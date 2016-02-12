@@ -108,18 +108,20 @@ set(handles.frameIndexSlider, 'Max', nFrames);
 sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
 
-% get threshold of current frame
-set(handles.currentFrameThresholdLabel, 'Visible', 'On');
-currentThreshold = int16(app.thresholdValues(frameIndex));
-string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-set(handles.currentFrameThresholdLabel, 'String', string);
+% display threshold of current frame
+displayCurrentFrameThreshold(handles);
+
+% % get threshold of current frame
+% set(handles.currentFrameThresholdLabel, 'Visible', 'On');
+% currentThreshold = int16(app.thresholdValues(frameIndex));
+% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+% set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
 seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
 imshow(seg);
 
-setappdata(0, 'app', app);
 
 guidata(hObject, handles);
 
@@ -136,6 +138,30 @@ function varargout = ChooseThresholdDialog_OutputFcn(hObject, eventdata, handles
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+%% Utility functions
+
+function displayCurrentFrameThreshold(handles)
+% display threshold information of current frame
+
+% get app data
+app = getappdata(0, 'app');
+
+frameIndex = app.currentFrameIndex;
+
+currentThreshold = int16(app.thresholdValues(frameIndex));
+baseThreshold = int16(app.baseThresholdValues(frameIndex));
+diffThreshold = currentThreshold - baseThreshold;
+
+if diffThreshold >= 0
+    string = sprintf('Threshold = %d (%d + %d)', ...
+        currentThreshold, baseThreshold, diffThreshold);
+else
+    string = sprintf('Threshold = %d (%d - %d)', ...
+        currentThreshold, baseThreshold, -diffThreshold);
+end
+
+set(handles.currentFrameThresholdLabel, 'String', string);
 
 
 %% Menu
@@ -170,19 +196,20 @@ bin = getSegmentedImage(app, frameIndex);
 axes(handles.currentFrameAxes)
 imshow(bin);
 
+app.currentFrameIndex = frameIndex;
+setappdata(0, 'app', app);
+
 % display threshold level of current image
-currentThreshold = app.thresholdValues(frameIndex);
-set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
-set(handles.currentFrameThresholdLabel, 'String', string);
+displayCurrentFrameThreshold(handles);
+% currentThreshold = app.thresholdValues(frameIndex);
+% set(handles.currentFrameThresholdLabel, 'Visible', 'on');
+% string = sprintf('Threshold for frame %d is %d', frameIndex, int16(currentThreshold));
+% set(handles.currentFrameThresholdLabel, 'String', string);
 
 % show info on current frame
 nFrames = frameNumber(app);
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameIndexLabel, 'String', string);
-
-app.currentFrameIndex = frameIndex;
-setappdata(0, 'app', app);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -212,7 +239,7 @@ app = getappdata(0, 'app');
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose automatic threshold');
 
-frameIndex = app.currentFrameIndex;
+% frameIndex = app.currentFrameIndex;
 
 set(handles.manualThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'off');
@@ -230,9 +257,10 @@ set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
 % compute thresholded images
 computeThresholdValues(app);
 
-currentThreshold = round(app.thresholdValues(frameIndex));
-string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-set(handles.currentFrameThresholdLabel, 'String', string);
+displayCurrentFrameThreshold(handles);
+% currentThreshold = round(app.thresholdValues(frameIndex));
+% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+% set(handles.currentFrameThresholdLabel, 'String', string);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 setappdata(0, 'app', app);
@@ -266,9 +294,10 @@ app.settings.thresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
 % display threshold of current frame
-currentThreshold = int16(app.thresholdValues(frameIndex));
-string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-set(handles.currentFrameThresholdLabel, 'String', string);
+displayCurrentFrameThreshold(handles);
+% currentThreshold = int16(app.thresholdValues(frameIndex));
+% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+% set(handles.currentFrameThresholdLabel, 'String', string);
 
 % compute binarised image
 seg = getSegmentedImage(app, frameIndex);
@@ -416,9 +445,10 @@ end
 
 % update widgets with new values
 frameIndex = app.currentFrameIndex;
-currentThreshold = app.thresholdValues(frameIndex);
-string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
-set(handles.currentFrameThresholdLabel, 'String', string);
+% currentThreshold = app.thresholdValues(frameIndex);
+% string = sprintf('Threshold for frame %d is %d', frameIndex, currentThreshold);
+% set(handles.currentFrameThresholdLabel, 'String', string);
+displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 % compute binarised image
@@ -486,10 +516,11 @@ setappdata(0, 'app', app);
 % update widgets
 set(handles.manualThresholdValueLabel, 'String', ...
     num2str(thresholdValues(frameIndex)));
+displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
-string = sprintf('Threshold for frame %d is %d', frameIndex, ...
-    round(thresholdValues(frameIndex)));
-set(handles.currentFrameThresholdLabel, 'String', string);
+% string = sprintf('Threshold for frame %d is %d', frameIndex, ...
+%     round(thresholdValues(frameIndex)));
+% set(handles.currentFrameThresholdLabel, 'String', string);
 
 setProcessingStep(app, ProcessingStep.Threshold);
 
@@ -542,11 +573,12 @@ app = getappdata(0, 'app');
 app.logger.info('ChooseThresholdDialog.m', ...
     'Validate threshold');
 
+% update processing step if necessary
 if getProcessingStep(app) < ProcessingStep.Contour
     computeContours(app);
 end
 
+% switch the visible dialog to Smooth Contour
 delete(gcf);
-
 SmoothContourDialog(app);
 
