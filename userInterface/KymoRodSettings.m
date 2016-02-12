@@ -5,11 +5,12 @@ classdef KymoRodSettings < handle
     %% Properties
     properties
         
-        % in case of color images, which channel should be used for analysis
+        % in case of color images, specify the channel used for segmentation
         imageSegmentationChannel = 'red';
                 
         % spatial calibration of input images
         pixelSize = 1000 / 253;
+        
         % The unit name for spatial calibration. Default value is 'µm'
         pixelSizeUnit = 'µm';
         
@@ -52,7 +53,18 @@ classdef KymoRodSettings < handle
         function this = KymoRodSettings(varargin)
             % Create a new data structure for storing application data
             
-            % TODO: add copy constructor
+            if ~isempty(varargin)
+                var1 = varargin{1};
+                if isa(var1, 'KymoRodSettings')
+                    % copy each field of the data structure
+                    names = properties(var1);
+                    for i = 1:length(names)
+                        this.(names{i}) = var1.(names{i});
+                    end
+                else
+                    error(['Unable to create KymoRodSettings from object of class ' class(var1)]);
+                end
+            end
         end
         
     end % end of constructor methods
