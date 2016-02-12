@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 18-Feb-2015 13:50:23
+% Last Modified by GUIDE v2.5 12-Feb-2016 14:51:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,7 +80,14 @@ if ndims(img) == 2 %#ok<ISMAT>
 end
 handles.imageHandle     = imshow(img);
 
-% draw geometric annotations
+% setup slider for display of current frame
+nFrames = frameNumber(app);
+nFrames = nFrames - 2; % remove two frames for elongation kymographs
+set(handles.currentFrameSlider, 'Min', 1, 'Max', nFrames, 'Value', frameIndex); 
+sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
+set(handles.currentFrameSlider, 'SliderStep', sliderStep); 
+
+% create handles for geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
 handles.skeletonHandle  = drawSkeleton(skeleton, 'b');
 handles.colorSkelHandle = scatter(skeleton(:, 1), skeleton(:, 2), ...
@@ -101,6 +108,7 @@ set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
 
 updateKymographDisplay(handles);
+displayCurrentFrameIndex(handles);
 
 handles.kymographMarker = [];
 
@@ -108,7 +116,7 @@ handles.kymographMarker = [];
 guidata(hObject, handles);
 
 % UIWAIT makes DisplayKymograph wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+% uiwait(handles.mainFigure);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -122,6 +130,43 @@ function varargout = DisplayKymograph_OutputFcn(hObject, eventdata, handles)%#ok
 varargout{1} = handles.output;
 
 
+function updateCurrentFrameDisplay(handles)
+% refresh display of current frame: image, and eventually colored skeleton
+
+% extract data for current frame
+app = getappdata(0, 'app');
+frameIndex = app.currentFrameIndex;
+
+% create RGB image from app data
+img = app.getImage(frameIndex);
+if ndims(img) == 2 %#ok<ISMAT>
+    img = repmat(img, [1 1 3]);
+end
+
+% extract geometric annotations
+contour = getSmoothedContour(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex);
+
+% update display
+axes(handles.imageAxes);
+set(handles.imageHandle, 'CData', img);
+set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
+set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
+
+
+function displayCurrentFrameIndex(handles)
+% Updates the content of the "currentFrameIndex" label
+% Typically after slider update, or after click on kymograph
+
+% get current frame index and number
+app = getappdata(0, 'app');
+frameIndex = app.currentFrameIndex;
+nFrames = frameNumber(app);
+
+% update label display
+string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
+set(handles.currentFrameLabel, 'String', string);
+
 
 % --------------------------------------------------------------------
 function mainMenuMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSD>
@@ -132,6 +177,39 @@ function mainMenuMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSD>
 app = getappdata(0, 'app');
 delete(gcf);
 KymoRodMenuDialog(app);
+
+
+% --- Executes on slider movement.
+function currentFrameSlider_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to currentFrameSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% compute new value for frame index
+app = getappdata(0, 'app');
+frameIndex = round(get(handles.currentFrameSlider, 'Value'));
+
+app.currentFrameIndex = frameIndex;
+setappdata(0, 'app', app);
+
+updateCurrentFrameDisplay(handles);
+displayCurrentFrameIndex(handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function currentFrameSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to currentFrameSlider (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
 
 
 % --- Executes on button press in showColoredSkeletonCheckBox.
@@ -316,7 +394,12 @@ set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
 if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
     updateColoredSkeleton(handles);
 end    
-    
+
+% update display of frame info
+setappdata(0, 'app', app);
+updateCurrentFrameDisplay(handles);
+displayCurrentFrameIndex(handles);
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -566,4 +649,3 @@ button = questdlg({'This will quit the program', 'Are you sure ?'}, ...
 if strcmp(button, 'Yes')
     delete(gcf);
 end
-
