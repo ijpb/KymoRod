@@ -1,8 +1,15 @@
 classdef KymoRod < handle
-    % Class for Application "KymoRod"
-    % 
-    % This class contains a reference to the current settings, the data
-    % currently loaded, and most processing methods.
+% Class for storing data of the "KymoRod" application
+%
+% This class contains a reference to the current settings, the currently
+% loaded data, and most of the data processing methods. 
+%
+% KR = KymoRod()
+% Creates a new KymoRod data structure with default settings
+%
+% KR = KymoRod(SETTINGS)
+% Creates a new KymoRod data structure with pre-determined settings
+%
     
     %% Static Properties
     properties (Constant)
@@ -117,6 +124,13 @@ classdef KymoRod < handle
     methods
         function this = KymoRod(varargin)
             % Create a new data structure for storing application data
+            %
+            % KR = KymoRod()
+            % Creates a new KymoRod data structure with default settings
+            %
+            % KR = KymoRod(SETTINGS)
+            % Creates a new KymoRod data structure with pre-determinated
+            % settings
             
             % creates '.kymorod' directory if it does not exist
             logdir = fullfile(getuserdir, '.kymorod');
@@ -137,8 +151,12 @@ classdef KymoRod < handle
             this.logger.info('KymoRod', ...
                 ['Create new KymoRod instance, V-' versionString]);
             
-            % initialize new default settings
-            this.settings = KymoRodSettings;
+            % initialize settings of the new appli
+            if ~isempty(varargin) && isa(varargin{1}, 'KymoRodSettings')
+                this.settings = varargin{1};
+            else
+                this.settings = KymoRodSettings;
+            end
         end
     end
     

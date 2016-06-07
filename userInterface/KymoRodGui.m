@@ -96,14 +96,13 @@ methods
     function newAnalysisMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
         % creates a new analysis 
         
-        % cl
+        % clear current figure
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
         
-        % create new empty application data structure
+        % create new empty application data structure, using same settings
         settings = this.app.settings;
-        newApp = KymoRod();
-        newApp.settings = settings;
+        newApp = KymoRod(settings);
         
         % initialize with default directory
         path = fileparts(mfilename('fullpath'));
