@@ -56,8 +56,11 @@ methods
         inds = strcmp(get(children, 'type'), 'uimenu');
         delete(children(inds));
         
-        % create standard menu hierarchy
+        % Populate the "File" menu entry
         fileMenu = uimenu('parent', hFigure, 'Label', 'Files');
+        uimenu('parent', fileMenu, ...
+            'Label', 'New Analysis', ...
+            'Callback', @this.newAnalysisMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Load...', ...
             'Callback', @this.loadAppDataMenuCallback);
@@ -69,11 +72,13 @@ methods
             'Separator', 'On', ...
             'Callback', @this.quitMenuCallback);
         
+        % Populate the "Edit" menu entry
         editMenu = uimenu('parent', hFigure, 'Label', 'Edit');
         uimenu('parent', editMenu, ...
             'Label', 'Processing Step Menu', ...
             'Callback', @this.mainMenuCallback);
         
+        % Populate the "Help" menu entry
         helpMenu = uimenu('parent', hFigure, 'Label', 'Help');
         uimenu('parent', helpMenu, ...
             'Label', 'Display Log File Path', ...
@@ -86,6 +91,26 @@ methods
             'Label', 'About...', ...
             'Callback', @this.aboutMenuCallback);
         
+    end
+    
+    function newAnalysisMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        % creates a new analysis 
+        
+        % cl
+        hFig = KymoRodGui.findParentFigure(hObject);
+        delete(hFig);
+        
+        % create new empty application data structure
+        settings = this.app.settings;
+        newApp = KymoRod();
+        newApp.settings = settings;
+        
+        % initialize with default directory
+        path = fileparts(mfilename('fullpath'));
+        newApp.inputImagesDir = fullfile(path, '..', '..', '..', 'sampleImages', '01');
+        
+        % open first dialog of application
+        SelectInputImagesDialog(newApp);
     end
     
     function loadAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
