@@ -47,22 +47,25 @@ SK1(i,1) = V(j,1);
 SK1(i,2) = V(j,2);
 R1(i) = dist(j);
 
-if V_F(j) < 3
+if V_F(j) < 3 && length(F{j})<3
+    
     jind = find(F{j} ~= jp);
     jp = j;
     j = F{j}(jind);
-    V_F(j) = V_F(j)-1;
-    
-    while V_F(j) == 1
-        i = i+1;
-        SK1(i,1) = V(j,1);
-        SK1(i,2) = V(j,2);
-        R1(i) = dist(j);
+    V_F(j) = V_F(j)-1; 
+    if isempty(j)==0
 
-        jind = find(F{j}~=jp);
-        jp = j;
-        j = F{j}(jind);
-        V_F(j) = V_F(j)-1; 
+        while (V_F(j) == 1 && length(F{j})==2)
+            i = i+1;
+            SK1(i,1) = V(j,1);
+            SK1(i,2) = V(j,2);
+            R1(i) = dist(j);
+
+            jind = find(F{j}~=jp);
+            jp = j;
+            j = F{j}(jind);
+            V_F(j) = V_F(j)-1; 
+        end
     end
 end
 
