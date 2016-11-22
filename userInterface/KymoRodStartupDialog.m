@@ -117,6 +117,32 @@ if strcmp(ext, '.mat')
         return;
     end
     
+    % ensure input directory is valid, otherwise, ask for a new one.
+    while exist(app.inputImagesDir, 'dir') == 0
+        disp(['Could not find input dir: ' app.inputImagesDir]);
+        
+        msg = sprintf('Could not find input directory:\n%s', ext);
+        h = errordlg(msg, 'Loading Error', 'modal');
+        uiwait(h);
+        
+        % open a dialog to select input image folder, restricting type to images
+        [fileName, folderName] = uigetfile(...
+            {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
+            '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
+            '*.jpg;', 'JPEG images (*.jpg)';...
+            '*.*','All Files' }, ...
+            'Select Input Folder', ...
+            '*.*');
+        
+        % check if cancel button was selected
+        if fileName == 0
+            return;
+        end
+        
+        % let us try with the new folder...
+        app.inputImagesDir = folderName;
+    end
+    
     % assumes only 'complete' analyses can be saved, and call the dialog for
     % showing results
     DisplayKymograph(app);

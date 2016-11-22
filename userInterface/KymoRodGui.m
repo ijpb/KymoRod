@@ -134,37 +134,7 @@ methods
         % from a text file
         [path, name, ext] = fileparts(fileName); %#ok<ASGLU>
         if strcmp(ext, '.mat')
-            warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
-            try
-                newApp = KymoRod.load(fullfile(folderName, fileName));
-            catch ME
-                h = errordlg(ME.message, 'Loading Error', 'modal');
-                uiwait(h);
-                return;
-            end
-            
-            % assumes only 'complete' analyses can be saved, and call the dialog for
-            % showing results
-            switch getProcessingStep(newApp)
-                case {ProcessingStep.None, ProcessingStep.Selection}
-                    SelectInputImagesDialog(newApp);
-                
-                case ProcessingStep.Threshold
-                    ChooseThresholdDialog(newApp);
-                    
-                case ProcessingStep.Contour
-                    SmoothContourDialog(newApp);
-                
-                case ProcessingStep.Skeleton
-                    ValidateSkeleton(newApp);
-                    
-                case ProcessingStep.Kymograph
-                    DisplayKymograph(newApp);
-                    
-                otherwise
-                    SelectInputImagesDialog(newApp);
-            end
-            DisplayKymograph(newApp);
+            readAppData_mat(this, fullfile(folderName, fileName));
             
         elseif strcmp(ext, '.txt')
             newApp = KymoRod.read(fullfile(folderName, fileName));
@@ -178,6 +148,67 @@ methods
             msg = sprintf('Can not manage file with extension %s', ext);
             h = errordlg(msg, 'Loading Error', 'modal');
             uiwait(h);
+        end
+    end
+    
+    function readAppData_mat(this, filePath) %#ok<INUSL>
+        % read KymoRod data from a mat file
+        
+        % try to read the app from selected file
+        warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
+        try
+            newApp = KymoRod.load(filePath);
+        catch ME
+            h = errordlg(ME.message, 'Loading Error', 'modal');
+            uiwait(h);
+            return;
+        end
+        
+        % ensure input directory is valid, otherwise, ask for a new one.
+        if exist(newApp.inputImagesDir, 'dir') == 0
+            disp(['Could not find input dir: ' newApp.inputImagesDir]);
+            
+            msg = sprintf('Could not find input directory:\n%s', newApp.inputImagesDir);
+            h = errordlg(msg, 'Loading Error', 'modal');
+            uiwait(h);
+            
+            % open a dialog to select input image folder, restricting type to images
+            [fileName, folderName] = uigetfile(...
+                {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
+                '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
+                '*.jpg;', 'JPEG images (*.jpg)';...
+                '*.*','All Files' }, ...
+                'Select Input Folder', '*.*');
+            
+            % check if cancel button was selected
+            if fileName == 0
+                return;
+            end
+            
+            % let us try with the new folder...
+            newApp.inputImagesDir = folderName;
+        end
+        
+        % assumes only 'complete' analyses can be saved, and call the dialog for
+        % showing results
+        switch getProcessingStep(newApp)
+            case {ProcessingStep.None, ProcessingStep.Selection}
+                SelectInputImagesDialog(newApp);
+                
+            case ProcessingStep.Threshold
+                ChooseThresholdDialog(newApp);
+                
+            case ProcessingStep.Contour
+                SmoothContourDialog(newApp);
+                
+            case ProcessingStep.Skeleton
+                ValidateSkeleton(newApp);
+                
+            case ProcessingStep.Kymograph
+                DisplayKymograph(newApp);
+                
+            otherwise
+                SelectInputImagesDialog(newApp);
         end
     end
     

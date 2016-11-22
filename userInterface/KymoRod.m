@@ -1172,6 +1172,9 @@ classdef KymoRod < handle
             version = VersionNumber(data.serialVersion);
             if version.major == 0 && version.minor == 8
                 app = KymoRod.load_V_0_8(data);
+            elseif version.major == 0 && version.minor == 10
+                % just to fix bug introduced in version 0.10.0
+                app = KymoRod.load_V_0_8(data);
             else
                 error('Could not parse file with serial version %f', ...
                     data.serialVersion);
