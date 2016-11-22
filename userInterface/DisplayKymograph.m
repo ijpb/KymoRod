@@ -217,8 +217,12 @@ frameIndex = round(get(handles.currentFrameSlider, 'Value'));
 app.currentFrameIndex = frameIndex;
 setappdata(0, 'app', app);
 
-updateCurrentFrameDisplay(handles);
 displayCurrentFrameIndex(handles);
+
+updateCurrentFrameDisplay(handles);
+if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
+    updateColoredSkeleton(handles);
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -231,7 +235,6 @@ function currentFrameSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD>
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
-
 
 
 % --- Executes on button press in showColoredSkeletonCheckBox.
@@ -289,8 +292,10 @@ set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
 
 updateKymographDisplay(handles);
-updateColoredSkeleton(handles);
-    
+if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
+    updateColoredSkeleton(handles);
+end
+   
 handles.kymographMarker = [];
 guidata(hObject, handles);
 
@@ -444,6 +449,9 @@ function slider1_Callback(hObject, eventdata, handles) %#ok<INUSL>
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 updateKymographDisplay(handles);
+if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
+    updateColoredSkeleton(handles);
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -507,18 +515,8 @@ end
 
 app = getappdata(0, 'app');
 
-% % Choose the type of kymograph to display
-% valPopUp = get(handles.kymographTypePopup, 'Value');
-% switch valPopUp
-%     case 1, type = 'elongation';
-%     case 2, type = 'radius';
-%     case 3, type = 'curvature';
-%     case 4, type = 'verticalAngle';
-% end
-
 hf = figure; 
 set(gca, 'fontsize', 14);
-% showKymograph(app, type);
 showCurrentKymograph(app);
 print(hf, fullfile(pathName, fileName), '-dpng');
 close(hf);
@@ -540,18 +538,8 @@ end
 
 app = getappdata(0, 'app');
 
-% % Choose the type of kymograph to display
-% valPopUp = get(handles.kymographTypePopup, 'Value');
-% switch valPopUp
-%     case 1, type = 'elongation';
-%     case 2, type = 'radius';
-%     case 3, type = 'curvature';
-%     case 4, type = 'verticalAngle';
-% end
-
 hf = figure; 
 set(gca, 'fontsize', 14);
-% showKymograph(app, type);
 showCurrentKymograph(app);
 print(hf, fullfile(pathName, fileName), '-dtiff');
 close(hf);
