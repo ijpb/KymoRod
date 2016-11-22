@@ -551,6 +551,9 @@ app     = getappdata(0, 'app');
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose manual threshold method');
 
+val = round(get(handles.manualThresholdSlider, 'Value'));
+set(handles.manualThresholdValueLabel, 'String', num2str(val));
+
 set(handles.automaticThresholdRadioButton, 'Value', 0);
 set(handles.manualThresholdSlider, 'Visible', 'on');
 set(handles.manualThresholdValueLabel, 'Visible', 'on');
