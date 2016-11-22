@@ -546,6 +546,8 @@ function manualThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %M
 
 % Hint: get(hObject,'Value') returns toggle state of manualThresholdRadioButton
 
+% extract application data
+app     = getappdata(0, 'app');
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose manual threshold method');
 
@@ -577,8 +579,8 @@ val = round(get(handles.manualThresholdSlider, 'Value'));
 app = getappdata(0, 'app');
 frameIndex   = app.currentFrameIndex;
 
-bin = getImage(app, frameIndex) > val;
-imshow(handles.currentFrameAxes, bin);
+% bin = getImage(app, frameIndex) > val;
+% imshow(handles.currentFrameAxes, bin);
 
 nImages = frameNumber(app);
 thresholdValues = ones(nImages, 1) * val;
