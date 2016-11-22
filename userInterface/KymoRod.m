@@ -300,6 +300,7 @@ classdef KymoRod < handle
         end
         
         function image = getImage(this, index)
+            % Return the image corresponding to the given frame
             if this.inputImagesLazyLoading
                 filePath = fullfile(this.inputImagesDir, this.imageNameList{index});
                 image = imread(filePath);
@@ -321,6 +322,18 @@ classdef KymoRod < handle
             end
         end
         
+        function loadImageData(this)
+            % Read image data
+            % Load images, or simply read file names depending on the value
+            % of the "inputImagesLazyLoading" property
+            
+            if this.inputImagesLazyLoading
+                computeImageNames(this);
+            else
+                readAllImages(this);
+            end
+        end
+        
         function computeImageNames(this)
             % update list of image names from input directory and indices
 
@@ -337,12 +350,20 @@ classdef KymoRod < handle
             fileList = fileList(fileIndices);
             nFrames = length(fileList);
             
+            imageNames = cell(nFrames, 1);
+            disp('Read all image names');
+            
             % allocate memory for local variables
-            this.imageNameList = cell(nFrames, 1);
-            for i = 1:nFrames
+            parfor_progress(nFrames);
+            parfor i = 1:nFrames
                 fileName = fileList(i).name;
-                this.imageNameList{i} = fileName;
+                imageNames{i} = fileName;
+                parfor_progress;
             end
+            parfor_progress(0);
+            
+            this.imageNameList = imageNames;
+
         end
         
         function nFiles = getFileNumber(this)
@@ -374,18 +395,25 @@ classdef KymoRod < handle
             nImages = length(fileList);
             
             % allocate memory
-            this.imageList = cell(nImages, 1);
-            this.imageNameList = cell(nImages, 1);
+            images = cell(nImages, 1);
+            imageNames = cell(nImages, 1);
+
+            % keep variables outside parfor loop to ensure avoiding overhead
+            inputDir = this.inputImagesDir;
+            channelName = lower(this.settings.imageSegmentationChannel);
+
+            disp('Read all images');
             
             % read each image
-            for i = 1:nImages
+            parfor_progress(nImages);
+            parfor i = 1:nImages
                 fileName = fileList(i).name;
-                this.imageNameList{i} = fileName;
-                img = imread(fullfile(this.inputImagesDir, fileName));
+                imageNames{i} = fileName;
+                img = imread(fullfile(inputDir, fileName));
                 
                 % in case of color image, select which channel should be kept
                 if ndims(img) > 2 %#ok<ISMAT>
-                    switch lower(app.settings.imageSegmentationChannel)
+                    switch channelName
                         case 'red',     img = img(:,:,1); 
                         case 'green',   img = img(:,:,2); 
                         case 'blue',    img = img(:,:,3); 
@@ -394,8 +422,15 @@ classdef KymoRod < handle
                             error(['could not recognise channel name: ' channelName]);
                     end
                 end
-                this.imageList{i} = img;
+                images{i} = img;
+                
+                parfor_progress;
             end
+            parfor_progress(0);
+            
+            % keep loaded data in app
+            this.imageList = images;
+            this.imageNameList = imageNames;
         end
     end
     
@@ -453,7 +488,7 @@ classdef KymoRod < handle
             nImages = frameNumber(this);
             this.baseThresholdValues = zeros(nImages, 1);
             
-            % Compute the contour
+            % Compute the threshold values
             disp('Segmentation');
             hDialog = msgbox(...
                 {'Computing image thresholds,', 'please wait...'}, ...
@@ -546,8 +581,8 @@ classdef KymoRod < handle
                 
                 parfor_progress;
             end
-            
             parfor_progress(0);
+            
             if ishandle(hDialog)
                 close(hDialog);
             end
@@ -633,8 +668,8 @@ classdef KymoRod < handle
                 
                 parfor_progress;
             end
-            
             parfor_progress(0);
+            
             if ishandle(hDialog)
                 close(hDialog);
             end
@@ -1204,4 +1239,5 @@ classdef KymoRod < handle
             end
         end
     end
-end
+    
+end % end class declaration

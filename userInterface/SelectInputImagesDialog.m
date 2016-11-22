@@ -822,7 +822,7 @@ function selectImagesButton_Callback(hObject, eventdata, handles)
 % extract global data
 app = getappdata(0, 'app');
 
-computeImageNames(app);
+loadImageData(app);
 
 nFrames = frameNumber(app);
 app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
