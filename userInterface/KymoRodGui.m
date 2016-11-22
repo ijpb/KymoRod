@@ -123,7 +123,7 @@ methods
             'Select KymoRod Analysis');
         
         % check if cancel button was selected
-        if fileName == 0;
+        if fileName == 0
             return;
         end
         

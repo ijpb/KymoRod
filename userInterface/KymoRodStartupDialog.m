@@ -90,7 +90,7 @@ function loadAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEF
     'Select KymoRod Analysis');
       
 % check if cancel button was selected
-if fileName == 0;
+if fileName == 0
     return;
 end
 
@@ -171,7 +171,7 @@ function loadSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEF
     'Select Settings File');
       
 % check if cancel button was selected
-if fileName == 0;
+if fileName == 0
     return;
 end
 
