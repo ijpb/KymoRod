@@ -18,7 +18,7 @@ classdef KymoRod < handle
         appliVersion = VersionNumber(0, 10, 1, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
-        serialVersion = VersionNumber(0, 10, 0);
+        serialVersion = VersionNumber(0, 8, 0);
     end
     
     %% Properties
@@ -1153,7 +1153,7 @@ classdef KymoRod < handle
         
         function app = load_V_0_8(data)
             % Initialize a new instance from a structure with 0.8 format
-            % (corresponds to KymoRod applications 0.8.x to 0.9.x)
+            % (corresponds to KymoRod applications 0.8.x to 0.10.x)
             
             % creates empty instance
             app = KymoRod();
