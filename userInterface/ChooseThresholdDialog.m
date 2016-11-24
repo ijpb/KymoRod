@@ -116,6 +116,7 @@ end
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Min', 1); 
 set(handles.frameIndexSlider, 'Max', nFrames); 
+set(handles.frameIndexSlider, 'Value', frameIndex); 
 sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
 
