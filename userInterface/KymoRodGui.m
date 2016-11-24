@@ -9,7 +9,7 @@ classdef (Sealed) KymoRodGui < handle
 %   GUI = KymoRodGui.getInstance();
 %
 %   See also
-%
+%   KymoRod
 
 % ------
 % Author: David Legland
@@ -20,7 +20,7 @@ classdef (Sealed) KymoRodGui < handle
 
 %% Properties
 properties
-
+    lastOpenDir = '.';
 end % end properties
 
 
@@ -35,6 +35,9 @@ methods (Access = private)
     end
 
 end % end constructors
+
+
+%% Static methods
 
 methods (Static)
     function singleObj = getInstance
@@ -52,6 +55,91 @@ methods (Static)
             hObject = get(hObject, 'Parent');
         end
         hFigure = hObject;
+    end
+end
+
+
+%% General GUI function
+
+methods
+    function app = loadKymoRodAppData(this)
+        % Open File dialog to read KymoRod application data
+        %
+        % Returns a new instance, or empty if could not load.
+        %
+        
+        % open a dialog to select input kymorod app file
+        [fileName, folderName] = uigetfile(...
+            {'*.mat', 'KymoRod Data Files';...
+            '*.*','All Files' }, ...
+            'Select KymoRod Analysis');
+        
+        % check if cancel button was selected
+        if fileName == 0
+            return;
+        end
+        
+        % keep path to file for future opening
+        this.lastOpenDir = folderName;
+
+        % log file info
+        logger = log4m.getLogger;
+        logger.info(mfilename, ...
+            ['Open analysis from file: ' fullfile(folderName, fileName)]);
+
+        % read application data corresponding to selected file
+        app = KymoRod.load(fullfile(folderName, fileName));
+
+        % ensure input directory is valid, otherwise, ask for a new one.
+        while exist(app.inputImagesDir, 'dir') == 0
+            disp(['Could not find input dir: ' app.inputImagesDir]);
+            
+            msg = sprintf('Could not find input directory:\n%s', app.inputImagesDir);
+            h = errordlg(msg, 'Loading Error', 'modal');
+            uiwait(h);
+            
+            % open a dialog to select input image folder, restricting type to images
+            [fileName, folderName] = uigetfile(...
+                {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
+                '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
+                '*.jpg;', 'JPEG images (*.jpg)';...
+                '*.*','All Files' }, ...
+                'Select Input Folder', ...
+                fullfile(folderName, '*.*'));
+            
+            % check if cancel button was selected
+            if fileName == 0
+                return;
+            end
+            
+            % let us try with the new folder...
+            app.inputImagesDir = folderName;
+        end
+    end
+    
+    function displayProcessingDialog(this, app) %#ok<INUSL>
+        % Opens the appropriate dialog to display result of kymorod appdata
+        
+        % switch dialog depending on processing step
+        switch getProcessingStep(app)
+            case {ProcessingStep.None, ProcessingStep.Selection}
+                SelectInputImagesDialog(app);
+                
+            case ProcessingStep.Threshold
+                ChooseThresholdDialog(app);
+                
+            case ProcessingStep.Contour
+                SmoothContourDialog(app);
+                
+            case ProcessingStep.Skeleton
+                ValidateSkeleton(app);
+                
+            case ProcessingStep.Kymograph
+                DisplayKymograph(app);
+                
+            otherwise
+                SelectInputImagesDialog(app);
+        end
     end
 end
 
@@ -138,104 +226,25 @@ methods
     end
     
     function loadAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
-        disp('Loading...');
+        disp('loading...');
         
-        % open a dialog to select input image folder, restricting type to images
-        [fileName, folderName] = uigetfile(...
-            {'*.mat', 'KymoRod Data Files';...
-            '*-kymo.txt', 'KymoRod Info Files';...
-            '*.*','All Files' }, ...
-            'Select KymoRod Analysis');
-        
-        % check if cancel button was selected
-        if fileName == 0
-            return;
-        end
-        
-        app = get(hObject, 'UserData');
-        app.logger.info('KymoRodGUI.loadAppDataMenuCallback', ...
-            ['Open saved analysis from file ' fullfile(folderName, fileName)]);
-        
-        % depending in file format, either use binary reading, or read parameters
-        % from a text file
-        [path, name, ext] = fileparts(fileName); %#ok<ASGLU>
-        if strcmp(ext, '.mat')
-            readAppData_mat(this, fullfile(folderName, fileName));
-            
-        elseif strcmp(ext, '.txt')
-            newApp = KymoRod.read(fullfile(folderName, fileName));
-            setProcessingStep(newApp, ProcessingStep.Selection);
-            
-            % in case of reading from a text, binary data are not saved and need to
-            % be recomputed
-            SelectInputImagesDialog(newApp);
-            
-        else
-            msg = sprintf('Can not manage file with extension %s', ext);
-            h = errordlg(msg, 'Loading Error', 'modal');
-            uiwait(h);
-        end
-    end
-    
-    function readAppData_mat(this, filePath) %#ok<INUSL>
-        % read KymoRod data from a mat file
-        
-        % try to read the app from selected file
-        warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
         try
-            newApp = KymoRod.load(filePath);
+            % try to load the data
+            app = loadKymoRodAppData(this);
+            
         catch ME
+            logger = log4m.getLogger;
+            logger.error(mfilename, ME.message);
             h = errordlg(ME.message, 'Loading Error', 'modal');
             uiwait(h);
             return;
         end
         
-        % ensure input directory is valid, otherwise, ask for a new one.
-        if exist(newApp.inputImagesDir, 'dir') == 0
-            disp(['Could not find input dir: ' newApp.inputImagesDir]);
-            
-            msg = sprintf('Could not find input directory:\n%s', newApp.inputImagesDir);
-            h = errordlg(msg, 'Loading Error', 'modal');
-            uiwait(h);
-            
-            % open a dialog to select input image folder, restricting type to images
-            [fileName, folderName] = uigetfile(...
-                {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
-                '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
-                '*.jpg;', 'JPEG images (*.jpg)';...
-                '*.*','All Files' }, ...
-                'Select Input Folder', '*.*');
-            
-            % check if cancel button was selected
-            if fileName == 0
-                return;
-            end
-            
-            % let us try with the new folder...
-            newApp.inputImagesDir = folderName;
+        if isempty(app)
+            return;
         end
         
-        % assumes only 'complete' analyses can be saved, and call the dialog for
-        % showing results
-        switch getProcessingStep(newApp)
-            case {ProcessingStep.None, ProcessingStep.Selection}
-                SelectInputImagesDialog(newApp);
-                
-            case ProcessingStep.Threshold
-                ChooseThresholdDialog(newApp);
-                
-            case ProcessingStep.Contour
-                SmoothContourDialog(newApp);
-                
-            case ProcessingStep.Skeleton
-                ValidateSkeleton(newApp);
-                
-            case ProcessingStep.Kymograph
-                DisplayKymograph(newApp);
-                
-            otherwise
-                SelectInputImagesDialog(newApp);
-        end
+        displayProcessingDialog(this, app);
     end
     
     function saveAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>

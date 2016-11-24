@@ -82,86 +82,24 @@ function loadAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEF
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% open a dialog to select input image folder, restricting type to images
-[fileName, folderName] = uigetfile(...
-    {'*.mat', 'KymoRod Data Files';...
-    '*-kymo.txt', 'KymoRod Info Files';...
-    '*.*','All Files' }, ...
-    'Select KymoRod Analysis');
-      
-% check if cancel button was selected
-if fileName == 0
+close(handles.mainFigure);
+
+gui = KymoRodGui.getInstance();
+try
+    app = loadKymoRodAppData(gui);
+    
+catch ME
+    logger = log4m.getLogger;
+    logger.error(mfilename, ME.message);
+    h = errordlg(ME.message, 'Loading Error', 'modal');
+    uiwait(h);
+    KymoRodStartupDialog();
     return;
 end
 
-close(handles.mainFigure);
-
-% depending in file format, either use binary reading, or read parameters
-% from a text file
-[path, name, ext] = fileparts(fileName); %#ok<ASGLU>
-if strcmp(ext, '.mat')
-    warning('off', 'MATLAB:load:cannotInstantiateLoadedVariable');
-    try
-        logger = log4m.getLogger;
-        logger.info('KymoRodStartupDialog', ...
-                ['Open analysis from file: ' fullfile(folderName, fileName)]);
-        app = KymoRod.load(fullfile(folderName, fileName));
-        
-    catch ME
-        logger = log4m.getLogger;
-        logger.error('KymoRodStartupDialog', ME.message);
-        h = errordlg(ME.message, 'Loading Error', 'modal');
-        uiwait(h);
-        KymoRodStartupDialog();
-        return;
-    end
-    
-    % ensure input directory is valid, otherwise, ask for a new one.
-    while exist(app.inputImagesDir, 'dir') == 0
-        disp(['Could not find input dir: ' app.inputImagesDir]);
-        
-        msg = sprintf('Could not find input directory:\n%s', ext);
-        h = errordlg(msg, 'Loading Error', 'modal');
-        uiwait(h);
-        
-        % open a dialog to select input image folder, restricting type to images
-        [fileName, folderName] = uigetfile(...
-            {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
-            '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
-            '*.jpg;', 'JPEG images (*.jpg)';...
-            '*.*','All Files' }, ...
-            'Select Input Folder', ...
-            '*.*');
-        
-        % check if cancel button was selected
-        if fileName == 0
-            return;
-        end
-        
-        % let us try with the new folder...
-        app.inputImagesDir = folderName;
-    end
-    
-    % assumes only 'complete' analyses can be saved, and call the dialog for
-    % showing results
-    DisplayKymograph(app);
-    
-elseif strcmp(ext, '.txt')
-    logger = log4m.getLogger;
-    logger.info('KymoRodStartupDialog', ...
-        ['Open analysis from file: ' fullfile(folderName, fileName)]);
-    app = KymoRod.read(fullfile(folderName, fileName));
-    setProcessingStep(app, ProcessingStep.Selection);
-    
-    % in case of reading from a text, binary data are not saved and need to
-    % be recomputed
-    SelectInputImagesDialog(app);
-
-else
-    msg = sprintf('Can not manage file with extension %s', ext);
-    h = errordlg(msg, 'Loading Error', 'modal');
-    uiwait(h);
-end
+% assumes only 'complete' analyses can be saved, and call the dialog for
+% showing results
+displayProcessingDialog(gui, app);
 
 
 % --- Executes on button press in newAnalysisButton.
