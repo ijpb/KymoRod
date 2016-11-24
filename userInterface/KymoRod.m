@@ -907,6 +907,9 @@ classdef KymoRod < handle
             % 
             % deprecated: use showCurrentKymograph instead
             
+            warning('KymoRod:showKymoGraph', ...
+                'KymoRod.showKymoGraph() is deprecated, use showCurrentKymograph instead');
+            
             if nargin < 2
                 type = 'elongation';
             end
