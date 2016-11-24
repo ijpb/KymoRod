@@ -122,11 +122,10 @@ set(handles.frameIndexSlider, 'SliderStep', sliderStep);
 % display threshold of current frame
 displayCurrentFrameThreshold(handles);
 
-% compute binarised image
+% display current binarised image
 seg = getSegmentedImage(app, frameIndex);
 axis(handles.currentFrameAxes);
-imshow(seg);
-
+handles.imageHandle = imshow(seg);
 
 guidata(hObject, handles);
 
@@ -169,18 +168,18 @@ end
 set(handles.currentFrameThresholdLabel, 'String', string);
 
 
-function displayCurrentThresholdedImage(handles)
+function updateSegmentationDisplay(handles)
 % display threshold information of current frame
 
 % get app data
 app = getappdata(0, 'app');
 
+% compute/get current segmentation
 frameIndex = app.currentFrameIndex;
-
 seg = getSegmentedImage(app, frameIndex);
-axis(handles.currentFrameAxes);
-imshow(seg);
 
+% update display
+set(handles.imageHandle, 'CData', seg);
 
 
 %% Menu
@@ -193,7 +192,6 @@ function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 delete(gcf);
 KymoRodMenuDialog(app);
-
 
 
 %% Display of current frame
@@ -217,7 +215,7 @@ setappdata(0, 'app', app);
 % bin = getSegmentedImage(app, frameIndex);
 % axes(handles.currentFrameAxes)
 % imshow(bin);
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 
 % display threshold level of current image
 displayCurrentFrameThreshold(handles);
@@ -262,7 +260,7 @@ switch get(handles.imageSmoothingMethodPopup, 'Value')
         app.settings.imageSmoothingMethod = 'gaussian';
 end
 
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -298,7 +296,7 @@ set(hObject, 'String', num2str(radius));
 
 app.settings.imageSmoothingRadius = radius;
 
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 
 
 
@@ -350,7 +348,7 @@ computeThresholdValues(app);
 setappdata(0, 'app', app);
 
 % update display with current info
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
@@ -380,7 +378,7 @@ app.logger.info('ChooseThresholdDialog.m', ...
 app.settings.thresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 
 % display threshold of current frame
 displayCurrentFrameThreshold(handles);
@@ -523,7 +521,7 @@ displayCurrentFrameThreshold(handles);
 set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 % Update display of binarized image
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 
 % re-enable widgets
 set(handles.updateAutomaticThresholdButton, 'Enable', 'on');
@@ -578,9 +576,6 @@ val = round(get(handles.manualThresholdSlider, 'Value'));
 app = getappdata(0, 'app');
 frameIndex   = app.currentFrameIndex;
 
-% bin = getImage(app, frameIndex) > val;
-% imshow(handles.currentFrameAxes, bin);
-
 nImages = frameNumber(app);
 thresholdValues = ones(nImages, 1) * val;
 
@@ -589,7 +584,7 @@ setProcessingStep(app, ProcessingStep.Threshold);
 setappdata(0, 'app', app);
 
 % update widgets
-displayCurrentThresholdedImage(handles);
+updateSegmentationDisplay(handles);
 set(handles.manualThresholdValueLabel, 'String', ...
     num2str(thresholdValues(frameIndex)));
 displayCurrentFrameThreshold(handles);
