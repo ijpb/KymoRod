@@ -44,7 +44,7 @@ E = zeros(length(x1), 2);
 a = 0;
 
 % apply Particle Image Velocimetry on each point of the skeleton
-for k = 1:100:length(x1)
+for k = 1:length(x1)
 	% image indices of current point
     i = y1(k);
     j = x1(k);
