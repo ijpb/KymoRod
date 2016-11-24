@@ -76,6 +76,7 @@ methods
         
         % check if cancel button was selected
         if fileName == 0
+            app = [];
             return;
         end
         
@@ -109,6 +110,7 @@ methods
             
             % check if cancel button was selected
             if fileName == 0
+                app = [];
                 return;
             end
             
@@ -244,6 +246,11 @@ methods
             return;
         end
         
+        % delete figure containing calling object
+        hFigure = KymoRodGui.findParentFigure(hObject);
+        close(hFigure);
+
+        % display appropriate dialog for the application data
         displayProcessingDialog(this, app);
     end
     
