@@ -1,46 +1,53 @@
-classdef KymoRodGui < handle
+classdef (Sealed) KymoRodGui < handle
 %KYMORODGUI GUI Manager for the KymoRod application
 %
 %   The goal of this class is to provide several facility methods, such as
 %   methods for creating figure menus.
+%   
+%   The KymoRodGui is a singleton, and can be shared byu several
+%   application instances. To get the unique instance:
+%   GUI = KymoRodGui.getInstance();
 %
 %   See also
 %
 
 % ------
 % Author: David Legland
-% e-mail: david.legland@nantes.inra.fr
+% e-mail: david.legland@inra.fr
 % Created: 2015-07-23,    using Matlab 8.5.0.197613 (R2015a)
 % Copyright 2015 INRA - BIA-BIBS.
 
 
 %% Properties
 properties
-%     app;
 
 end % end properties
 
 
 %% Constructor
-methods
+methods (Access = private)
     function this = KymoRodGui(varargin)
     % Constructor for KymoRodGui class
     % 
     % Does not require any argument.
     %
-    
-    
-%         if nargin ~= 1 || ~isa(varargin{1}, 'KymoRod')
-%             error('Requires an object of class KymoRod as input');
-%         end
-%         
-%         this.app = varargin{1};
+  
     end
 
 end % end constructors
 
 methods (Static)
+    function singleObj = getInstance
+        % Return the current instance if KymoRodGui, or create one
+        persistent localObj
+        if isempty(localObj) || ~isvalid(localObj)
+            localObj = KymoRodGui();
+        end
+        singleObj = localObj;
+    end
+   
     function hFigure = findParentFigure(hObject)
+        % Return the figure object containing the hObject widget
         while ~isempty(hObject) && ~strcmp(get(hObject, 'Type'), 'figure')
             hObject = get(hObject, 'Parent');
         end

@@ -67,7 +67,7 @@ app.logger.info('ValidateSkeletonDialog.m', ...
     'Open dialog: ValidateSkeletonDialog');
 
 % setup figure menu
-gui = KymoRodGui(app);
+gui = KymoRodGui.getInstance();
 buildFigureMenu(gui, hObject, app);
 
 % get info on frames

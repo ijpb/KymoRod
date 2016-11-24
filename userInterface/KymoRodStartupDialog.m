@@ -109,8 +109,7 @@ if strcmp(ext, '.mat')
         
     catch ME
         logger = log4m.getLogger;
-        logger.error('KymoRodStartupDialog', ...
-                ME.message);
+        logger.error('KymoRodStartupDialog', ME.message);
         h = errordlg(ME.message, 'Loading Error', 'modal');
         uiwait(h);
         KymoRodStartupDialog();

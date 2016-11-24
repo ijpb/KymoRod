@@ -69,7 +69,7 @@ app.logger.info('ChooseThresholdDialog.m', ...
 setappdata(0, 'app', app);
 
 % setup figure menu
-gui = KymoRodGui(app);
+gui = KymoRodGui.getInstance();
 buildFigureMenu(gui, hObject, app);
 
 % retrieve app data

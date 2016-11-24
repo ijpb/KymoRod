@@ -63,7 +63,7 @@ else
 end
 
 % setup figure menu
-gui = KymoRodGui(app);
+gui = KymoRodGui.getInstance();
 buildFigureMenu(gui, hObject, app);
 
 % compute number of frames that can be displayed
