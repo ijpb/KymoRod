@@ -75,8 +75,11 @@ methods
         % Populate the "Edit" menu entry
         editMenu = uimenu('parent', hFigure, 'Label', 'Edit');
         uimenu('parent', editMenu, ...
-            'Label', 'Processing Step Menu', ...
+            'Label', 'Processing Step Menu...', ...
             'Callback', @this.mainMenuCallback);
+        uimenu('parent', editMenu, ...
+            'Label', 'Print KymoRod Settings', ...
+            'Callback', @this.printSettingsCallback);
         
         % Populate the "Help" menu entry
         helpMenu = uimenu('parent', hFigure, 'Label', 'Help');
@@ -242,17 +245,23 @@ methods
         write(this.app, filePath);
     end
     
+    function quitMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD,INUSL>
+        hFig = KymoRodGui.findParentFigure(hObject);
+        delete(hFig);
+    end
+    
+    
     function mainMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
         KymoRodMenuDialog(this.app);
     end
     
-    function quitMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD,INUSL>
-        hFig = KymoRodGui.findParentFigure(hObject);
-        delete(hFig);
+    function printSettingsCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+        disp('KymoRod Settings:');
+        disp(this.app.settings);
     end
-
+    
     function displayLogFilePathMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
         path = this.app.logger.fullpath;
         disp('Path to log file:');
