@@ -70,7 +70,7 @@ setappdata(0, 'app', app);
 
 % setup figure menu
 gui = KymoRodGui(app);
-buildFigureMenu(gui, hObject);
+buildFigureMenu(gui, hObject, app);
 
 % retrieve app data
 frameIndex = app.currentFrameIndex;
@@ -474,39 +474,35 @@ function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles) %#
 
 % extract application data
 app     = getappdata(0, 'app');
-nb      = frameNumber(app);
 
-addThres = get(handles.autoThresholdValueEdit, 'String');
-start   = get(handles.autoThresholdStartEdit, 'String');
-fin     = get(handles.autoThresholdFinalEdit, 'String');
+addThres = strtrim(get(handles.autoThresholdValueEdit, 'String'));
+start   = strtrim(get(handles.autoThresholdStartEdit, 'String'));
+fin     = strtrim(get(handles.autoThresholdFinalEdit, 'String'));
 
+% check input validity
+if isempty(start) || isempty(fin)
+    return;
+end
+if addThres == 0
+    warning('Select a value to add to the current threshold');
+    return;
+end
+
+% print info into log file
 app.logger.info('ChooseThresholdDialog.m', ...
     sprintf('add threshold value %s to frames %s to %s', ...
     addThres, start, fin));
 
-if length(start) ~= 0    %#ok isempty does'nt work i dont know why
-    start = str2num(start);%#ok
-else
-    start = 1;
-end
-if length(fin) ~= 0    %#ok isempty does'nt work i dont know why
-    fin = str2num(fin);%#ok
-else
-    fin = nb;
-end
+% convert to numeric values
+start   = str2double(start);
+fin     = str2double(fin);
+addThres = str2double(addThres);
 
-if addThres == 0
-    warning('Select a value to add at the current threshold');
-    return;
-end
-
-addThres = str2num(addThres);%#ok
-
-if isempty(fin) || isempty(start) || isempty(addThres)
+% check input validity
+if isempty(start) || isempty(fin) || isempty(addThres)
     warning('Set a numeric value for the edit text');
     return;
 end
-
 if start > fin
     warning('The first value must be smaller than the second value');
     return;

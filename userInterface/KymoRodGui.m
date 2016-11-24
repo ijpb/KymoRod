@@ -16,7 +16,8 @@ classdef KymoRodGui < handle
 
 %% Properties
 properties
-    app;
+%     app;
+
 end % end properties
 
 
@@ -24,12 +25,16 @@ end % end properties
 methods
     function this = KymoRodGui(varargin)
     % Constructor for KymoRodGui class
+    % 
+    % Does not require any argument.
+    %
     
-        if nargin ~= 1 || ~isa(varargin{1}, 'KymoRod')
-            error('Requires an object of class KymoRod as input');
-        end
-        
-        this.app = varargin{1};
+    
+%         if nargin ~= 1 || ~isa(varargin{1}, 'KymoRod')
+%             error('Requires an object of class KymoRod as input');
+%         end
+%         
+%         this.app = varargin{1};
     end
 
 end % end constructors
@@ -45,13 +50,13 @@ end
 
 %% Menu Managment methods
 methods
-    function buildFigureMenu(this, hFigure)
+    function buildFigureMenu(this, hFigure, app)
         % creates standardized menu for a figure
         
         % remove default menu bar
         set(hFigure, 'MenuBar', 'none');
        
-        % remove previously created menus
+        % remove previously created menus, if any
         children = get(hFigure, 'children');
         inds = strcmp(get(children, 'type'), 'uimenu');
         delete(children(inds));
@@ -60,43 +65,52 @@ methods
         fileMenu = uimenu('parent', hFigure, 'Label', 'Files');
         uimenu('parent', fileMenu, ...
             'Label', 'New Analysis', ...
+            'UserData', app, ...
             'Callback', @this.newAnalysisMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Load...', ...
+            'UserData', app, ...
             'Callback', @this.loadAppDataMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Save As...', ...
+            'UserData', app, ...
             'Callback', @this.saveAppDataMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Quit', ...
             'Separator', 'On', ...
+            'UserData', app, ...
             'Callback', @this.quitMenuCallback);
         
         % Populate the "Edit" menu entry
         editMenu = uimenu('parent', hFigure, 'Label', 'Edit');
         uimenu('parent', editMenu, ...
             'Label', 'Processing Step Menu...', ...
+            'UserData', app, ...
             'Callback', @this.mainMenuCallback);
         uimenu('parent', editMenu, ...
             'Label', 'Print KymoRod Settings', ...
+            'UserData', app, ...
             'Callback', @this.printSettingsCallback);
         
         % Populate the "Help" menu entry
         helpMenu = uimenu('parent', hFigure, 'Label', 'Help');
         uimenu('parent', helpMenu, ...
             'Label', 'Display Log File Path', ...
+            'UserData', app, ...
             'Callback', @this.displayLogFilePathMenuCallback);
         uimenu('parent', helpMenu, ...
             'Label', 'Show Log File', ...
+            'UserData', app, ...
             'Callback', @this.showLogFileMenuCallback);
         uimenu('parent', helpMenu, ...
             'Separator', 'On', ...
             'Label', 'About...', ...
+            'UserData', app, ...
             'Callback', @this.aboutMenuCallback);
         
     end
     
-    function newAnalysisMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function newAnalysisMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         % creates a new analysis 
         
         % clear current figure
@@ -104,7 +118,8 @@ methods
         delete(hFig);
         
         % create new empty application data structure, using same settings
-        settings = this.app.settings;
+        app = get(hObject, 'UserData');
+        settings = app.settings;
         newApp = KymoRod(settings);
         
         % initialize with default directory
@@ -130,7 +145,8 @@ methods
             return;
         end
         
-        this.app.logger.info('KymoRodGUI.loadAppDataMenuCallback', ...
+        app = get(hObject, 'UserData');
+        app.logger.info('KymoRodGUI.loadAppDataMenuCallback', ...
             ['Open saved analysis from file ' fullfile(folderName, fileName)]);
         
         % depending in file format, either use binary reading, or read parameters
@@ -215,7 +231,7 @@ methods
         end
     end
     
-    function saveAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function saveAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         disp('Saving...');
         
         % To open the directory who the user want to save the data
@@ -231,18 +247,19 @@ methods
         filePath = fullfile(pathName, [baseName '.mat']);
         
         % temporarily remove image list from app data
-        imgTemp = this.app.imageList;
-        this.app.imageList = {};
+        app = get(hObject, 'UserData');
+        imgTemp = app.imageList;
+        app.imageList = {};
 
         % save full application data as mat file, without image data
-        save(this.app, filePath);
+        save(app, filePath);
         
         % replace image list within app data
-        this.app.imageList = imgTemp;
+        app.imageList = imgTemp;
         
         % save all informations of experiment, to retrieve them easily
         filePath = fullfile(pathName, [baseName '-kymorod.txt']);
-        write(this.app, filePath);
+        write(app, filePath);
     end
     
     function quitMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD,INUSL>
@@ -251,28 +268,32 @@ methods
     end
     
     
-    function mainMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function mainMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+        app = get(hObject, 'UserData');
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
-        KymoRodMenuDialog(this.app);
+        KymoRodMenuDialog(app);
     end
     
-    function printSettingsCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function printSettingsCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+        app = get(hObject, 'UserData');
         disp('KymoRod Settings:');
-        disp(this.app.settings);
+        disp(app.settings);
     end
     
-    function displayLogFilePathMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
-        path = this.app.logger.fullpath;
+    function displayLogFilePathMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+        app = get(hObject, 'UserData');
+        path = app.logger.fullpath;
         disp('Path to log file:');
         disp(path);
     end
 
-    function showLogFileMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function showLogFileMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         % Display the content of the log file in a new figure
 
         % try to open log file
-        path = this.app.logger.fullpath;
+        app = get(hObject, 'UserData');
+        path = app.logger.fullpath;
         [f, errMsg] = fopen(path, 'rt');
         if f == -1
             errordlg(errMsg, 'Show Log File Error', 'modal');

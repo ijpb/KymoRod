@@ -72,7 +72,7 @@ app.logger.info('SmoothContourDialog.m', ...
 
 % setup figure menu
 gui = KymoRodGui(app);
-buildFigureMenu(gui, hObject);
+buildFigureMenu(gui, hObject, app);
 
 % retrieve app data
 nFrames = frameNumber(app);

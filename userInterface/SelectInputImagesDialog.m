@@ -65,7 +65,7 @@ app.logger.info('SelectInputImagesDialog.m', ...
 
 % setup figure menu
 gui = KymoRodGui(app);
-buildFigureMenu(gui, hObject);
+buildFigureMenu(gui, hObject, app);
 
 % some gui listener adjustments
 set(handles.inputImagesPanel, 'SelectionChangeFcn', ...

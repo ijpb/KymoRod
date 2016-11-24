@@ -64,7 +64,7 @@ end
 
 % setup figure menu
 gui = KymoRodGui(app);
-buildFigureMenu(gui, hObject);
+buildFigureMenu(gui, hObject, app);
 
 % compute number of frames that can be displayed
 nFrames = frameNumber(app);
