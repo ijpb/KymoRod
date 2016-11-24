@@ -78,9 +78,16 @@ buildFigureMenu(gui, hObject);
 nFrames = frameNumber(app);
 index   = app.currentFrameIndex;
 
-% initialize smoothing value
+% compute the max value for smoothing 
+smoothMaxValue = 500;
+
+% initialize slider for smoothing value
 smooth  = app.settings.contourSmoothingSize;
+set(handles.smoothValueSlider, 'Min', 0);
+set(handles.smoothValueSlider, 'Max', smoothMaxValue);
 set(handles.smoothValueSlider, 'Value', smooth);
+steps = min([1 10] ./ smoothMaxValue, .5);
+set(handles.smoothValueSlider, 'SliderStep', steps);
 set(handles.smoothValueEdit, 'String', num2str(smooth));
 
 % initialize current frame index slider
