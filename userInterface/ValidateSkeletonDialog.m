@@ -148,12 +148,8 @@ if isempty(app.skeletonList)
     set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 end
 
-
 % Update handles structure
 guidata(hObject, handles);
-
-% UIWAIT makes Skeleton wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -168,7 +164,7 @@ varargout{1} = handles.output;
 
 
 % --------------------------------------------------------------------
-function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok % To save the 
+function mainFrameMenuItem_Callback(hObject, eventdata, handles)%#ok 
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -183,9 +179,6 @@ function currentFrameSlider_Callback(hObject, eventdata, handles)%#ok
 % hObject    handle to currentFrameSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') retkurns position osf slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 % disable slider to avoid multiple calls
 set(handles.currentFrameSlider, 'Enable', 'Off');

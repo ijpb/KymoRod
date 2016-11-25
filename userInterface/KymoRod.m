@@ -185,7 +185,6 @@ classdef KymoRod < handle
                     otherwise
                         error(['Unrecognised processing step: ' newStep]);
                 end
-                
             end
             
             this.logger.debug('KymoRod.setProcessingStep', ...
@@ -758,7 +757,7 @@ classdef KymoRod < handle
             % allocate memory for result
             displList = cell(nFrames-step, 1);
             
-            parfor_progress(nFrames);
+            parfor_progress(nFrames - step);
             parfor i = 1:nFrames - step
                 % index of next skeleton
                 i2 = i + step;
@@ -780,10 +779,7 @@ classdef KymoRod < handle
             %
             % assumes the class field 'displacementList' is already
             % initialized to the required size.
-
-%             assert(i <= length(this.displacementList), ...
-%                 'Class field ''displacementList'' is not correctly initialized');
-            
+       
             % local data
             SK1 = this.skeletonList{i};
             SK2 = this.skeletonList{i2};
@@ -797,23 +793,25 @@ classdef KymoRod < handle
             L = 4 * ws * this.settings.pixelSize / 1000;
                 
             % check if the two skeletons are large enough
-            if length(SK1) > 2*80 && length(SK2) > 2*80
-                E = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, L);
-                
-                % check result is large enough
-                if size(E, 1) == 1
-                    this.logger.warn('KymoRod.computeFrameDisplacement', ...
-                        sprintf('Displacement from frame %d to frame %d resulted in small array', i, i2));
-                    E = [1 0;1 1];
-                end
-            else
+            if length(SK1) <= 2*80 || length(SK2) <= 2*80
                 % case of too small skeletons
-                this.logger.warn('KymoRod.computeFrameDisplacement', ...
-                    sprintf('Skeletons %d or %d has not enough vertices', i, i2));
-                E = [1 0; 1 1];
+                msg = sprintf('Skeletons %d or %d has not enough vertices', i, i2);
+                this.logger.warn('KymoRod.computeFrameDisplacement', msg);
+                warning(msg); %#ok<SPWRN>
+                displ = [1 0; 1 1];
+                return;
             end
             
-            displ = E;
+            displ = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, L);
+            
+            % check result is large enough
+            if size(displ, 1) == 1
+                msg = sprintf('Displacement from frame %d to frame %d resulted in small array', i, i2);
+                this.logger.warn('KymoRod.computeFrameDisplacement', msg);
+                warning(msg); %#ok<SPWRN>
+                displ = [1 0;1 1];
+                return;
+            end
         end
         
         function computeElongations(this)
