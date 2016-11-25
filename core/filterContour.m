@@ -2,6 +2,7 @@ function CTf = filterContour(CT, a, sym)
 % FILTERCONTOUR Smooth the contour depending on its global shape
 %
 % CTF = filterContour(CT, WS, TYPE)
+%   (Rewritten from CTfilter function)
 %
 % CT: 	contour n-by-2 array of double
 % WS: 	length of smoothing window
