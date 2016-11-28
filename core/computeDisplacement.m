@@ -104,7 +104,7 @@ for k = 1:length(x1)
              
         % compute displacement to current skeleton pixel of skel2, as the
         % difference between curvilinear abscissa
-        resCorr(l, 1) = S2(inds(l)) - S1pix(k);
+        resCorr(l, 1) = S2pix(inds(l)) - S1pix(k);
         
         % compute image correlation between the two thumbnails.
         resCorr(l, 2) = sum(w1 .* w2) / sqrt(sum(w1 .* w1) * sum(w2 .* w2));

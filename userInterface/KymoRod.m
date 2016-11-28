@@ -631,6 +631,7 @@ classdef KymoRod < handle
                 {'Computing skeletons from contours,', 'please wait...'}, ...
                 'Skeletonization');
             
+            t0 = tic;
             parfor_progress(nFrames);
             for i = 1:nFrames
                 % extract current contour
@@ -668,6 +669,9 @@ classdef KymoRod < handle
                 parfor_progress;
             end
             parfor_progress(0);
+            
+            t1 = toc(t0);
+            disp(sprintf('elapsed time: %6.2f mn', t1 / 60)); %#ok<DSPS>
             
             if ishandle(hDialog)
                 close(hDialog);
@@ -777,7 +781,10 @@ classdef KymoRod < handle
             % Computes displacement between frames i and i2, and update
             % corresponding displacment.
             %
-            % assumes the class field 'displacementList' is already
+            % Usage:
+            % DISPL = computeFrameDisplacement(KYMO, IND1, IND2);
+            %
+            % Assumes the class field 'displacementList' is already
             % initialized to the required size.
        
             % local data
@@ -816,16 +823,27 @@ classdef KymoRod < handle
         
         function computeElongations(this)
             % Compute elongation curves for all skeleton curves
+            %
+            %   computeElongations(KYMO)
+            %
 
             % Elongation
             disp('Elongation');
             this.logger.info('KymoRod.computeElongations', ...
                 'Compute elongations');
 
-            E       = this.displacementList;
-            ws2     = this.settings.windowSize2;
-            step    = this.settings.displacementStep;
-            [Elg, E2] = computeElongationAll(E, this.settings.timeInterval, step, ws2);
+            % initialize results
+            n = length(this.displacementList);
+            E2 = cell(n, 1);
+            Elg = cell(n, 1);
+
+            % iterate over displacement curves
+            parfor_progress(n);
+            parfor i = 1:n
+                [Elg{i}, E2{i}] = computeFrameElongation(this, i);
+                parfor_progress;
+            end
+            parfor_progress(0);
 
             % store results
             this.smoothedDisplacementList = E2;
@@ -838,6 +856,51 @@ classdef KymoRod < handle
             this.elongationImage = reconstruct_Elg2(nx, Elg);
 
             setProcessingStep(this, ProcessingStep.Elongation);
+        end
+        
+        function [Elg, E2] = computeFrameElongation(this, index)
+            % Compute elongation curve for a specific frame
+            % 
+            % [ELG, E2] = computeFrameElongation(KYMO, INDEX)
+            %   ELG: array of elongation
+            %   E2:  smoothed displacement for the frame
+            
+            % get current array of displacement
+            E2 = getFilteredDisplacement(this, index);
+            
+            % check validity of size
+            if length(E2) <= 20
+                E2 = [0 0;1 0];
+                Elg = [0 0;1 0];
+                return;
+            end
+            
+            % get some settings
+            t0      = this.settings.timeInterval;
+            step    = this.settings.displacementStep;
+            ws2     = this.settings.windowSize2;
+
+            % Compute elongation by spatial derivation of the displacement
+            Elg = computeElongation(E2, t0, step, ws2);
+        end
+        
+        function E2 = getFilteredDisplacement(this, index)
+            % Smooth the curve and remove errors using kernel smoothers
+            %
+            % E2 = filterFrameDisplacement(KYMO, INDEX);
+            %
+            
+            % get current array of displacement
+            E = this.displacementList{index};
+            
+            % check validity of size
+            if length(E) <= 20
+                E2 = [0 0;1 0];
+                return;
+            end
+            
+            % call the computational function
+            E2 = filterDisplacement(E);
         end
         
         function img = getKymographMatrix(this)
