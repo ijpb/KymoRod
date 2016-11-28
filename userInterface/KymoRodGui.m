@@ -210,10 +210,6 @@ methods
     function newAnalysisMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         % creates a new analysis 
         
-        % clear current figure
-        hFig = KymoRodGui.findParentFigure(hObject);
-        delete(hFig);
-        
         % create new empty application data structure, using same settings
         app = get(hObject, 'UserData');
         settings = app.settings;
@@ -222,6 +218,10 @@ methods
         % initialize with default directory
         path = fileparts(mfilename('fullpath'));
         newApp.inputImagesDir = fullfile(path, '..', '..', '..', 'sampleImages', '01');
+        
+        % clear current figure
+        hFig = KymoRodGui.findParentFigure(hObject);
+        delete(hFig);
         
         % open first dialog of application
         SelectInputImagesDialog(newApp);
