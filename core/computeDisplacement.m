@@ -37,10 +37,24 @@ dim = size(img1);
 [x1, y1, S1pix] = snapFunctionToPixels(img1, skel1, S1);
 [x2, y2, S2pix] = snapFunctionToPixels(img2, skel2, S2);
 
+
+% process only skeleton points that are not too close from border
+inds = (x1 > ws) & (y1 > ws) & (x1 < dim(2)-ws) & (y1 < dim(1)-ws);
+x1 = x1(inds);
+y1 = y1(inds);
+S1pix = S1pix(inds);
+
+% process only skeleton points that are not too close from border
+inds = (x2 > ws) & (x2 < dim(2)-ws) & (y2 > ws) & (y2 < dim(1)-ws);
+x2 = x2(inds);
+y2 = y2(inds);
+S2pix = S2pix(inds);
+
+
 % allocate memory for result
 E = zeros(length(x1), 2);
 
-% counter for number of computed correlations
+% counter for the number of computed correlations
 a = 0;
 
 % apply Particle Image Velocimetry on each point of the skeleton
@@ -49,11 +63,6 @@ for k = 1:length(x1)
     i = y1(k);
     j = x1(k);
    
-    % process only skeleton points that are not too close from border
-    if i <= ws || j <= ws || i >= (dim(1)-ws) || j >= (dim(2)-ws)
-        continue;
-    end
-    
     % get small image around current point of first skeleton
     w1 = double(img1(i-ws:i+ws, j-ws:j+ws));
     
@@ -69,29 +78,23 @@ for k = 1:length(x1)
     % identify positions in second image with similar curvilinear abscissa
     % TODO: keep second condition?
     inds = find( abs(S2pix - S1pix(k)) < L & S2pix > 0);
-    x2k = x2(inds);
-    y2k = y2(inds);
-    S2k = S2pix(inds);
+%     inds = find( abs(S2pix - S1pix(k)) < L );
 
-    % process only neighbor points that are not too close from border
-    inds = (x2k > ws) & (x2k < dim(2)-ws) & (y2k > ws) & (y2k < dim(1)-ws);
-    x2k = x2k(inds);
-    y2k = y2k(inds);
-    S2k = S2k(inds);
-    
     % check degenerate cases
-    if isempty(x2k)
+    if isempty(inds)
         error('Could not find enough points in second skeleton close to point (%d,%d)', j, i);
     end
     
-    % initialze result of image to image correlation
-    resCorr = zeros(length(x2k), 2);
+    % initialize result of image to image correlation
+    % first column contains difference in curvilinear coordinate
+    % second column contains correlation coefficient
+    resCorr = zeros(length(inds), 2);
     
     % iterate over pixels of second skeleton close enough from current pixel
-    for l = 1:length(x2k)
+    for l = 1:length(inds)
         % indices of positions in second image
-        u = y2k(l);
-        v = x2k(l);
+        u = y2(inds(l));
+        v = x2(inds(l));
         
         % get small image around current point in second skeleton
         w2 = double(img2(u-ws:u+ws, v-ws:v+ws));
@@ -101,7 +104,7 @@ for k = 1:length(x1)
              
         % compute displacement to current skeleton pixel of skel2, as the
         % difference between curvilinear abscissa
-        resCorr(l, 1) = S2k(l) - S1pix(k);
+        resCorr(l, 1) = S2(inds(l)) - S1pix(k);
         
         % compute image correlation between the two thumbnails.
         resCorr(l, 2) = sum(w1 .* w2) / sqrt(sum(w1 .* w1) * sum(w2 .* w2));
@@ -117,6 +120,6 @@ for k = 1:length(x1)
     E(a, 2) = resCorr(indMax,1);
 end
 
-% keep and sort relevant results
+% keep only relevant results, and sort them according to abscissa
 E = E(1:a, :);
 E = sortrows(E, 1);
