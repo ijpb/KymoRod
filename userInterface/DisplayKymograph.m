@@ -625,7 +625,8 @@ filePath = fullfile(pathName, [baseName '-curvature.csv']);
 writeTable(CE1', colNames, rowNames, filePath);
 
 filePath = fullfile(pathName, [baseName '-elongation.csv']);
-writeTable(ElgE1', colNames, rowNames(2:end-1), filePath);
+rowNames2 = rowNames(1:end-app.settings.displacementStep);
+writeTable(ElgE1', colNames, rowNames2, filePath);
 
 disp('Saving done');
 
