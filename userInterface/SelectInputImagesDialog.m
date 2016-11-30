@@ -209,7 +209,7 @@ function imageChannelPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 app = getappdata(0, 'app');
 stringArray = get(handles.imageChannelPopup, 'String');
 value = get(handles.imageChannelPopup, 'Value');
-channelString = strtrim(stringArray(value,:));
+channelString = char(strtrim(stringArray(value,:)));
 
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change image segmentation channel to ' channelString]);

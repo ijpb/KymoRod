@@ -22,7 +22,7 @@ function varargout = ChooseElongationSettingsDialog(varargin)
 
 % Edit the above text to modify the response to help ChooseElongationSettingsDialog
 
-% Last Modified by GUIDE v2.5 10-Mar-2015 13:57:01
+% Last Modified by GUIDE v2.5 30-Nov-2016 15:52:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -185,6 +185,38 @@ function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in displacementChannelPopupMenu.
+function displacementChannelPopupMenu_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+% hObject    handle to displacementChannelPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns displacementChannelPopupMenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from displacementChannelPopupMenu
+
+app = getappdata(0, 'app');
+stringArray = get(handles.displacementChannelPopupMenu, 'String');
+value = get(handles.displacementChannelPopupMenu, 'Value');
+channelString = lower(char(strtrim(stringArray(value,:))));
+
+app.logger.info(mfilename, ...
+    ['Change image channel for displacement to: ' channelString]);
+
+app.settings.displacementChannel = channelString;
+
+% --- Executes during object creation, after setting all properties.
+function displacementChannelPopupMenu_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+% hObject    handle to displacementChannelPopupMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
@@ -358,3 +390,4 @@ delete(gcf);
 
 disp('Display Kymographs');
 DisplayKymograph(app);
+
