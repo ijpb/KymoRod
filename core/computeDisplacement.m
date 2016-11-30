@@ -68,7 +68,7 @@ for k = 1:length(x1)
     
     % compute PIV only if variability in window is sufficient
     V = std2(w1);
-    if V <= 1
+    if V < .1
         continue;
     end
         
@@ -76,9 +76,8 @@ for k = 1:length(x1)
     w1 = w1(:) - mean(w1(:));
     
     % identify positions in second image with similar curvilinear abscissa
-    % TODO: keep second condition?
-    inds = find( abs(S2pix - S1pix(k)) < L & S2pix > 0);
-%     inds = find( abs(S2pix - S1pix(k)) < L );
+    inds = find( abs(S2pix - S1pix(k)) < L );
+%     inds = find( abs(S2pix - S1pix(k)) < L & S2pix > 0);
 
     % check degenerate cases
     if isempty(inds)
