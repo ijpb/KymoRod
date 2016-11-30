@@ -117,6 +117,10 @@ classdef KymoRod < handle
         
         % final result: elongation as a function of position and time
         elongationImage;
+        
+        % the value of curvilinear abscissa related to the graphical cursor
+        % (in user unit, default value is 0.
+        abscissaCursorValue = 0;
     end
     
     

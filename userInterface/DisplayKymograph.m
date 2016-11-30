@@ -223,6 +223,7 @@ updateCurrentFrameDisplay(handles);
 if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
     updateColoredSkeleton(handles);
 end
+updateCurvilinearMarker(handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -365,6 +366,44 @@ if isfield(handles, 'colorSkelHandle')
         'XData', xdata, 'YData', ydata, 'CData', colors);
 end
 
+
+function updateCurvilinearMarker(handles)
+
+app = getappdata(0, 'app');
+
+% coordinates of current skeleton
+frameIndex = app.currentFrameIndex;
+skeleton = getSkeleton(app, frameIndex);
+
+S = app.abscissaList{frameIndex};
+
+% keep value of cursor abscissa
+Smarker = app.abscissaCursorValue;
+
+% update position of curvilinear cursor
+if isfield(handles, 'imageMarker')
+    
+    % identify skeleton point corresponding to marker
+    ind = find(Smarker <= S, 1, 'first');
+    ind = max(ind, 1);
+    if isempty(ind)
+        % test returns empty if all absissa are below marker, 
+        % so we use last skeleton point
+        ind = size(skeleton, 1);
+    end
+    set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
+end
+
+if isfield(handles, 'kymographMarker')
+    posX = (frameIndex - 1) * (app.settings.timeInterval * app.indexStep);
+    nx   = app.settings.finalResultLength;
+    Smax = app.abscissaList{end}(end);
+    Smin = 0;
+    posY = Smarker * nx / (Smax - Smin);
+    set(handles.kymographMarker, 'XData', posX, 'YData', posY);
+end
+
+
 % --- Executes on mouse press over axes background.
 function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
 % hObject    handle to kymographAxes (see GCBO)
@@ -417,7 +456,10 @@ set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
 Smax = app.abscissaList{end}(end);
 Smin = 0;
 Smarker = (posY - Smin) * (Smax - Smin) / nx;
+% keep value of cursor abscissa
+app.abscissaCursorValue = Smarker;
 
+% identify skeleton point corresponding to marker
 S = app.abscissaList{frameIndex};
 ind = find(Smarker <= S, 1, 'first');
 ind = max(ind, 1);
