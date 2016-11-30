@@ -430,6 +430,8 @@ classdef KymoRod < handle
             % keep loaded data in app
             this.imageList = images;
             this.imageNameList = imageNames;
+            
+            setProcessingStep(this, ProcessingStep.Selection);
         end
     end
     
@@ -472,6 +474,17 @@ classdef KymoRod < handle
                     error(['Can not handle smoothing method: ' ...
                         this.settings.imageSmoothingMethod]);
             end
+        end
+        
+        function setThresholdValues(this, values)
+            % manually set up the values for threshold
+            
+            if length(values) ~= frameNumber(this)
+                error('The number of values should match number of frames');
+            end
+            
+            this.baseThresholdValues = values(:)';
+            setProcessingStep(this, ProcessingStep.Threshold);
         end
         
         function computeThresholdValues(this)
