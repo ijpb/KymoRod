@@ -506,23 +506,25 @@ classdef KymoRod < handle
                 {'Computing image thresholds,', 'please wait...'}, ...
                 'Segmentation');
             
+            % temporay array for storing result
+            baseValues = zeros(1, nImages);
+            
             % compute threshold values
             switch this.settings.thresholdMethod
                 case 'maxEntropy'
                     parfor_progress(nImages);
-                    for i = 1 : nImages
+                    parfor i = 1 : nImages
                         img = getSegmentableImage(this, i);
-                        this.baseThresholdValues(i) = maxEntropyThreshold(img);
+                        baseValues(i) = maxEntropyThreshold(img);
                         parfor_progress;
                     end
                     parfor_progress(0);
                     
                 case 'Otsu'
                     parfor_progress(nImages);
-                    for i = 1 : nImages
+                    parfor i = 1 : nImages
                         img = getSegmentableImage(this, i);
-                        this.baseThresholdValues(i) = ...
-                            round(graythresh(img) * 255);
+                        baseValues(i) = round(graythresh(img) * 255);
                         parfor_progress;
                     end
                     parfor_progress(0);
@@ -531,6 +533,8 @@ classdef KymoRod < handle
                     error(['Could not recognize threshold method: ' ...
                         this.settings.thresholdMethod]);
             end
+            
+            this.baseThresholdValues = baseValues;
             
             % reset current threshold to base values
             this.thresholdValues = this.baseThresholdValues;
@@ -580,21 +584,24 @@ classdef KymoRod < handle
             nFrames = frameNumber(this);
             
             % allocate memory for contour array
+            contours = cell(nFrames, 1);
             this.contourList = cell(nFrames, 1);
 
             % iterate over images
             parfor_progress(nFrames);
-            for i = 1:nFrames
+            parfor i = 1:nFrames
                 % add black border around each image, to ensure continuous contours
                 img = getSegmentableImage(this, i);
                 img = imAddBlackBorder(img);
                 threshold = this.thresholdValues(i);
-                this.contourList{i} = segmentContour(img, threshold);
+                contours{i} = segmentContour(img, threshold);
                 
                 parfor_progress;
             end
             parfor_progress(0);
             
+            this.contourList = contours;
+
             if ishandle(hDialog)
                 close(hDialog);
             end
