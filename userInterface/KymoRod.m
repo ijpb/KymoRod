@@ -640,11 +640,11 @@ classdef KymoRod < handle
             originDirection = this.settings.firstPointLocation;
             
             % allocate memory for results
-            this.skeletonList = cell(nFrames, 1);
-            this.radiusList = cell(nFrames, 1);
-            this.scaledContourList = cell(nFrames, 1);
-            this.scaledSkeletonList = cell(nFrames, 1);
-            this.originPosition = cell(nFrames, 1);
+            skelList    = cell(nFrames, 1);
+            radList     = cell(nFrames, 1);
+            contListMm  = cell(nFrames, 1);
+            skelListMm  = cell(nFrames, 1);
+            originList  = cell(nFrames, 1);
             
             disp('Skeletonization');
             hDialog = msgbox(...
@@ -653,7 +653,7 @@ classdef KymoRod < handle
             
             t0 = tic;
             parfor_progress(nFrames);
-            for i = 1:nFrames
+            parfor i = 1:nFrames
                 % extract current contour
                 contour = getContour(this, i);
                 if smooth ~= 0
@@ -671,24 +671,31 @@ classdef KymoRod < handle
                 
                 % keep skeleton in pixel units
                 skelPx = skel * 1000 / this.settings.pixelSize;
-                this.skeletonList{i} = skelPx;
-                this.radiusList{i} = rad;
+                skelList{i} = skelPx;
+                radList{i} = rad;
                 
                 % coordinates of first point of skeleton
                 origin = skel(1,:);
-                this.originPosition{i} = origin;
+                originList{i} = origin;
                 
                 % align contour at bottom left and reverse y-axis (user coordinates)
                 contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
-                this.scaledContourList{i} = contour2;
-
+                contListMm{i} = contour2;
+                
                 % align skeleton at bottom left, and reverse y axis
                 skel2 = [skel(:,1) - origin(1), -(skel(:,2) - origin(2))];
-                this.scaledSkeletonList{i} = skel2;
+                skelListMm{i} = skel2;
                 
                 parfor_progress;
             end
             parfor_progress(0);
+            
+            % copy temporary arrays to KymoRod instance
+            this.skeletonList       = skelList;
+            this.radiusList         = radList;
+            this.scaledContourList  = contListMm;
+            this.scaledSkeletonList = skelListMm;
+            this.originPosition     = originList;
             
             t1 = toc(t0);
             disp(sprintf('elapsed time: %6.2f mn', t1 / 60)); %#ok<DSPS>
