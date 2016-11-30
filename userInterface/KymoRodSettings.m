@@ -4,10 +4,8 @@ classdef KymoRodSettings < handle
     
     %% Properties
     properties
+        %% Calibration
         
-        % in case of color images, specify the channel used for segmentation
-        imageSegmentationChannel = 'red';
-                
         % spatial calibration of input images
         pixelSize = 1000 / 253;
         
@@ -19,6 +17,9 @@ classdef KymoRodSettings < handle
         % The unit name for time interval. Default value is 'min'
         timeIntervalUnit = 'min';
         
+        
+        %% Segmentation
+        
         % specify the smoothing method applied on gray-scale image before
         % segmentation. Should be one of 'none', 'boxFilter', 'gaussian'
         imageSmoothingMethod = 'boxFilter';
@@ -26,10 +27,16 @@ classdef KymoRodSettings < handle
         % the radius of the smoothing filter applied on gray scale image
         % before segmentation
         imageSmoothingRadius = 2;
+
+        % in case of color images, specify the channel used for segmentation
+        imageSegmentationChannel = 'red';
         
         % the method for computing threshold on each image
         % Can be one of {'maxEntropy'}, 'Otsu'.
         thresholdMethod = 'maxEntropy';
+        
+
+        %% Contour and skeleton
         
         % length of window for smoothing coutours. Default value is 20.
         contourSmoothingSize = 20;
@@ -37,10 +44,24 @@ classdef KymoRodSettings < handle
         % location of the first point of the skeleton.
         % Can be one of 'bottom' (default), 'top', 'left', 'right'.
         firstPointLocation = 'bottom';
-                
+        
+
+        %% Curvature and angle
+        
         % smoothing window size for computation of curvature.  
         % Default value is 10.
         curvatureSmoothingSize = 10;
+        
+        % the number of points used to discretize signal on each skeleton.
+        % Default value is 500.
+        finalResultLength = 500;
+
+
+        %% Displacement and elongation
+        
+        % in case of color images, specify the channel used for computing
+        % displacement
+        displacementChannel = 'red';
         
         % size of first correlation window (in pixels). Default value is 5.
         windowSize1 = 5;
@@ -50,10 +71,6 @@ classdef KymoRodSettings < handle
         
         % length of displacement (in pixels). Default value is 2.
         displacementStep = 2;
-        
-        % the number of points used to discretize signal on each skeleton.
-        % Default value is 500.
-        finalResultLength = 500;
     end
     
     %% Constructor
@@ -123,6 +140,7 @@ classdef KymoRodSettings < handle
             fprintf(f, 'imageSmoothingRadius = %d\n', this.imageSmoothingRadius);
 
             % the method used for computing thresholds
+            fprintf(f, 'imageSegmentationChannel = %s\n', this.imageSegmentationChannel);
             fprintf(f, 'thresholdMethod = %s\n', this.thresholdMethod);
             
             % length of window for smoothing coutours
@@ -139,6 +157,7 @@ classdef KymoRodSettings < handle
             fprintf(f, '\n');
             
             % info for computation of elongation
+            fprintf(f, 'displacementChannel = %s\n', this.displacementChannel);
             fprintf(f, 'displacementStep = %d\n', this.displacementStep);
             fprintf(f, 'windowSize1 = %d\n', this.windowSize1);
             fprintf(f, 'windowSize2 = %d\n', this.windowSize2);
@@ -218,6 +237,8 @@ classdef KymoRodSettings < handle
                     case lower('finalResultLength')
                         settings.finalResultLength = str2double(value);
                     
+                    case lower('displacementChannel')
+                        settings.displacementChannel = value;
                     case lower('displacementStep')
                         settings.displacementStep = str2double(value);
                     case lower('windowSize1')
@@ -255,7 +276,6 @@ classdef KymoRodSettings < handle
             res = KymoRodSettings();
             
             % setup instance state with struct fields
-            res.imageSegmentationChannel    = data.imageSegmentationChannel;
             res.pixelSize                   = data.pixelSize;
             res.pixelSizeUnit               = data.pixelSizeUnit;
             res.timeInterval                = data.timeInterval;
@@ -264,10 +284,16 @@ classdef KymoRodSettings < handle
             res.contourSmoothingSize        = data.contourSmoothingSize;
             res.firstPointLocation          = data.firstPointLocation;
             res.curvatureSmoothingSize      = data.curvatureSmoothingSize;
+            res.finalResultLength           = data.finalResultLength;
+            res.imageSegmentationChannel    = data.imageSegmentationChannel;
             res.windowSize1                 = data.windowSize1;
             res.windowSize2                 = data.windowSize2;
             res.displacementStep            = data.displacementStep;
-            res.finalResultLength           = data.finalResultLength;
+            
+            % fields appearing in later versions...
+            if isfield(data, 'displacementChannel')
+                res.displacementChannel         = data.displacementChannel;
+            end
         end
     end
     

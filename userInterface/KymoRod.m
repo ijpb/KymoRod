@@ -660,7 +660,7 @@ classdef KymoRod < handle
                     contour = smoothContour(contour, smooth);
                 end
                 
-                % scale contour in user unit
+                % scale contour in user unit (and convert from microns to millimeters)
                 contour = contour * this.settings.pixelSize / 1000;
                 
                 % apply filtering depending on contour type
