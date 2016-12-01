@@ -711,6 +711,9 @@ end
 currentImageName = fileList(fileIndex).name;
 img = imread(fullfile(folderName, currentImageName));
 
+% keep image size
+app.frameImageSize = [size(img, 1) size(img, 2)];
+
 % display current frame frame
 if isfield(handles, 'currentFrameImage')
     set(handles.currentFrameImage, 'CData', img);

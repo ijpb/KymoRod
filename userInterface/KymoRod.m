@@ -57,6 +57,10 @@ classdef KymoRod < handle
         lastIndex = 1;
         indexStep = 1;
         
+        % the size of frame images, to prepare possibility of displaying
+        % results without reading images
+        frameImageSize = [0 0];
+        
         % the list of threshold values used to segment images
         thresholdValues = [];
         
