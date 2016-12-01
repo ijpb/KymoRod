@@ -429,8 +429,6 @@ set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
 Smax = app.abscissaList{end}(end);
 Smin = 0;
 Smarker = (posY - Smin) * (Smax - Smin) / nx;
-% keep value of cursor abscissa
-app.abscissaCursorValue = Smarker;
 
 % convert absolute abscissa to relative abscissa
 S = app.abscissaList{frameIndex};
@@ -468,21 +466,23 @@ function updateCurvilinearMarker(handles)
 
 app = getappdata(0, 'app');
 
+% relative abscissa of cursor
+relPos = app.cursorRelativeAbscissa;
+
 % coordinates of current skeleton
 frameIndex = app.currentFrameIndex;
 skeleton = getSkeleton(app, frameIndex);
 
+% curvilinear abscissa along current skeleton
 S = app.abscissaList{frameIndex};
 
-% keep value of cursor abscissa
-% Smarker = app.abscissaCursorValue;
-relPos = app.cursorRelativeAbscissa;
-
+% compute absolute curvilinear absissa of marker
+markerAbscissa = relPos * (max(S) - min(S)) + min(S);
+    
 % update position of curvilinear cursor on image display
 if isfield(handles, 'imageMarker')
     % identify skeleton point corresponding to marker
-    Smarker = relPos *  (max(S) - min(S)) + min(S);
-    ind = find(Smarker <= S, 1, 'first');
+    ind = find(markerAbscissa <= S, 1, 'first');
     ind = max(ind, 1);
     if isempty(ind)
         % test returns empty if all absissa are below marker, 
@@ -492,11 +492,17 @@ if isfield(handles, 'imageMarker')
     set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
 end
 
-% update position of marker on kymograph
-if isfield(handles, 'kymographMarker') 
+% update position of marker on kymograph display
+if isfield(handles, 'kymographMarker')
+    % convert frame index to time position
     posX = (frameIndex - 1) * app.settings.timeInterval;
+    
+    % convert marker abscissa to position on kyomgraph Y axis
     nx   = app.settings.finalResultLength;
-    posY = relPos * nx;
+    Smaxi = app.abscissaList{end}(end);
+    Smini = app.abscissaList{end}(1);
+    posY = (markerAbscissa - Smini) / (Smaxi - Smini) * nx;
+    posY = max(min(posY, nx), 0);
     
     set(handles.kymographMarker, 'XData', posX, 'YData', posY);
     

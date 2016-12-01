@@ -107,11 +107,6 @@ classdef KymoRod < handle
         elongationList;
         
         
-        % the type of kymograph used for display
-        % should be one of 'radius' (default), 'verticalAngle',
-        % 'curvature', 'elongation'.
-        kymographDisplayType = 'radius';
-        
         % reconstructed image of skeleton radius in absissa and time
         radiusImage;
         
@@ -125,9 +120,10 @@ classdef KymoRod < handle
         elongationImage;
         
         
-        % the value of curvilinear abscissa related to the graphical cursor
-        % (in user unit, default value is 0.
-        abscissaCursorValue = 0;
+        % the type of kymograph used for display
+        % should be one of 'radius' (default), 'verticalAngle',
+        % 'curvature', 'elongation'.
+        kymographDisplayType = 'radius';
         
         % the relative abscissa of the graphical cursor, between 0 and 1.
         % Default value is .5, corresponding to the middle of the skeleton.
