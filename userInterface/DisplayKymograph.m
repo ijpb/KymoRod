@@ -68,10 +68,10 @@ buildFigureMenu(gui, hObject, app);
 
 % compute number of frames that can be displayed
 nFrames = frameNumber(app);
-if strcmp(app.kymographDisplayType, 'elongation')
-    % remove two frames for elongation kymographs
-    nFrames = nFrames - 2; 
-end
+% if strcmp(app.kymographDisplayType, 'elongation')
+%     % remove two frames for elongation kymographs
+%     nFrames = nFrames - 2; 
+% end
 
 % get index of current frame, eventually corrected by max frame number
 frameIndex = app.currentFrameIndex;
@@ -88,7 +88,7 @@ handles.imageHandle = imshow(img);
 
 % setup slider for display of current frame
 set(handles.currentFrameSlider, 'Min', 1, 'Max', nFrames, 'Value', frameIndex); 
-sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
+sliderStep = min(max([1 10] ./ (nFrames - 1), 0.001), 1);
 set(handles.currentFrameSlider, 'SliderStep', sliderStep); 
 
 % get geometric data for annotations
@@ -128,6 +128,15 @@ setappdata(0, 'maxCaxis', maxCaxis);
 set(handles.slider1, 'Min', minCaxis);
 set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
+
+
+% display current kymograph
+xdata = (0:(size(img, 2)-1)) * app.settings.timeInterval;
+ydata = 1:size(img, 1);
+disp('create kymograph image');
+handles.kymographImage = imagesc(handles.kymographAxes, xdata, ydata, img);
+% add the function handle to capture mouse clicks
+set(handles.kymographImage, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 
 updateKymographDisplay(handles);
 displayCurrentFrameIndex(handles);
@@ -293,11 +302,12 @@ set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
 
 updateKymographDisplay(handles);
+updateCurvilinearMarker(handles);
+
 if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
     updateColoredSkeleton(handles);
 end
-   
-handles.kymographMarker = [];
+
 guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -347,7 +357,6 @@ switch valPopUp
         end
         xdata = skeleton(inds, 1);
         ydata = skeleton(inds, 2);
-
 end
 
 % extract bounds
@@ -364,43 +373,6 @@ colors = cmap(inds, :);
 if isfield(handles, 'colorSkelHandle')
     set(handles.colorSkelHandle, ...
         'XData', xdata, 'YData', ydata, 'CData', colors);
-end
-
-
-function updateCurvilinearMarker(handles)
-
-app = getappdata(0, 'app');
-
-% coordinates of current skeleton
-frameIndex = app.currentFrameIndex;
-skeleton = getSkeleton(app, frameIndex);
-
-S = app.abscissaList{frameIndex};
-
-% keep value of cursor abscissa
-Smarker = app.abscissaCursorValue;
-
-% update position of curvilinear cursor
-if isfield(handles, 'imageMarker')
-    
-    % identify skeleton point corresponding to marker
-    ind = find(Smarker <= S, 1, 'first');
-    ind = max(ind, 1);
-    if isempty(ind)
-        % test returns empty if all absissa are below marker, 
-        % so we use last skeleton point
-        ind = size(skeleton, 1);
-    end
-    set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
-end
-
-if isfield(handles, 'kymographMarker')
-    posX = (frameIndex - 1) * (app.settings.timeInterval * app.indexStep);
-    nx   = app.settings.finalResultLength;
-    Smax = app.abscissaList{end}(end);
-    Smin = 0;
-    posY = Smarker * nx / (Smax - Smin);
-    set(handles.kymographMarker, 'XData', posX, 'YData', posY);
 end
 
 
@@ -435,7 +407,8 @@ else
 end
 
 % determine index of frame corresponding to clicked point
-frameIndex = round(posX / (app.settings.timeInterval * app.indexStep)) + 1;
+timeStep = app.settings.timeInterval * app.indexStep;
+frameIndex = round(posX / timeStep) + 1;
 app.currentFrameIndex = frameIndex;
 
 % extract data for current frame
@@ -459,6 +432,12 @@ Smarker = (posY - Smin) * (Smax - Smin) / nx;
 % keep value of cursor abscissa
 app.abscissaCursorValue = Smarker;
 
+% convert absolute abscissa to relative abscissa
+S = app.abscissaList{frameIndex};
+relPos = (Smarker - min(S) ) / (max(S) - min(S));
+relPos = min(max(relPos, 0), 1);
+app.cursorRelativeAbscissa = relPos;
+
 % identify skeleton point corresponding to marker
 S = app.abscissaList{frameIndex};
 ind = find(Smarker <= S, 1, 'first');
@@ -468,17 +447,68 @@ if isempty(ind)
 end
 set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
 
-if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
-    updateColoredSkeleton(handles);
-end    
-
 % update display of frame info
 setappdata(0, 'app', app);
+
+if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
+    updateColoredSkeleton(handles);
+end   
+
+updateCurvilinearMarker(handles);
+
 updateCurrentFrameDisplay(handles);
 displayCurrentFrameIndex(handles);
+set(handles.currentFrameSlider, 'Value', frameIndex);
 
 % Update handles structure
 guidata(hObject, handles);
+
+
+function updateCurvilinearMarker(handles)
+
+app = getappdata(0, 'app');
+
+% coordinates of current skeleton
+frameIndex = app.currentFrameIndex;
+skeleton = getSkeleton(app, frameIndex);
+
+S = app.abscissaList{frameIndex};
+
+% keep value of cursor abscissa
+% Smarker = app.abscissaCursorValue;
+relPos = app.cursorRelativeAbscissa;
+
+% update position of curvilinear cursor on image display
+if isfield(handles, 'imageMarker')
+    % identify skeleton point corresponding to marker
+    Smarker = relPos *  (max(S) - min(S)) + min(S);
+    ind = find(Smarker <= S, 1, 'first');
+    ind = max(ind, 1);
+    if isempty(ind)
+        % test returns empty if all absissa are below marker, 
+        % so we use last skeleton point
+        ind = size(skeleton, 1);
+    end
+    set(handles.imageMarker, 'xdata', skeleton(ind, 1), 'ydata', skeleton(ind, 2));
+end
+
+% update position of marker on kymograph
+if isfield(handles, 'kymographMarker') 
+    posX = (frameIndex - 1) * app.settings.timeInterval;
+    nx   = app.settings.finalResultLength;
+    posY = relPos * nx;
+    
+    set(handles.kymographMarker, 'XData', posX, 'YData', posY);
+    
+    % check if marker should be displayed (for elongation kymographs, the
+    % number of frames in kymograph is different from frame number in app)
+    nFrameKymo = length(get(handles.kymographImage, 'XData'));
+    if frameIndex <= nFrameKymo
+        set(handles.kymographMarker, 'Visible', 'On');
+    else
+        set(handles.kymographMarker, 'Visible', 'Off');
+    end
+end
 
 
 % --- Executes on slider movement.
@@ -518,24 +548,29 @@ maxCaxis = getappdata(0, 'maxCaxis');
 img = getKymographMatrix(app);
 
 % display current kymograph
-timeInterval = app.settings.timeInterval;
-xdata = (0:(size(img, 2)-1)) * timeInterval * app.indexStep;
+timeStep = app.settings.timeInterval;
+xdata = (0:(size(img, 2)-1)) * timeStep;
 ydata = 1:size(img, 1);
-axes(handles.kymographAxes);
-hImg = imagesc(xdata, ydata, img);
+if isfield(handles, 'kymographImage')
+    set(handles.kymographImage, 'xdata', xdata, 'ydata', ydata, 'cdata', img); 
+else
+    disp('create kymograph image again!');
+    axes(handles.kymographAxes); cla;
+    handles.kymographImage = imagesc(xdata, ydata, img);
+end
+xlim(handles.kymographAxes, ([0 size(img,2)] - .5) * timeStep);
 
 % a value to adjust kymograph contrast
 val = get(handles.slider1, 'Value');
   
 % setup display
-set(gca, 'YDir', 'normal', 'YTick', []);
+axes(handles.kymographAxes);
+set(handles.kymographAxes, 'YDir', 'normal', 'YTick', []);
 if minCaxis < maxCaxis - val
-    caxis([minCaxis, maxCaxis - val]); 
+    caxis(handles.kymographAxes, [minCaxis, maxCaxis - val]); 
 end
-colorbar; colormap jet;
-
-% add the function handle to capture mouse clicks
-set(hImg, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
+colorbar(handles.kymographAxes); 
+colormap jet;
 
 % annotate
 xlabel(sprintf('Time (%s)', app.settings.timeIntervalUnit));

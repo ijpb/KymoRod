@@ -130,6 +130,7 @@ classdef KymoRod < handle
         abscissaCursorValue = 0;
         
         % the relative abscissa of the graphical cursor, between 0 and 1.
+        % Default value is .5, corresponding to the middle of the skeleton.
         cursorRelativeAbscissa = 0;
     end
     
