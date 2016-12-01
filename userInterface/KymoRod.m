@@ -15,10 +15,10 @@ classdef KymoRod < handle
     properties (Constant)
         % identifier of application version, for display in About dialog
         % and for file releases
-        appliVersion = VersionNumber(0, 10, 2, 'SNAPHSHOT');
+        appliVersion = VersionNumber(0, 11, 0, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
-        serialVersion = VersionNumber(0, 8, 0);
+        serialVersion = VersionNumber(0, 11, 0);
     end
     
     %% Properties
@@ -87,6 +87,9 @@ classdef KymoRod < handle
         % the curvilinear abscissa of each skeleton, in a cell array
         abscissaList;
         
+        % the curvilinear abscissa after alignment procedure
+        alignedAbscissaList;
+        
         % the angle with the vertical of each point of each skeleton, in a
         % cell array
         verticalAngleList;
@@ -97,9 +100,12 @@ classdef KymoRod < handle
         % the displacement of a point to the next similar point
         displacementList;
         
+        % the displacement after smoothing and resampling
         smoothedDisplacementList;
         
+        % elongation, computed by derivation of smoothed displacement
         elongationList;
+        
         
         % the type of kymograph used for display
         % should be one of 'radius' (default), 'verticalAngle',
@@ -118,9 +124,13 @@ classdef KymoRod < handle
         % final result: elongation as a function of position and time
         elongationImage;
         
+        
         % the value of curvilinear abscissa related to the graphical cursor
         % (in user unit, default value is 0.
         abscissaCursorValue = 0;
+        
+        % the relative abscissa of the graphical cursor, between 0 and 1.
+        cursorRelativeAbscissa = 0;
     end
     
     
@@ -1117,6 +1127,7 @@ classdef KymoRod < handle
             % info about current step of the process
             fprintf(f, 'currentStep = %s\n', char(this.processingStep));
             fprintf(f, 'currentFrameIndex = %d\n', this.currentFrameIndex);
+            fprintf(f, 'cursorRelativeAbscissa = %8.6f\n', this.cursorRelativeAbscissa);
             fprintf(f, '\n');
             
             % close the file
@@ -1299,6 +1310,40 @@ classdef KymoRod < handle
             end
         end
         
+        function app = load_V_0_11(data)
+            % Initialize a new instance from a structure with 0.8 format
+            % (corresponds to KymoRod applications 0.11.x and upward)
+            
+            % creates a new empty instance
+            app = KymoRod();
+
+            fields = fieldnames(data);
+            for i = 1:length(fields)
+                name = fields{i};
+                value = data.(name);
+                
+                
+                if any(strcmpi(name, {'appliVersion', 'serialVersion', 'logger'}))
+                    % do not override static fields
+                    continue;
+                elseif strcmpi(name, 'settings')
+                    % Initialize settings
+                    KymoRodSettings.fromStruct(data.settings);
+                elseif strcmpi(name, 'processingStep')
+                    app.processingStep = ProcessingStep.parse(value);
+                else
+                    % check that the field exists 
+                    if ~isfield(data, name)
+                        warning(['Try to initialize an unknown field: ' name]);
+                        continue;
+                    end
+                    
+                    % simply copy the value of the field
+                    app.(name) = value;
+                end
+            end
+        end
+   
         function app = load_V_0_8(data)
             % Initialize a new instance from a structure with 0.8 format
             % (corresponds to KymoRod applications 0.8.x to 0.10.x)
@@ -1339,7 +1384,6 @@ classdef KymoRod < handle
             app.curvatureImage          = data.curvatureImage;
             app.elongationImage         = data.elongationImage;
         end
-        
     end
     
     % some utility methods
