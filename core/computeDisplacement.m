@@ -69,6 +69,8 @@ for k = 1:length(x1)
     % compute PIV only if variability in window is sufficient
     V = std2(w1);
     if V < .1
+        warning(['KymoRod:' mfilename], ...
+            'window around point (%d,%d) has not enough variability', j, i);
         continue;
     end
         
