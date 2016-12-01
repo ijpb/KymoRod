@@ -482,12 +482,27 @@ classdef KymoRod < handle
         
         function setThresholdValues(this, values)
             % manually set up the values for threshold
+            %
+            % setThresholdValues(KYMO, VALUES)
+            %   VALUES should be an array with as many elements as the
+            %   number of frames.
+            % setThresholdValues(KYMO, VAL)
+            %   VAL should be a scalar value.
             
+            % check dimension of input array
+            if length(values) == 1
+                values = repmat(values, 1, frameNumber(this));
+            end
             if length(values) ~= frameNumber(this)
                 error('The number of values should match number of frames');
             end
+
+            % update local variables
+            values = values(:)';
+            this.baseThresholdValues = values;
+            this.thresholdValues = values;
             
-            this.baseThresholdValues = values(:)';
+            % update processing step
             setProcessingStep(this, ProcessingStep.Threshold);
         end
         

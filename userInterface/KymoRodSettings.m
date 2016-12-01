@@ -31,6 +31,10 @@ classdef KymoRodSettings < handle
         % in case of color images, specify the channel used for segmentation
         imageSegmentationChannel = 'red';
         
+        % the stategy for setting up the threshold method on each image
+        % Can be one of {'auto'}, 'manual'.
+        thresholdStrategy = 'auto';
+        
         % the method for computing threshold on each image
         % Can be one of {'maxEntropy'}, 'Otsu'.
         thresholdMethod = 'maxEntropy';
@@ -141,6 +145,7 @@ classdef KymoRodSettings < handle
 
             % the method used for computing thresholds
             fprintf(f, 'imageSegmentationChannel = %s\n', this.imageSegmentationChannel);
+            fprintf(f, 'thresholdStrategy = %s\n', this.thresholdStrategy);
             fprintf(f, 'thresholdMethod = %s\n', this.thresholdMethod);
             
             % length of window for smoothing coutours
@@ -222,6 +227,8 @@ classdef KymoRodSettings < handle
                     case lower('timeIntervalUnit')
                         settings.timeIntervalUnit = value;
                         
+                    case lower('thresholdStrategy')
+                        settings.thresholdStrategy = value;
                     case lower('thresholdMethod')
                         settings.thresholdMethod = value;
 
@@ -290,9 +297,13 @@ classdef KymoRodSettings < handle
             res.windowSize2                 = data.windowSize2;
             res.displacementStep            = data.displacementStep;
             
-            % fields appearing in later versions...
+            % fields appearing in earlier versions...
             if isfield(data, 'displacementChannel')
                 res.displacementChannel         = data.displacementChannel;
+            end
+            % fields appearing in later versions...
+            if isfield(data, 'thresholdStrategy')
+                res.thresholdStrategy           = data.thresholdStrategy;
             end
         end
     end

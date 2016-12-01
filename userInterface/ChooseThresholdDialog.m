@@ -22,7 +22,7 @@ function varargout = ChooseThresholdDialog(varargin)
 
 % Edit the above text to modify the response to help ChooseThresholdDialog
 
-% Last Modified by GUIDE v2.5 12-Feb-2016 17:38:41
+% Last Modified by GUIDE v2.5 01-Dec-2016 11:48:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -59,7 +59,7 @@ if nargin == 4 && isa(varargin{1}, 'KymoRod')
     % should be the canonical way of calling the program
     app = varargin{1};    
 else
-    error('requires 4 input arguments, with a KymoRod as fourth argument');
+    error('requires 4 input arguments, with a KymoRod instance as fourth argument');
 end
 
 app.logger.info('ChooseThresholdDialog.m', ...
@@ -76,10 +76,6 @@ buildFigureMenu(gui, hObject, app);
 frameIndex = app.currentFrameIndex;
 nFrames = frameNumber(app);
 
-% update widgets
-string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
-set(handles.currentFrameIndexLabel, 'String', string);
-
 switch app.settings.imageSmoothingMethod
     case 'none'
         set(handles.imageSmoothingMethodPopup, 'Value', 1);
@@ -93,25 +89,12 @@ set(handles.imageSmoothingRadiusEdit, 'String', string);
 
 set(handles.autoThresholdFinalEdit, 'String', num2str(nFrames));
 
-set(handles.automaticThresholdRadioButton, 'Value', 1);
-set(handles.manualThresholdRadioButton, 'Value', 0);
-set(handles.currentFrameThresholdLabel, 'String', '');
-set(handles.manualThresholdSlider, 'Visible', 'off');
-set(handles.manualThresholdSlider, 'SliderStep', [1/255 10/255]);
-set(handles.manualThresholdValueLabel, 'Visible', 'off');
-set(handles.autoThresholdValueLabel, 'Visible', 'on');
-set(handles.autoThresholdStartLabel, 'Visible', 'on');
-set(handles.autoThresholdFinalLabel, 'Visible', 'on');
-set(handles.autoThresholdValueEdit, 'Visible', 'on');
-set(handles.autoThresholdStartEdit, 'Visible', 'on');
-set(handles.autoThresholdFinalEdit, 'Visible', 'on');
-set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
-set(handles.manualThresholdSlider, 'Visible', 'off');
+% setup slider steps for manual threshold slider
+sliderStep = min(max([1 10] ./ 255, 0.001), 1);
+set(handles.manualThresholdSlider, 'SliderStep', sliderStep); 
 
-% eventually pre-compute threshold values
-if getProcessingStep(app) < ProcessingStep.Threshold
-    computeThresholdValues(app);
-end
+updateWidgetsVisibility(handles);
+
 
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Min', 1); 
@@ -119,6 +102,15 @@ set(handles.frameIndexSlider, 'Max', nFrames);
 set(handles.frameIndexSlider, 'Value', frameIndex); 
 sliderStep = min(max([1 5] ./ (nFrames - 1), 0.001), 1);
 set(handles.frameIndexSlider, 'SliderStep', sliderStep); 
+
+% eventually pre-compute threshold values
+if getProcessingStep(app) < ProcessingStep.Threshold
+    computeThresholdValues(app);
+end
+
+% update widgets
+string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
+set(handles.currentFrameIndexLabel, 'String', string);
 
 % display threshold of current frame
 displayCurrentFrameThreshold(handles);
@@ -277,7 +269,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function imageSmoothingRadiusEdit_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
 % hObject    handle to imageSmoothingRadiusEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -298,7 +289,6 @@ set(hObject, 'String', num2str(radius));
 app.settings.imageSmoothingRadius = radius;
 
 updateSegmentationDisplay(handles);
-
 
 
 % --- Executes during object creation, after setting all properties.
@@ -325,22 +315,12 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles) %#o
 % Hint: get(hObject,'Value') returns toggle state of automaticThresholdRadioButton
 
 app = getappdata(0, 'app');
+app.settings.thresholdStrategy = 'auto';
 
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose automatic threshold');
 
-set(handles.manualThresholdRadioButton, 'Value', 0);
-set(handles.manualThresholdSlider, 'Visible', 'off');
-set(handles.manualThresholdValueLabel, 'Visible', 'off');
-
-set(handles.adjustAutoThresholdLabel, 'Visible', 'on');
-set(handles.autoThresholdValueLabel, 'Visible', 'on');
-set(handles.autoThresholdStartLabel, 'Visible', 'on');
-set(handles.autoThresholdFinalLabel, 'Visible', 'on');
-set(handles.autoThresholdValueEdit, 'Visible', 'on');
-set(handles.autoThresholdStartEdit, 'Visible', 'on');
-set(handles.autoThresholdFinalEdit, 'Visible', 'on');
-set(handles.updateAutomaticThresholdButton, 'Visible', 'on');
+updateWidgetsVisibility(handles);
 
 % compute new threshold values
 computeThresholdValues(app);
@@ -356,24 +336,24 @@ set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 frameIndexSlider_Callback(hObject, eventdata, handles);
 
 
-% --- Executes on selection change in thresholdMethodPopup.
-function thresholdMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
-% hObject    handle to thresholdMethodPopup (see GCBO)
+% --- Executes on selection change in autoThresholdMethodPopup.
+function autoThresholdMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to autoThresholdMethodPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns thresholdMethodPopup contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from thresholdMethodPopup
+% Hints: contents = cellstr(get(hObject,'String')) returns autoThresholdMethodPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from autoThresholdMethodPopup
 
 app = getappdata(0, 'app');
 
 % choose new method for threshold
-ind = get(handles.thresholdMethodPopup, 'Value');
+ind = get(handles.autoThresholdMethodPopup, 'Value');
 methodList = {'maxEntropy', 'Otsu'};
 methodName = methodList{ind};
 
 app.logger.info('ChooseThresholdDialog.m', ...
-    ['Set threshold method: ' methodName]);
+    ['Set automatic threshold method: ' methodName]);
 
 % update threshold information of application
 app.settings.thresholdMethod = methodList{ind};
@@ -386,8 +366,8 @@ displayCurrentFrameThreshold(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function thresholdMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
-% hObject    handle to thresholdMethodPopup (see GCBO)
+function autoThresholdMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to autoThresholdMethodPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -396,7 +376,6 @@ function thresholdMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function autoThresholdValueEdit_Callback(hObject, eventdata, handles)%#ok
@@ -543,24 +522,44 @@ function manualThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %M
 
 % extract application data
 app     = getappdata(0, 'app');
+app.settings.thresholdStrategy = 'manual';
+
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose manual threshold method');
 
 val = round(get(handles.manualThresholdSlider, 'Value'));
-set(handles.manualThresholdValueLabel, 'String', num2str(val));
+set(handles.manualThresholdValueEdit2, 'String', num2str(val));
 
-set(handles.automaticThresholdRadioButton, 'Value', 0);
-set(handles.manualThresholdSlider, 'Visible', 'on');
-set(handles.manualThresholdValueLabel, 'Visible', 'on');
+updateWidgetsVisibility(handles);
 
-set(handles.adjustAutoThresholdLabel, 'Visible', 'off');
-set(handles.autoThresholdValueLabel, 'Visible', 'off');
-set(handles.autoThresholdStartLabel, 'Visible', 'off');
-set(handles.autoThresholdFinalLabel, 'Visible', 'off');
-set(handles.autoThresholdValueEdit, 'Visible', 'off');
-set(handles.autoThresholdStartEdit, 'Visible', 'off');
-set(handles.autoThresholdFinalEdit, 'Visible', 'off');
-set(handles.updateAutomaticThresholdButton, 'Visible', 'off');
+
+function manualThresholdValueEdit2_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to manualThresholdValueEdit2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of manualThresholdValueEdit2 as text
+%        str2double(get(hObject,'String')) returns contents of manualThresholdValueEdit2 as a double
+
+% get threshold value between 0 and 255
+val = str2double(get(handles.manualThresholdValueEdit2, 'String'));
+if isnan(val)
+    return;
+end
+updateManualThresholdValue(handles, val);
+
+
+% --- Executes during object creation, after setting all properties.
+function manualThresholdValueEdit2_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+% hObject    handle to manualThresholdValueEdit2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
 
 % --- Executes on slider movement.
 function manualThresholdSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
@@ -574,22 +573,7 @@ function manualThresholdSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,
 % get threshold value between 0 and 255
 val = round(get(handles.manualThresholdSlider, 'Value'));
 
-app = getappdata(0, 'app');
-frameIndex   = app.currentFrameIndex;
-
-nImages = frameNumber(app);
-thresholdValues = ones(nImages, 1) * val;
-
-app.thresholdValues = thresholdValues;
-setProcessingStep(app, ProcessingStep.Threshold);
-setappdata(0, 'app', app);
-
-% update widgets
-updateSegmentationDisplay(handles);
-set(handles.manualThresholdValueLabel, 'String', ...
-    num2str(thresholdValues(frameIndex)));
-displayCurrentFrameThreshold(handles);
-set(handles.currentFrameThresholdLabel, 'Visible', 'on');
+updateManualThresholdValue(handles, val);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -602,6 +586,52 @@ function manualThresholdSlider_CreateFcn(hObject, eventdata, handles)%#ok
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject, 'BackgroundColor',[.9 .9 .9]);
 end
+
+function updateManualThresholdValue(handles, value)
+
+app = getappdata(0, 'app');
+setThresholdValues(app, value)
+setappdata(0, 'app', app);
+
+% update widgets
+updateSegmentationDisplay(handles);
+set(handles.manualThresholdValueEdit2, 'String', num2str(value));
+set(handles.manualThresholdSlider, 'Value', value);
+
+displayCurrentFrameThreshold(handles);
+set(handles.currentFrameThresholdLabel, 'Visible', 'on');
+
+
+function updateWidgetsVisibility(handles)
+
+
+app = getappdata(0, 'app');
+
+autoThreshold = strcmp(app.settings.thresholdStrategy, 'auto');
+if autoThreshold
+    keyAuto = 'on';
+    keyManual = 'off';
+else
+    keyAuto = 'off';
+    keyManual = 'on';
+end
+
+set(handles.automaticThresholdRadioButton, 'Value', autoThreshold);
+set(handles.autoThresholdMethodLabel, 'Visible', keyAuto);
+set(handles.autoThresholdMethodPopup, 'Visible', keyAuto);
+set(handles.autoThresholdValueLabel, 'Visible', keyAuto);
+set(handles.autoThresholdStartLabel, 'Visible', keyAuto);
+set(handles.autoThresholdFinalLabel, 'Visible', keyAuto);
+set(handles.autoThresholdValueEdit, 'Visible', keyAuto);
+set(handles.autoThresholdStartEdit, 'Visible', keyAuto);
+set(handles.autoThresholdFinalEdit, 'Visible', keyAuto);
+set(handles.adjustAutoThresholdLabel, 'Visible', keyAuto);
+set(handles.updateAutomaticThresholdButton, 'Visible', keyAuto);
+
+set(handles.manualThresholdRadioButton, 'Value', ~autoThreshold);
+set(handles.manualThresholdSlider, 'Visible', keyManual);
+set(handles.manualThresholdValueEdit2, 'Visible', keyManual);
+
 
 %% General settings widgets
 
@@ -648,5 +678,3 @@ end
 % switch the visible dialog to Smooth Contour
 delete(gcf);
 SmoothContourDialog(app);
-
-
