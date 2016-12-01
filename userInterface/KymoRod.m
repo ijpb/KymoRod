@@ -1288,14 +1288,14 @@ classdef KymoRod < handle
             
             % parse version number from version string
             version = VersionNumber(data.serialVersion);
-            if version.major == 0 && version.minor == 8
-                app = KymoRod.load_V_0_8(data);
-            elseif version.major == 0 && version.minor == 10
+            if version.major == 0 && version.minor == 11
+                app = KymoRod.load_V_0_11(data);
+            elseif version.major == 0 && ismember(version.minor, [8 10])
                 % just to fix bug introduced in version 0.10.0
                 app = KymoRod.load_V_0_8(data);
             else
-                error('Could not parse file with serial version %f', ...
-                    data.serialVersion);
+                error('Could not parse file with serial version %s', ...
+                    char(data.serialVersion));
             end
             
             % post-processing
@@ -1319,7 +1319,7 @@ classdef KymoRod < handle
                 name = fields{i};
                 value = data.(name);
                 
-                
+                % iterate over specific cases
                 if any(strcmpi(name, {'appliVersion', 'serialVersion', 'logger'}))
                     % do not override static fields
                     continue;
@@ -1329,6 +1329,8 @@ classdef KymoRod < handle
                 elseif strcmpi(name, 'processingStep')
                     app.processingStep = ProcessingStep.parse(value);
                 else
+                    % otherwise, use generic processing
+                    
                     % check that the field exists 
                     if ~isfield(data, name)
                         warning(['Try to initialize an unknown field: ' name]);
