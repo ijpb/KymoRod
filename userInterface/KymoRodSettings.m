@@ -226,7 +226,14 @@ classdef KymoRodSettings < handle
                         settings.timeInterval = str2double(value);
                     case lower('timeIntervalUnit')
                         settings.timeIntervalUnit = value;
-                        
+            
+                    case lower('imageSmoothingMethod')
+                        settings.imageSmoothingMethod = value;
+                    case lower('imageSmoothingRadius')
+                        settings.imageSmoothingRadius = str2double(value);
+
+                    case lower('imageSegmentationChannel')
+                        settings.imageSegmentationChannel = value;
                     case lower('thresholdStrategy')
                         settings.thresholdStrategy = value;
                     case lower('thresholdMethod')
@@ -282,28 +289,19 @@ classdef KymoRodSettings < handle
             % initialize new instance
             res = KymoRodSettings();
             
-            % setup instance state with struct fields
-            res.pixelSize                   = data.pixelSize;
-            res.pixelSizeUnit               = data.pixelSizeUnit;
-            res.timeInterval                = data.timeInterval;
-            res.timeIntervalUnit            = data.timeIntervalUnit;
-            res.thresholdMethod             = data.thresholdMethod;
-            res.contourSmoothingSize        = data.contourSmoothingSize;
-            res.firstPointLocation          = data.firstPointLocation;
-            res.curvatureSmoothingSize      = data.curvatureSmoothingSize;
-            res.finalResultLength           = data.finalResultLength;
-            res.imageSegmentationChannel    = data.imageSegmentationChannel;
-            res.windowSize1                 = data.windowSize1;
-            res.windowSize2                 = data.windowSize2;
-            res.displacementStep            = data.displacementStep;
-            
-            % fields appearing in earlier versions...
-            if isfield(data, 'displacementChannel')
-                res.displacementChannel         = data.displacementChannel;
-            end
-            % fields appearing in later versions...
-            if isfield(data, 'thresholdStrategy')
-                res.thresholdStrategy           = data.thresholdStrategy;
+            fields = fieldnames(data);
+            for i = 1:length(fields)
+                name = fields{i};
+                value = data.(name);
+                
+                % check that the field exists
+                if ~isfield(data, name)
+                    warning(['Try to initialize an unknown field: ' name]);
+                    continue;
+                end
+                
+                % simply copy the value of the field
+                res.(name) = value;
             end
         end
     end
