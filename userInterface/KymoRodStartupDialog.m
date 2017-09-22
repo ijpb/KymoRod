@@ -57,6 +57,9 @@ handles.output = hObject;
 
 set(hObject, 'Name', 'KymoRod Startup Dialog');
 
+% setup the demo image
+img = imread('kymorod-splash.png');
+imshow(img, 'parent', handles.splashImageAxis);
 
 % Update handles structure
 guidata(hObject, handles);
