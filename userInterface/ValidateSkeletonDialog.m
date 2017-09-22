@@ -345,26 +345,34 @@ function saveSkeletonDataButton_Callback(hObject, eventdata, handles)%#ok
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% disable button to avoid multiple clicks
 set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 set(handles.saveSkeletonDataButton, 'String', 'Wait please...');
 pause(0.01);
 
+% retrive skeleton data
 app = getappdata(0, 'app');
 app.logger.info('ValidateSkeleton.m', ...
     'Save Skeleton data');
 
 % To open the directory who the user want to save the data
-[fileName, pathName] = uiputfile('*.mat', 'Save App Data', 'appData.mat'); 
+folderName = uigetdir(app.inputImagesDir, 'Save Skeleton Data');
 
-if pathName == 0
-    warning('Select a file please');
-    return;
+if folderName ~= 0
+    % iterate on skeletons to save text files
+    nSkels = length(app.skeletonList);
+    for iSkel = 1:nSkels
+        % create file name
+        [tmp, fileName] = fileparts(app.imageNameList{iSkel}); %#ok<ASGLU>
+        fileName = [fileName '_skel.txt']; %#ok<AGROW>
+        
+        % save current skeleton
+        skel = app.skeletonList{iSkel}; %#ok<NASGU>
+        save(fullfile(folderName, fileName), 'skel', '-ascii');
+    end
 end
 
-% save app data as .mat file
-name = fullfile(pathName, fileName);
-save(name, 'app');
-
+% re-enable gui buttons
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'String', 'Save Skeleton Data');
 
