@@ -22,7 +22,7 @@ function varargout = ValidateSkeletonDialog(varargin)
 
 % Edit the above text to modify the response to help ValidateSkeletonDialog
 
-% Last Modified by GUIDE v2.5 21-Jan-2016 16:06:23
+% Last Modified by GUIDE v2.5 22-Sep-2017 16:35:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -340,7 +340,7 @@ set(handles.saveSkeletonDataButton, 'Enable', 'On');
 
 
 % --- Executes on button press in saveSkeletonDataButton.
-function saveSkeletonDataButton_Callback(hObject, eventdata, handles)%#ok
+function saveSkeletonDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
 % hObject    handle to saveSkeletonDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -377,8 +377,47 @@ set(handles.saveSkeletonDataButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'String', 'Save Skeleton Data');
 
 
+% --- Executes on button press in saveSkeletonRoisButton.
+function saveSkeletonRoisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to saveSkeletonRoisButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% disable button to avoid multiple clicks
+set(handles.saveSkeletonRoisButton, 'Enable', 'Off');
+set(handles.saveSkeletonRoisButton, 'String', 'Wait please...');
+pause(0.01);
+
+% retrive skeleton data
+app = getappdata(0, 'app');
+app.logger.info('ValidateSkeleton.m', ...
+    'Save Skeleton ROIs');
+
+% To open the directory who the user want to save the data
+folderName = uigetdir(app.inputImagesDir, 'Save Skeleton ROIs');
+
+if folderName ~= 0
+    % iterate on skeletons to save text files
+    nSkels = length(app.skeletonList);
+    for iSkel = 1:nSkels
+        % create file name
+        [tmp, fileName] = fileparts(app.imageNameList{iSkel}); %#ok<ASGLU>
+        fileName = [fileName '_skel.roi']; %#ok<AGROW>
+        
+        % save current skeleton
+        skel = app.skeletonList{iSkel};
+        filePath = fullfile(folderName, fileName);
+        savePolylineAsIJRoi(skel, filePath);
+    end
+end
+
+% re-enable gui buttons
+set(handles.saveSkeletonRoisButton, 'Enable', 'On');
+set(handles.saveSkeletonRoisButton, 'String', 'Save Skeleton ROIs');
+
+
 % --- Executes on button press in BackToContourButton.
-function BackToContourButton_Callback(hObject, eventdata, handles)%#ok
+function BackToContourButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 % hObject    handle to BackToContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -393,7 +432,7 @@ SmoothContourDialog(app);
 
 
 % --- Executes on button press in validateSkeletonButton.
-function validateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
+function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 % hObject    handle to validateSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -405,3 +444,4 @@ app.logger.info('ValidateSkeletonDialog.m', ...
 
 delete(gcf);
 ChooseElongationSettingsDialog(app);
+
