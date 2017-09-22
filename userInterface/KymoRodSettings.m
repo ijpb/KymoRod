@@ -61,20 +61,38 @@ classdef KymoRodSettings < handle
         finalResultLength = 500;
 
 
-        %% Displacement and elongation
+        %% Displacement
         
         % in case of color images, specify the channel used for computing
         % displacement
         displacementChannel = 'red';
         
+        % length of displacement (in pixels). Default value is 2.
+        displacementStep = 2;
+        
         % size of first correlation window (in pixels). Default value is 5.
         windowSize1 = 5;
+        
+        
+        %% Displacement Smoothing and Elongation
+        % displacement curves are smoothed using bilateral filtering
+        
+        % smooth displacement curve giving more weight to spatially closer values. 
+        % Default value is 0.1.
+        displacementSpatialSmoothing = .1;
+        
+        % smooth displacement curve giving more weight to similar values
+        % Default value is 1e-2.
+        displacementValueSmoothing = 1e-2;
+        
+        % discretisation step of the filtered displacement curve
+        % Default value is 5e-3.
+        displacementResamplingDistance = 5e-3;
         
         % size of second correlation window (in pixels). Not used anymore?
         windowSize2 = 20;
         
-        % length of displacement (in pixels). Default value is 2.
-        displacementStep = 2;
+
     end
     
     %% Constructor
@@ -161,10 +179,15 @@ classdef KymoRodSettings < handle
             fprintf(f, 'finalResultLength = %d\n', this.finalResultLength);
             fprintf(f, '\n');
             
-            % info for computation of elongation
+            % info for computation of displacement
             fprintf(f, 'displacementChannel = %s\n', this.displacementChannel);
             fprintf(f, 'displacementStep = %d\n', this.displacementStep);
             fprintf(f, 'windowSize1 = %d\n', this.windowSize1);
+
+            % info for filtering displacement curves
+            fprintf(f, 'displacementSpatialSmoothing = %f\n', this.displacementSpatialSmoothing);
+            fprintf(f, 'displacementValueSmoothing = %f\n', this.displacementValueSmoothing);
+            fprintf(f, 'displacementResamplingDistance = %f\n', this.displacementResamplingDistance);
             fprintf(f, 'windowSize2 = %d\n', this.windowSize2);
             fprintf(f, '\n');
         end
@@ -257,6 +280,13 @@ classdef KymoRodSettings < handle
                         settings.displacementStep = str2double(value);
                     case lower('windowSize1')
                         settings.windowSize1 = str2double(value);
+                        
+                    case lower('displacementSpatialSmoothing')
+                        settings.displacementSpatialSmoothing = str2double(value);
+                    case lower('displacementValueSmoothing')
+                        settings.displacementValueSmoothing = str2double(value);
+                    case lower('displacementResamplingDistance')
+                        settings.displacementResamplingDistance = str2double(value);
                     case lower('windowSize2')
                         settings.windowSize2 = str2double(value);
                         

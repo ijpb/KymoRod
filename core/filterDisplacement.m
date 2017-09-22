@@ -20,6 +20,7 @@ function Eab = filterDisplacement(E)
 %   HISTORY
 %   2014-04-16 : Add comments about the file
 
+warning('use obsolete function fitlerDisplacement');
 
 %% Global settings
 

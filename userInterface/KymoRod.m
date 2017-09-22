@@ -944,7 +944,7 @@ classdef KymoRod < handle
         function E2 = getFilteredDisplacement(this, index)
             % Smooth the curve and remove errors using kernel smoothers
             %
-            % E2 = filterFrameDisplacement(KYMO, INDEX);
+            % E2 = getFilteredDisplacement(KYMO, INDEX);
             %
             
             % get current array of displacement
@@ -955,10 +955,27 @@ classdef KymoRod < handle
                 E2 = [0 0;1 0];
                 return;
             end
+
+            % extract computation options
+            LX      = this.settings.displacementSpatialSmoothing;
+            LY      = this.settings.displacementValueSmoothing;
+            dx      = this.settings.displacementResamplingDistance;
+
+            % shifts curvilinear abscissa to start at zero
+            Smin = E(1,1);
+            E(:,1) = E(:,1) - Smin;
             
-            % call the computational function
-            E2 = filterDisplacement(E);
+            % apply curve smoothing
+            [X, Y] = smoothAndFilterDisplacement(E, LX, LY, dx);
+            if any(size(X) ~= size(Y))
+                warning('arrays X and Y do not have same size...');
+            end
+            
+            % add initial curvilinear abscissa
+            E2 = [X + Smin, Y];
+
         end
+        
         
         function img = getKymographMatrix(this)
             % Return the array of values representing the current kymograph

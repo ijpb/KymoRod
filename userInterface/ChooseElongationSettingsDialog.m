@@ -22,7 +22,7 @@ function varargout = ChooseElongationSettingsDialog(varargin)
 
 % Edit the above text to modify the response to help ChooseElongationSettingsDialog
 
-% Last Modified by GUIDE v2.5 30-Nov-2016 15:52:42
+% Last Modified by GUIDE v2.5 22-Sep-2017 17:31:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -100,11 +100,13 @@ function updateWidgets(app, handles)
 
 % setup handles with application settings
 settings = app.settings;
-set(handles.smoothingLengthEdit,        'String', num2str(settings.curvatureSmoothingSize));
-set(handles.pointNumberEdit,            'String', num2str(settings.finalResultLength));
-set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
-set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
 set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
+set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
+
+set(handles.displacementSpatialSmoothingEdit,   'String', num2str(settings.displacementSpatialSmoothing));
+set(handles.displacementValueSmoothingEdit,     'String', num2str(settings.displacementValueSmoothing));
+set(handles.displacementResamplingDistanceEdit, 'String', num2str(settings.displacementResamplingDistance));
+set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
 
 
 % --------------------------------------------------------------------
@@ -222,6 +224,40 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+function displacementStepEdit_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSL>
+% hObject    handle to displacementStepEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of displacementStepEdit as text
+%        str2double(get(hObject,'String')) returns contents of displacementStepEdit as a double
+
+str  = get(handles.displacementStepEdit, 'String');
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of displacement step to ' str]);
+
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app.settings.displacementStep = val;
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+% --- Executes during object creation, after setting all properties.
+function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+% hObject    handle to displacementStepEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject, 'BackgroundColor', 'white');
+end
+
+
 
 function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
@@ -249,6 +285,118 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 % --- Executes during object creation, after setting all properties.
 function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function displacementSpatialSmoothingEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to displacementSpatialSmoothingEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of displacementSpatialSmoothingEdit as text
+%        str2double(get(hObject,'String')) returns contents of displacementSpatialSmoothingEdit as a double
+
+
+str  = get(handles.displacementSpatialSmoothingEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of displacementSpatialSmoothing to ' str]);
+
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app.settings.displacementSpatialSmoothing = val;
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
+% --- Executes during object creation, after setting all properties.
+function displacementSpatialSmoothingEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to displacementSpatialSmoothingEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function displacementValueSmoothingEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to displacementValueSmoothingEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of displacementValueSmoothingEdit as text
+%        str2double(get(hObject,'String')) returns contents of displacementValueSmoothingEdit as a double
+
+str  = get(handles.displacementValueSmoothingEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of displacementValueSmoothing to ' str]);
+
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app.settings.displacementValueSmoothing = val;
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
+% --- Executes during object creation, after setting all properties.
+function displacementValueSmoothingEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to displacementValueSmoothingEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function displacementResamplingDistanceEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to displacementResamplingDistanceEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of displacementResamplingDistanceEdit as text
+%        str2double(get(hObject,'String')) returns contents of displacementResamplingDistanceEdit as a double
+
+str  = get(handles.displacementResamplingDistanceEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ChooseElongationSettingsDialog.m', ...
+    ['Change value of displacementSamplingDistance to ' str]);
+
+val  = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app.settings.displacementResamplingDistance = val;
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
+% --- Executes during object creation, after setting all properties.
+function displacementResamplingDistanceEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to displacementResamplingDistanceEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -293,39 +441,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-function displacementStepEdit_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSL>
-% hObject    handle to displacementStepEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of displacementStepEdit as text
-%        str2double(get(hObject,'String')) returns contents of displacementStepEdit as a double
-
-str  = get(handles.displacementStepEdit, 'String');
-app = getappdata(0, 'app');
-app.logger.info('ChooseElongationSettingsDialog.m', ...
-    ['Change value of displacement step to ' str]);
-
-val  = str2double(str);
-if isnan(val) || val < 0
-    error('input ''%s'' must be a positive numeric value', str);
-end
-
-app.settings.displacementStep = val;
-setProcessingStep(app, ProcessingStep.Skeleton);
-
-% --- Executes during object creation, after setting all properties.
-function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
-% hObject    handle to displacementStepEdit (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject, 'BackgroundColor', 'white');
-end
 
 
 % --- Executes on button press in defaultSettingsButton.
@@ -390,4 +505,5 @@ delete(gcf);
 
 disp('Display Kymographs');
 DisplayKymograph(app);
+
 

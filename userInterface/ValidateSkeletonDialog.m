@@ -22,7 +22,7 @@ function varargout = ValidateSkeletonDialog(varargin)
 
 % Edit the above text to modify the response to help ValidateSkeletonDialog
 
-% Last Modified by GUIDE v2.5 22-Sep-2017 16:35:18
+% Last Modified by GUIDE v2.5 22-Sep-2017 16:50:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -147,6 +147,10 @@ if isempty(app.skeletonList)
     set(handles.validateSkeletonButton, 'Enable', 'Off');
     set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 end
+
+settings = app.settings;
+set(handles.curvatureSmoothingSizeEdit, 'String', num2str(settings.curvatureSmoothingSize));
+set(handles.pointNumberEdit,            'String', num2str(settings.finalResultLength));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -416,6 +420,81 @@ set(handles.saveSkeletonRoisButton, 'Enable', 'On');
 set(handles.saveSkeletonRoisButton, 'String', 'Save Skeleton ROIs');
 
 
+
+function curvatureSmoothingSizeEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to curvatureSmoothingSizeEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of curvatureSmoothingSizeEdit as text
+%        str2double(get(hObject,'String')) returns contents of curvatureSmoothingSizeEdit as a double
+
+str = get(handles.curvatureSmoothingSizeEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ValidateSkeletonDialog.m', ...
+    ['Change value of curvature smoothing to ' str]);
+
+val = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app.settings.curvatureSmoothingSize = val;
+
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
+% --- Executes during object creation, after setting all properties.
+function curvatureSmoothingSizeEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to curvatureSmoothingSizeEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+% hObject    handle to pointNumberEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of pointNumberEdit as text
+%        str2double(get(hObject,'String')) returns contents of pointNumberEdit as a double
+
+str = get(handles.pointNumberEdit, 'String');
+
+app = getappdata(0, 'app');
+app.logger.info('ValidateSkeletonDialog.m', ...
+    ['Change value of finalResultLength to ' str]);
+
+val = str2double(str);
+if isnan(val) || val < 0
+    error('input ''%s'' must be a positive numeric value', str);
+end
+
+app.settings.finalResultLength = val;
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
+% --- Executes during object creation, after setting all properties.
+function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to pointNumberEdit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
 % --- Executes on button press in BackToContourButton.
 function BackToContourButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 % hObject    handle to BackToContourButton (see GCBO)
@@ -444,4 +523,5 @@ app.logger.info('ValidateSkeletonDialog.m', ...
 
 delete(gcf);
 ChooseElongationSettingsDialog(app);
+
 
