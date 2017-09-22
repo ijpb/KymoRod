@@ -133,7 +133,8 @@ set(handles.slider1, 'Value', minCaxis);
 % display current kymograph
 xdata = (0:(size(img, 2)-1)) * app.settings.timeInterval;
 ydata = 1:size(img, 1);
-handles.kymographImage = imagesc(handles.kymographAxes, xdata, ydata, img);
+handles.kymographImage = imagesc(handles.kymographAxes, 'XData', xdata, 'YData', ydata, 'CData', img);
+% handles.kymographImage = imagesc(handles.kymographAxes, xdata, ydata, img);
 % add the function handle to capture mouse clicks
 set(handles.kymographImage, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 
