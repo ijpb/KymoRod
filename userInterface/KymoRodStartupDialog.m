@@ -97,6 +97,13 @@ catch ME
     return;
 end
 
+% if cancel button was clicked, app result is empty, and we re-open the
+% dialog.
+if isempty(app)
+    KymoRodStartupDialog();
+    return;
+end
+
 % assumes only 'complete' analyses can be saved, and call the dialog for
 % showing results
 displayProcessingDialog(gui, app);

@@ -1,8 +1,8 @@
 classdef (Sealed) KymoRodGui < handle
 %KYMORODGUI GUI Manager for the KymoRod application
 %
-%   The goal of this class is to provide several facility methods, such as
-%   methods for creating figure menus.
+%   This class provides several GUI utility methods, such as methods for
+%   creating figure menus. 
 %   
 %   The KymoRodGui is a singleton, and can be shared byu several
 %   application instances. To get the unique instance:
@@ -20,7 +20,9 @@ classdef (Sealed) KymoRodGui < handle
 
 %% Properties
 properties
+    % the path to the last directory used for opening a file
     lastOpenDir = '.';
+    
 end % end properties
 
 
@@ -42,6 +44,7 @@ end % end constructors
 methods (Static)
     function singleObj = getInstance
         % Return the current instance if KymoRodGui, or create one
+        % (Singleton pattern)
         persistent localObj
         if isempty(localObj) || ~isvalid(localObj)
             localObj = KymoRodGui();
