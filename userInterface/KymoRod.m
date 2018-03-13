@@ -681,6 +681,9 @@ classdef KymoRod < handle
                 {'Computing skeletons from contours,', 'please wait...'}, ...
                 'Skeletonization');
             
+            % spatial resolution of images in millimetres
+            resolMm = this.settings.pixelSize / 1000;
+            
             t0 = tic;
             parfor_progress(nFrames);
             parfor i = 1:nFrames
@@ -690,31 +693,40 @@ classdef KymoRod < handle
                     contour = smoothContour(contour, smooth);
                 end
                 
-                % scale contour in user unit (and convert from microns to millimeters)
-                contour = contour * this.settings.pixelSize / 1000;
+%                 % scale contour in user unit (and convert from microns to millimeters)
+%                 contour = contour * this.settings.pixelSize / 1000;
                 
                 % apply filtering depending on contour type
                 contour2 = filterContour(contour, 200, organShape);
                 
                 % extract skeleton of current contour
                 [skel, rad] = contourSkeleton(contour2, originDirection);
-                
-                % keep skeleton in pixel units
-                skelPx = skel * 1000 / this.settings.pixelSize;
-                skelList{i} = skelPx;
-                radList{i} = rad;
+
+                skelList{i} = skel;
+%                 skelMm = skel * resolMm;
+                radList{i} = rad * resolMm;
+%                 % keep skeleton in pixel units
+%                 skelPx = skel * 1000 / this.settings.pixelSize;
+%                 skelList{i} = skelPx;
+%                 radList{i} = rad;
                 
                 % coordinates of first point of skeleton
-                origin = skel(1,:);
-                originList{i} = origin;
+%                 origin = skel(1,:);
+                originPx = skel(1,:);
+                originMm = originPx * resolMm;
+                originList{i} = originMm;
                 
                 % align contour at bottom left and reverse y-axis (user coordinates)
-                contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
-                contListMm{i} = contour2;
+%                 contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
+%                 contListMm{i} = contour2;
+                contour2 = [contour(:,1) - originPx(1), -(contour(:,2) - originPx(2))];
+                contListMm{i} = contour2 * resolMm;
                 
                 % align skeleton at bottom left, and reverse y axis
-                skel2 = [skel(:,1) - origin(1), -(skel(:,2) - origin(2))];
-                skelListMm{i} = skel2;
+%                 skelMm2 = [skelMm(:,1) - originMm(1), -(skelMm(:,2) - originMm(2))];
+%                 skelListMm{i} = skelMm2;
+                skel2 = [skel(:,1) - originPx(1), -(skel(:,2) - originPx(2))];
+                skelListMm{i} = skel2 * resol;
                 
                 parfor_progress;
             end
