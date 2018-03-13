@@ -82,10 +82,11 @@ classdef KymoRod < handle
         % point of skeleton (old 'SK').
         scaledSkeletonList = {};
         
-        % list of radius values (old 'rad')
+        % list of radius values, in millimetres 
         radiusList = {};
         
-        % coordinates of the first point of the skeleton for each image
+        % coordinates of the first point of the skeleton for each image.
+        % (in pixels)
         originPosition = {};
         
         % the curvilinear abscissa of each skeleton, in a cell array
@@ -651,6 +652,13 @@ classdef KymoRod < handle
             skel = this.skeletonList{index};
         end
         
+        function skel = getScaledkeleton(this, index)
+            if this.processingStep < ProcessingStep.Skeleton
+                error('need to have skeletons computed');
+            end
+            skel = this.scaledSkeletonList{index};
+        end
+        
         function computeSkeletons(this)
             % compute all skeletons from smoothed contours
             
@@ -693,40 +701,29 @@ classdef KymoRod < handle
                     contour = smoothContour(contour, smooth);
                 end
                 
-%                 % scale contour in user unit (and convert from microns to millimeters)
-%                 contour = contour * this.settings.pixelSize / 1000;
-                
                 % apply filtering depending on contour type
                 contour2 = filterContour(contour, 200, organShape);
                 
                 % extract skeleton of current contour
                 [skel, rad] = contourSkeleton(contour2, originDirection);
-
                 skelList{i} = skel;
-%                 skelMm = skel * resolMm;
-                radList{i} = rad * resolMm;
-%                 % keep skeleton in pixel units
-%                 skelPx = skel * 1000 / this.settings.pixelSize;
-%                 skelList{i} = skelPx;
-%                 radList{i} = rad;
                 
-                % coordinates of first point of skeleton
-%                 origin = skel(1,:);
-                originPx = skel(1,:);
-                originMm = originPx * resolMm;
-                originList{i} = originMm;
+                % convert radius list to millimetres
+                radList{i} = rad * resolMm;
+                
+                % coordinates of first point of skeleton (in pixels)
+                origin = skel(1,:);
+                
+                % keep it after conversion in mm
+                originList{i} = origin;
                 
                 % align contour at bottom left and reverse y-axis (user coordinates)
-%                 contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
-%                 contListMm{i} = contour2;
-                contour2 = [contour(:,1) - originPx(1), -(contour(:,2) - originPx(2))];
+                contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
                 contListMm{i} = contour2 * resolMm;
                 
                 % align skeleton at bottom left, and reverse y axis
-%                 skelMm2 = [skelMm(:,1) - originMm(1), -(skelMm(:,2) - originMm(2))];
-%                 skelListMm{i} = skelMm2;
-                skel2 = [skel(:,1) - originPx(1), -(skel(:,2) - originPx(2))];
-                skelListMm{i} = skel2 * resol;
+                skel2 = [skel(:,1) - origin(1), -(skel(:,2) - origin(2))];
+                skelListMm{i} = skel2 * resolMm;
                 
                 parfor_progress;
             end
@@ -769,8 +766,11 @@ classdef KymoRod < handle
                 error('need to have skeletons computed');
             end
             
-            % Curvature and normalisation of abscissa
-            computeCurvaturesAndAbscissa(this);
+            % Compute curvilinear abscissa and align them
+            computeSkeletonAlignedAbscissa(this);
+
+            % Compute vertical angle and curvatures
+            computeAnglesAndCurvatures(this);
             
             % Displacement (may require some time...)
             computeDisplacements(this);
@@ -779,23 +779,70 @@ classdef KymoRod < handle
             computeElongations(this);
         end
         
-        function computeCurvaturesAndAbscissa(this)
-            % compute curvilinear abscissa, angle and curvature of all skeletons
+        function computeSkeletonAlignedAbscissa(this)
+            % Compute curvlinear abscissa on skeleton and align them
             
             disp('Compute angles and curvature');
-            this.logger.info('KymoRod.computeCurvaturesAndAbscissa', ...
-                'Compute curvatures, angles, and curvilinear abscissa');
+            this.logger.info('KymoRod.computeSkeletonAlignedAbscissa', ...
+                'Compute curvilinear abscissa of skeletons');
 
-            % Compute smoothed curvature curves
-            smooth  = this.settings.curvatureSmoothingSize;
-            [S, A, C] = computeCurvatureAll(this.scaledSkeletonList, smooth);
+            % number of images
+            nFrames = frameNumber(this);
+                        
+            % allocate memory for result
+            S = cell(nFrames, 1);
+
+            % iterate over skeletons
+            for i = 1:nFrames
+                S{i} = curvilinearAbscissa(this.scaledSkeletonList{i});
+            end
             
             % Alignment of all the results
             disp('Alignment of curves');
             Sa = alignAbscissa(S, this.radiusList);
             
             % store within class
-            this.abscissaList        = Sa;
+            this.abscissaList = Sa;
+        end
+        
+        function computeAnglesAndCurvatures(this)
+            % compute angle and curvature of all skeletons
+            
+            disp('Compute angles and curvature');
+            this.logger.info('KymoRod.computeAnglesAndCurvatures', ...
+                'Compute vertical angles and curvatures');
+
+            % get input data
+            SK = this.scaledSkeletonList;
+            S = this.abscissaList;
+
+            % size option for computing curvature
+            smooth  = this.settings.curvatureSmoothingSize;
+
+            % allocate memory for results
+            n = length(SK);
+            A = cell(n, 1);
+            C = cell(n, 1);
+            
+            % iterate over skeletons in the list
+            parfor_progress(n);
+            parfor i = 1:n
+                curve = SK{i};
+                % Check that the length of the skeleton is not too small
+                if size(curve, 1) > 2 * smooth
+                    % Computation of the angle A and the curvature C
+                    [A{i}, C{i}] = computeCurvature(curve, S{i}, smooth);
+                else
+                    % if the length is too small use a dummy abscissa and zeros angle
+                    A{i} = zeros(size(S{i}));
+                    C{i} = zeros(size(S{i}));
+                end
+                parfor_progress;
+                
+            end
+            parfor_progress(0);
+
+            % store within class
             this.verticalAngleList   = A;
             this.curvatureList       = C;
             
