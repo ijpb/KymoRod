@@ -157,6 +157,7 @@ app.inputImagesDir = folderName;
 if isfield(handles, 'currentFrameImage')
     handles = rmfield(handles, 'currentFrameImage');
 end
+
 updateImageNameList(handles);
 
 % --- Executes on button change in channelSelectionPanel
@@ -237,11 +238,19 @@ app = getappdata(0, 'app');
 app.logger.info('SelectInputImagesDialog.m', ...
     'Update image name list');
 
+hDialog = msgbox(...
+    {'Reading Image File Infos,', 'Please wait...'}, ...
+    'Read Images');
+
 % read new list of image names, used to compute frame number
 folderName  = app.inputImagesDir;
 filePattern = app.inputImagesFilePattern;
 imageNames  = readImageNameList(folderName, filePattern);
 app.imageNameList = imageNames;
+
+if ishandle(hDialog)
+    close(hDialog);
+end
 
 if isempty(app.imageNameList)
     errordlg({'The chosen directory contains no file.', ...

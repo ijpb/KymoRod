@@ -685,10 +685,6 @@ classdef KymoRod < handle
             originList  = cell(nFrames, 1);
             
             disp('Skeletonization');
-            hDialog = msgbox(...
-                {'Computing skeletons from contours,', 'please wait...'}, ...
-                'Skeletonization');
-            
             % spatial resolution of images in millimetres
             resolMm = this.settings.pixelSize / 1000;
             
@@ -739,10 +735,6 @@ classdef KymoRod < handle
             t1 = toc(t0);
             disp(sprintf('elapsed time: %6.2f mn', t1 / 60)); %#ok<DSPS>
             
-            if ishandle(hDialog)
-                close(hDialog);
-            end
-    
             setProcessingStep(this, ProcessingStep.Skeleton);
         end
     end

@@ -337,7 +337,15 @@ function computeAllSkeletons(handles)
 % get current application data
 app = getappdata(0, 'app');
 
+hDialog = msgbox(...
+    {'Computing skeletons from contours,', 'please wait...'}, ...
+    'Skeletonization');
+
 computeSkeletons(app);
+
+if ishandle(hDialog)
+    close(hDialog);
+end
 
 set(handles.validateSkeletonButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
