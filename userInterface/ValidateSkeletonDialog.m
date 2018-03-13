@@ -22,7 +22,7 @@ function varargout = ValidateSkeletonDialog(varargin)
 
 % Edit the above text to modify the response to help ValidateSkeletonDialog
 
-% Last Modified by GUIDE v2.5 22-Sep-2017 16:50:16
+% Last Modified by GUIDE v2.5 13-Mar-2018 17:37:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -349,6 +349,26 @@ end
 
 set(handles.validateSkeletonButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
+
+
+
+% --- Executes on button press in showSkeleton3dButton.
+function showSkeleton3dButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+% hObject    handle to showSkeleton3dButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+app = getappdata(0, 'app');
+
+figure;
+hold on;
+for i = 1:length(app.skeletonList)
+    skel = getSkeleton(app, i);
+    skel(:,3) = i * 10;
+    drawPolyline3d(skel, 'b');
+end
+set(gca, 'ydir', 'reverse');
+view(3); axis equal;
 
 
 % --- Executes on button press in saveSkeletonDataButton.
