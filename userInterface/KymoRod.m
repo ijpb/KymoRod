@@ -300,6 +300,9 @@ classdef KymoRod < handle
             computeThresholdValues(this);
             computeContours(this);
             computeSkeletons(this);
+            computeSkeletonAlignedAbscissa(this);
+            computeAnglesAndCurvatures(this);
+            computeDisplacements(this);
             computeCurvaturesAndAbscissa(this);
             computeDisplacements(this);
             computeElongations(this);
