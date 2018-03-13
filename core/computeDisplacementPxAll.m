@@ -19,6 +19,9 @@ function E = computeDisplacementPxAll(SK, S, pic, ws, step)
 % Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
 % Copyright 2012 INRA ijpb
 
+% Note: deprecated, now direclty computed from within the KymoRod class)
+
+
 nFrames = length(SK);
 E = cell(nFrames-step, 1);
 
@@ -28,8 +31,8 @@ parfor i = 1:nFrames - step
 	i2 = i + step;
 	
 	% check if the two skeletons are large enough
-    if length(SK{i}) > 2*80 && length(SK{i2}) > 2*80
-        E{i} = computeDisplacementPx(SK{i}, SK{i2}, S{i}, S{i2}, pic{i}, pic{i2}, ws); 
+    if length(SK{i}) > 2*80 && length(SK{i2}) > 2*80 %#ok<PFBNS>
+        E{i} = computeDisplacementPx(SK{i}, SK{i2}, S{i}, S{i2}, pic{i}, pic{i2}, ws);  %#ok<PFBNS>
 		
 		% check result is large enough
         if size(E{i},1) == 1

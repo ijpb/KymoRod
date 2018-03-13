@@ -377,7 +377,7 @@ end
 
 
 % --- Executes on mouse press over axes background.
-function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok
+function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to kymographAxes (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

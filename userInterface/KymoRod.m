@@ -1170,7 +1170,7 @@ classdef KymoRod < handle
              appStruct.serialVersion = char(this.serialVersion);
              
              % clear some unnecessary data
-             appStruct.logger = [];
+             appStruct.logger = []; %#ok<STRNU>
              
              % save as a struct
              save(fileName, '-struct', 'appStruct');
