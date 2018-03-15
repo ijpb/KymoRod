@@ -20,6 +20,9 @@ function [px, py, res] = snapFunctionToPixels(image, curve, S)
 % Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
 % Copyright 2012 INRA - Cepia Software Platform.
 
+warning('Deprecated: use "snapCurveToPixel" instead');
+
+
 % size of result image
 dim  = size(image);
 

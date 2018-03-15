@@ -30,25 +30,25 @@ function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
 % Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
 % Copyright 2012 INRA - Cepia Software Platform.
 
-dim = size(img1);
-
-% identify in each image the pixels containing a portion of skeleton
-% S1pix and S2pix contain curvilinear abscissa for corresponding pixels.
-[x1, y1, S1pix] = snapFunctionToPixels(img1, skel1, S1);
-[x2, y2, S2pix] = snapFunctionToPixels(img2, skel2, S2);
-
+% identify in each image the pixels containing a portion of skeleton.
+% S1px and S2px contain curvilinear abscissa for corresponding pixels.
+% [x1, y1, S1pix] = snapFunctionToPixels(img1, skel1, S1);
+% [x2, y2, S2pix] = snapFunctionToPixels(img2, skel2, S2);
+[S1px, x1, y1] = snapCurveToPixels(S1, skel1);
+[S2px, x2, y2] = snapCurveToPixels(S2, skel2);
 
 % process only skeleton points that are not too close from border
+dim = size(img1);
 inds = (x1 > ws) & (y1 > ws) & (x1 < dim(2)-ws) & (y1 < dim(1)-ws);
 x1 = x1(inds);
 y1 = y1(inds);
-S1pix = S1pix(inds);
+S1px = S1px(inds);
 
 % process only skeleton points that are not too close from border
 inds = (x2 > ws) & (x2 < dim(2)-ws) & (y2 > ws) & (y2 < dim(1)-ws);
 x2 = x2(inds);
 y2 = y2(inds);
-S2pix = S2pix(inds);
+S2px = S2px(inds);
 
 
 % allocate memory for result
@@ -78,8 +78,7 @@ for k = 1:length(x1)
     w1 = w1(:) - mean(w1(:));
     
     % identify positions in second image with similar curvilinear abscissa
-    inds = find( abs(S2pix - S1pix(k)) < L );
-%     inds = find( abs(S2pix - S1pix(k)) < L & S2pix > 0);
+    inds = find( abs(S2px - S1px(k)) < L );
 
     % check degenerate cases
     if isempty(inds)
@@ -105,7 +104,7 @@ for k = 1:length(x1)
              
         % compute displacement to current skeleton pixel of skel2, as the
         % difference between curvilinear abscissa
-        resCorr(l, 1) = S2pix(inds(l)) - S1pix(k);
+        resCorr(l, 1) = S2px(inds(l)) - S1px(k);
         
         % compute image correlation between the two thumbnails.
         resCorr(l, 2) = sum(w1 .* w2) / sqrt(sum(w1 .* w1) * sum(w2 .* w2));
@@ -117,7 +116,7 @@ for k = 1:length(x1)
     
     % increment result array
     a = a + 1;
-    E(a, 1) = S1pix(k);
+    E(a, 1) = S1px(k);
     E(a, 2) = resCorr(indMax,1);
 end
 
