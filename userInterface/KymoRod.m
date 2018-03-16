@@ -967,7 +967,19 @@ classdef KymoRod < handle
             this.logger.info('KymoRod.computeElongations', ...
                 'Reconstruct elongation kymograph');
             nx = this.settings.finalResultLength;
-            this.elongationImage = reconstruct_Elg2(nx, Elg);
+            
+            % prepare data for computing kymograph
+            nFrames = length(Elg);
+            S = cell(nFrames, 1);
+            A = cell(nFrames, 1);
+            for k = 1:nFrames
+                signal = Elg{k};
+                if ~isempty(signal)
+                    S{k} = signal(:, 1);
+                    A{k} = signal(:, 2);
+                end
+            end
+            this.elongationImage = kymographFromValues(S, A, nx);
 
             setProcessingStep(this, ProcessingStep.Elongation);
         end
@@ -1030,7 +1042,6 @@ classdef KymoRod < handle
             
             % add initial curvilinear abscissa
             E2 = [X + Smin, Y];
-
         end
         
         

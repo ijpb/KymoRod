@@ -23,6 +23,7 @@ function [Ax] = reconstruct_Elg2(nx, varargin)
 %   HISTORY
 %   2014-04-16 : Add comments about the file
 
+warning('Deprecated: replaced by kymographFromValues');
 
 if length(varargin) == 1
     signalList = varargin{1};
