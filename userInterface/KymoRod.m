@@ -92,7 +92,7 @@ classdef KymoRod < handle
         % the curvilinear abscissa of each skeleton, in a cell array
         abscissaList;
         
-        % the curvilinear abscissa after alignment procedure
+        % (obsolete) the curvilinear abscissa after alignment procedure
         alignedAbscissaList;
         
         % the angle with the vertical of each point of each skeleton, in a
@@ -848,9 +848,12 @@ classdef KymoRod < handle
             nx  = this.settings.finalResultLength;
             Sa  = this.abscissaList;
             
-            this.curvatureImage     = reconstruct_Elg2(nx, this.curvatureList, Sa);
-            this.verticalAngleImage = reconstruct_Elg2(nx, this.verticalAngleList, Sa);
-            this.radiusImage        = reconstruct_Elg2(nx, this.radiusList, Sa);
+%             this.curvatureImage     = reconstruct_Elg2(nx, this.curvatureList, Sa);
+%             this.verticalAngleImage = reconstruct_Elg2(nx, this.verticalAngleList, Sa);
+%             this.radiusImage        = reconstruct_Elg2(nx, this.radiusList, Sa);
+            this.curvatureImage     = kymographFromValues(Sa, this.curvatureList, nx);
+            this.verticalAngleImage = kymographFromValues(Sa, this.verticalAngleList, nx);
+            this.radiusImage        = kymographFromValues(Sa, this.radiusList, nx);
         end
         
         function computeDisplacements(this)

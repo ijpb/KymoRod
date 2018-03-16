@@ -30,7 +30,7 @@ if length(varargin) == 1
     S = cell(nSignals, 1);
     A = cell(nSignals, 1);
 
-    for k = 1:nSignals;
+    for k = 1:nSignals
         signal = signalList{k};
         if ~isempty(signal)
             S{k} = signal(:, 1);
@@ -53,7 +53,7 @@ nSignals = length(A);
 % keep min and max abscissa
 Smin = zeros(nSignals, 1);
 Smax = zeros(nSignals, 1);
-for k = 1:nSignals;
+for k = 1:nSignals
     Smin(k,1) = S{k}(1);
     Smax(k,1) = S{k}(end);
 end
