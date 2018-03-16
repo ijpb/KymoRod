@@ -34,6 +34,8 @@ enumeration
     Elongation(70)
     % kymograph displayed
     Kymograph(80)
+    % Intensity kymograph computed
+    Intensity(90)
 end
 
 methods (Static)
@@ -55,6 +57,7 @@ methods (Static)
             case 'skeleton',    step = ProcessingStep.Skeleton;
             case 'elongation',  step = ProcessingStep.Elongation;
             case 'kymograph',   step = ProcessingStep.Kymograph;
+            case 'intensity',   step = ProcessingStep.Kymograph;
             otherwise
                 error('Unrecognised Processing step name: %s', value);
         end

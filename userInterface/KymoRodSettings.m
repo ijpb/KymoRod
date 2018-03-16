@@ -93,6 +93,10 @@ classdef KymoRodSettings < handle
         windowSize2 = 20;
         
 
+        %% Intensity kymographs
+        
+        intensityImagesChannel = 'red';
+        
     end
     
     %% Constructor
@@ -190,6 +194,10 @@ classdef KymoRodSettings < handle
             fprintf(f, 'displacementResamplingDistance = %f\n', this.displacementResamplingDistance);
             fprintf(f, 'windowSize2 = %d\n', this.windowSize2);
             fprintf(f, '\n');
+            
+            % info for computing intensity kymograph
+            fprintf(f, 'intensityImagesChannel = %s\n', this.intensityImagesChannel);
+            
         end
         
     end % end of I/O non static methods
@@ -289,6 +297,9 @@ classdef KymoRodSettings < handle
                         settings.displacementResamplingDistance = str2double(value);
                     case lower('windowSize2')
                         settings.windowSize2 = str2double(value);
+                        
+                    case lower('intensityImagesChannel')
+                        settings.intensityImagesChannel = value;
                         
                     % do not process parameters previously stored in
                     % .settings files.

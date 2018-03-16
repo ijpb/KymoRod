@@ -15,10 +15,10 @@ classdef KymoRodData < handle
     properties (Constant)
         % identifier of application version, for display in About dialog
         % and for file releases
-        appliVersion = VersionNumber(0, 11, 2, 'SNAPSHOT');
+        appliVersion = VersionNumber(0, 12, 0, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
-        serialVersion = VersionNumber(0, 11, 0);
+        serialVersion = VersionNumber(0, 12, 0);
     end
     
     %% Properties
@@ -47,6 +47,12 @@ classdef KymoRodData < handle
         imageNameList = {};
         inputImagesDir = '';
         inputImagesFilePattern = '*.*';
+        
+        % informations to retrieve intensity images 
+        % (for computing the intensity kymograph)
+        intensityImagesNameList = {};
+        intensityImagesDir = '';
+        intensityImagesFilePattern = '*.*';
         
         % flag indicating whether images are loaded in memory or read from
         % files only when necessary
@@ -124,15 +130,18 @@ classdef KymoRodData < handle
         % final result: elongation as a function of position and time
         elongationImage;
         
+        % intensity kymogrpah, computed by evaluating the intensity of
+        % another image on the positions of the skeletons
+        intensityImage;
         
         % the type of kymograph used for display
         % should be one of 'radius' (default), 'verticalAngle',
-        % 'curvature', 'elongation'.
+        % 'curvature', 'elongation', 'intensity'
         kymographDisplayType = 'radius';
         
         % the relative abscissa of the graphical cursor, between 0 and 1.
         % Default value is .5, corresponding to the middle of the skeleton.
-        cursorRelativeAbscissa = 0;
+        cursorRelativeAbscissa = 0.5;
     end
     
     
@@ -198,6 +207,7 @@ classdef KymoRodData < handle
                     case 'skeleton',    newStep = ProcessingStep.Skeleton;
                     case 'elongation',  newStep = ProcessingStep.Elongation;
                     case 'kymograph',   newStep = ProcessingStep.Kymograph;
+                    case 'intensity',   newStep = ProcessingStep.Intensity;
                     otherwise
                         error(['Unrecognised processing step: ' newStep]);
                 end
@@ -233,6 +243,9 @@ classdef KymoRodData < handle
                     
                 case ProcessingStep.Kymograph
                     % final processing step: nothing to clear!
+                    
+                case ProcessingStep.Intensity
+                    % An additional step after elongation histogram
                     
                 otherwise
                     error(['Unrecognised processing step: ' newStep]);
@@ -381,7 +394,6 @@ classdef KymoRodData < handle
             parfor_progress(0);
             
             this.imageNameList = imageNames;
-
         end
         
         function nFiles = getFileNumber(this)
@@ -1044,6 +1056,54 @@ classdef KymoRodData < handle
             E2 = [X + Smin, Y];
         end
         
+        function computeIntensityKymograph(this)
+            
+            % recupere la liste des squelette et le nombre d'images
+            n = length(this.skeletonList);
+            
+            % allocation memoire pour le resultat
+            S2List = cell(n, 1);
+            values = cell(n, 1);
+            
+            % iteration sur les couples images+squelette
+            for i = 1:n
+                % recupere image + squelette + abscisse curviligne
+                S = this.abscissaList{i};
+                skel = this.skeletonList{i};
+                
+                % reduction du squelette pour centrer sur les pixels
+                [S2, skel2] = snapCurveToPixels(S, skel);
+                S2List{i} = S2;
+                
+                % calcule les valeurs
+                img = this.getIntensityImage(i);
+                values{i} = imEvaluate(img, skel2);
+            end
+            
+            % recupere la taille des images resultat, et calcule le "Kymographe en
+            % niveau de gris...")
+            nx = this.settings.finalResultLength;
+            this.intensityImage = kymographFromValues(S2List, values, nx);
+            
+            % affiche le resultat
+            figure;
+            imagesc(this.intensityImage);
+            set(gca, 'ydir', 'normal');
+            colormap gray;
+        end
+        
+        function image = getIntensityImage(this, index)
+            filePath = fullfile(this.intensityImagesDir, this.intensityImagesNameList{index});
+            image = imread(filePath);
+            
+            if ndims(image) > 2 %#ok<ISMAT>
+                switch lower(this.settings.intensityImageChannel)
+                    case 'red',     image = image(:,:,1);
+                    case 'green',   image = image(:,:,2);
+                    case 'blue',    image = image(:,:,3);
+                end
+            end
+        end
         
         function img = getKymographMatrix(this)
             % Return the array of values representing the current kymograph
@@ -1052,15 +1112,14 @@ classdef KymoRodData < handle
             switch this.kymographDisplayType
                 case 'radius'
                     img = this.radiusImage;
-                    
                 case 'verticalAngle'
                     img = this.verticalAngleImage;
-                    
                 case 'curvature'
                     img = this.curvatureImage;
-                    
                 case 'elongation'
                     img = this.elongationImage;
+                case 'intensity'
+                    img = this.intensityImage;
             end
         end
     end
@@ -1185,6 +1244,10 @@ classdef KymoRodData < handle
             % informations to retrieve input image
             fprintf(f, 'inputImagesDir = %s\n', this.inputImagesDir);
             fprintf(f, 'inputImagesFilePattern = %s\n', this.inputImagesFilePattern);
+
+            % informations to retrieve intensity image
+            fprintf(f, 'intensityImagesDir = %s\n', this.intensityImagesDir);
+            fprintf(f, 'intensityImagesFilePattern = %s\n', this.intensityImagesFilePattern);
             
             % informations to select images from input directory
             fprintf(f, 'firstIndex = %d\n', this.firstIndex);
@@ -1377,7 +1440,9 @@ classdef KymoRodData < handle
             
             % parse version number from version string
             version = VersionNumber(data.serialVersion);
-            if version.major == 0 && version.minor == 11
+            if version.major == 0 && version.minor == 12
+                app = KymoRodData.load_V_0_11(data);
+            elseif version.major == 0 && version.minor == 11
                 app = KymoRodData.load_V_0_11(data);
             elseif version.major == 0 && ismember(version.minor, [8 10])
                 % just to fix bug introduced in version 0.10.0

@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 12-Feb-2016 14:51:26
+% Last Modified by GUIDE v2.5 16-Mar-2018 15:29:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,18 +68,14 @@ buildFigureMenu(gui, hObject, app);
 
 % compute number of frames that can be displayed
 nFrames = frameNumber(app);
-% if strcmp(app.kymographDisplayType, 'elongation')
-%     % remove two frames for elongation kymographs
-%     nFrames = nFrames - 2; 
-% end
 
 % get index of current frame, eventually corrected by max frame number
 frameIndex = app.currentFrameIndex;
 frameIndex = min(frameIndex, nFrames);
 
 % Display current image
-axes(handles.imageAxes); hold on;
 % display grayscale image as RGB, to avoid colormap problems
+axes(handles.imageAxes); hold on;
 img = getImage(app, frameIndex);
 if ndims(img) == 2 %#ok<ISMAT>
     img = repmat(img, [1 1 3]);
@@ -103,19 +99,37 @@ handles.colorSkelHandle = scatter(skeleton(:, 1), skeleton(:, 2), ...
 handles.imageMarker     = drawMarker(skeleton(1, :), ...
     'd', 'Color', 'k', 'LineWidth', 1, 'MarkerFaceColor', 'w');
 
-% update the widget for choosing the type of kymograph
-switch lower(app.kymographDisplayType)
-    case 'radius'
-        set(handles.kymographTypePopup, 'Value', 1);
-    case 'verticalangle'
-        set(handles.kymographTypePopup, 'Value', 2);
-    case 'curvature' 
-        set(handles.kymographTypePopup, 'Value', 3);
-    case 'elongation'
-        set(handles.kymographTypePopup, 'Value', 4);
-    otherwise
-        warning(['Could not interpret kymograph type: ' app.kymographDisplayType]);
+% depending on which data have been processed, only some kymographs may be
+% displayed.
+typeList = {'radius', 'verticalAngle', 'curvature'};
+if ~isempty(app.elongationImage)
+    typeList = [typeList, {'elongation'}];
 end
+if ~isempty(app.intensityImage)
+    typeList = [typeList, {'intensity'}];
+end
+set(handles.kymographTypePopup, 'String', char(typeList));
+
+% update the widget for choosing the type of kymograph
+index = find(strcmpi(app.kymographDisplayType, typeList));
+if isempty(index)
+    index = 1;
+end
+set(handles.kymographTypePopup, 'Value', index);
+% switch lower(app.kymographDisplayType)
+%     case 'radius'
+%         set(handles.kymographTypePopup, 'Value', 1);
+%     case 'verticalangle'
+%         set(handles.kymographTypePopup, 'Value', 2);
+%     case 'curvature' 
+%         set(handles.kymographTypePopup, 'Value', 3);
+%     case 'elongation'
+%         set(handles.kymographTypePopup, 'Value', 4);
+%     case 'intensity'
+%         set(handles.kymographTypePopup, 'Value', 5);
+%     otherwise
+%         warning(['Could not interpret kymograph type: ' app.kymographDisplayType]);
+% end
 
 % compute display extent for elongation kymograph
 img = getKymographMatrix(app);
@@ -275,22 +289,46 @@ function kymographTypePopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 
 app = getappdata(0, 'app');
 
+% get the type of kymograph currently displayed
+typeList = get(handles.kymographTypePopup, 'String');
+type = strtrim(typeList(get(handles.kymographTypePopup, 'Value'), :));
+disp(type)
+
 % Choose the kymograph to display
-valPopUp = get(handles.kymographTypePopup, 'Value');
-switch valPopUp
-    case 1
+switch lower(type)
+    case 'radius'
         app.kymographDisplayType = 'radius';
         img = app.radiusImage;
-    case 2
+    case lower('verticalAngle')
         app.kymographDisplayType = 'verticalAngle';
         img = app.verticalAngleImage;
-    case 3
+    case 'curvature'
         app.kymographDisplayType = 'curvature';
         img = app.curvatureImage;
-    case 4
+    case 'elongation'
         app.kymographDisplayType = 'elongation';
         img = app.elongationImage;
+    case 'intensity'
+        app.kymographDisplayType = 'intensity';
+        img = app.intensityImage;
 end
+
+% % Choose the kymograph to display
+% valPopUp = get(handles.kymographTypePopup, 'Value');
+% switch valPopUp
+%     case 1
+%         app.kymographDisplayType = 'radius';
+%         img = app.radiusImage;
+%     case 2
+%         app.kymographDisplayType = 'verticalAngle';
+%         img = app.verticalAngleImage;
+%     case 3
+%         app.kymographDisplayType = 'curvature';
+%         img = app.curvatureImage;
+%     case 4
+%         app.kymographDisplayType = 'elongation';
+%         img = app.elongationImage;
+% end
 minCaxis = min(img(:));
 maxCaxis = max(img(:));
 
@@ -333,13 +371,17 @@ skeleton = getSkeleton(app, frameIndex);
 xdata = skeleton(:, 1);
 ydata = skeleton(:, 2);
 
-% switch depending on value to display
-valPopUp = get(handles.kymographTypePopup, 'Value');
-switch valPopUp
-    case 1, values = app.radiusList{frameIndex};
-    case 2, values = app.verticalAngleList{frameIndex};
-    case 3, values = app.curvatureList{frameIndex};
-    case 4
+% get the type of kymograph currently displayed
+typeList = get(handles.kymographTypePopup, 'String');
+type = strtrim(typeList(get(handles.kymographTypePopup, 'Value'), :));
+disp(type)
+
+% Choose the kymograph to display
+switch lower(type)
+    case 'radius', values = app.radiusList{frameIndex};
+    case lower('verticalAngle'), values = app.verticalAngleList{frameIndex};
+    case 'curvature', values = app.curvatureList{frameIndex};
+    case 'elongation'
         % make sure frame index is valid for elongation data
         frameIndex = min(frameIndex, length(app.elongationList));
         skeleton = getSkeleton(app, frameIndex);
@@ -357,7 +399,36 @@ switch valPopUp
         end
         xdata = skeleton(inds, 1);
         ydata = skeleton(inds, 2);
+    case 'intensity'
+        % TODO...
+        return;
 end
+
+% % switch depending on value to display
+% valPopUp = get(handles.kymographTypePopup, 'Value');
+% switch valPopUp
+%     case 1, values = app.radiusList{frameIndex};
+%     case 2, values = app.verticalAngleList{frameIndex};
+%     case 3, values = app.curvatureList{frameIndex};
+%     case 4
+%         % make sure frame index is valid for elongation data
+%         frameIndex = min(frameIndex, length(app.elongationList));
+%         skeleton = getSkeleton(app, frameIndex);
+%         
+%         % extract the values of elongation
+%         elg = app.elongationList{frameIndex};
+%         values = elg(:, 2);
+%         
+%         % need to re-compute x and y data, as they are computed on a pixel
+%         % approximation of the skeleton
+%         abscissa = app.abscissaList{frameIndex};
+%         inds = zeros(size(elg, 1), 1);
+%         for i = 1:length(inds)
+%             inds(i) = find(abscissa > elg(i,1), 1, 'first');
+%         end
+%         xdata = skeleton(inds, 1);
+%         ydata = skeleton(inds, 2);
+% end
 
 % extract bounds
 vmin = getappdata(0, 'minCaxis');
@@ -742,3 +813,15 @@ button = questdlg({'This will quit the program', 'Are you sure ?'}, ...
 if strcmp(button, 'Yes')
     delete(gcf);
 end
+
+
+
+% --- Executes on button press in intensityKymographButton.
+function intensityKymographButton_Callback(hObject, eventdata, handles)
+% hObject    handle to intensityKymographButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+app = getappdata(0, 'app');
+delete(gcf);
+SelectIntensityImagesDialog(app);
