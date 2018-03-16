@@ -1091,7 +1091,7 @@ classdef KymoRodData < handle
             image = imread(filePath);
             
             if ndims(image) > 2 %#ok<ISMAT>
-                switch lower(this.settings.intensityImageChannel)
+                switch lower(this.settings.intensityImagesChannel)
                     case 'red',     image = image(:,:,1);
                     case 'green',   image = image(:,:,2);
                     case 'blue',    image = image(:,:,3);
