@@ -22,7 +22,7 @@ function varargout = DisplayKymograph(varargin)
 
 % Edit the above text to modify the response to help DisplayKymograph
 
-% Last Modified by GUIDE v2.5 16-Mar-2018 15:29:22
+% Last Modified by GUIDE v2.5 16-Mar-2018 16:04:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -116,20 +116,6 @@ if isempty(index)
     index = 1;
 end
 set(handles.kymographTypePopup, 'Value', index);
-% switch lower(app.kymographDisplayType)
-%     case 'radius'
-%         set(handles.kymographTypePopup, 'Value', 1);
-%     case 'verticalangle'
-%         set(handles.kymographTypePopup, 'Value', 2);
-%     case 'curvature' 
-%         set(handles.kymographTypePopup, 'Value', 3);
-%     case 'elongation'
-%         set(handles.kymographTypePopup, 'Value', 4);
-%     case 'intensity'
-%         set(handles.kymographTypePopup, 'Value', 5);
-%     otherwise
-%         warning(['Could not interpret kymograph type: ' app.kymographDisplayType]);
-% end
 
 % compute display extent for elongation kymograph
 img = getKymographMatrix(app);
@@ -313,22 +299,6 @@ switch lower(type)
         img = app.intensityImage;
 end
 
-% % Choose the kymograph to display
-% valPopUp = get(handles.kymographTypePopup, 'Value');
-% switch valPopUp
-%     case 1
-%         app.kymographDisplayType = 'radius';
-%         img = app.radiusImage;
-%     case 2
-%         app.kymographDisplayType = 'verticalAngle';
-%         img = app.verticalAngleImage;
-%     case 3
-%         app.kymographDisplayType = 'curvature';
-%         img = app.curvatureImage;
-%     case 4
-%         app.kymographDisplayType = 'elongation';
-%         img = app.elongationImage;
-% end
 minCaxis = min(img(:));
 maxCaxis = max(img(:));
 
@@ -359,6 +329,31 @@ function kymographTypePopup_CreateFcn(hObject, eventdata, handles) %#ok<*DEFNU,I
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function colormapPopup_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to colormapPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in colormapPopup.
+function colormapPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
+% hObject    handle to colormapPopup (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns colormapPopup contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from colormapPopup
+
+updateKymographDisplay(handles);
 
 
 function updateColoredSkeleton(handles)
@@ -404,31 +399,6 @@ switch lower(type)
         return;
 end
 
-% % switch depending on value to display
-% valPopUp = get(handles.kymographTypePopup, 'Value');
-% switch valPopUp
-%     case 1, values = app.radiusList{frameIndex};
-%     case 2, values = app.verticalAngleList{frameIndex};
-%     case 3, values = app.curvatureList{frameIndex};
-%     case 4
-%         % make sure frame index is valid for elongation data
-%         frameIndex = min(frameIndex, length(app.elongationList));
-%         skeleton = getSkeleton(app, frameIndex);
-%         
-%         % extract the values of elongation
-%         elg = app.elongationList{frameIndex};
-%         values = elg(:, 2);
-%         
-%         % need to re-compute x and y data, as they are computed on a pixel
-%         % approximation of the skeleton
-%         abscissa = app.abscissaList{frameIndex};
-%         inds = zeros(size(elg, 1), 1);
-%         for i = 1:length(inds)
-%             inds(i) = find(abscissa > elg(i,1), 1, 'first');
-%         end
-%         xdata = skeleton(inds, 1);
-%         ydata = skeleton(inds, 2);
-% end
 
 % extract bounds
 vmin = getappdata(0, 'minCaxis');
@@ -646,8 +616,12 @@ set(handles.kymographAxes, 'YDir', 'normal', 'YTick', []);
 if minCaxis < maxCaxis - val
     caxis(handles.kymographAxes, [minCaxis, maxCaxis - val]); 
 end
-colorbar(handles.kymographAxes); 
-colormap jet;
+colorbar(handles.kymographAxes);
+cmapNames = get(handles.colormapPopup, 'String');
+index = get(handles.colormapPopup, 'Value');
+% colormap jet;
+colorMapName = strtrim(cmapNames{index});
+colormap(handles.kymographAxes, colorMapName);
 
 % annotate
 xlabel(sprintf('Time (%s)', app.settings.timeIntervalUnit));
@@ -825,3 +799,4 @@ function intensityKymographButton_Callback(hObject, eventdata, handles)
 app = getappdata(0, 'app');
 delete(gcf);
 SelectIntensityImagesDialog(app);
+

@@ -1057,39 +1057,33 @@ classdef KymoRodData < handle
         end
         
         function computeIntensityKymograph(this)
+            % Comptue kymograph based on values within a list of images
             
-            % recupere la liste des squelette et le nombre d'images
+            % get number of frames
             n = length(this.skeletonList);
             
-            % allocation memoire pour le resultat
+            % allocate memory for result
             S2List = cell(n, 1);
             values = cell(n, 1);
             
-            % iteration sur les couples images+squelette
+            % iterate over pairs image+skeleton
             for i = 1:n
-                % recupere image + squelette + abscisse curviligne
+                % get skeleton and its curvilinear abscissa
                 S = this.abscissaList{i};
                 skel = this.skeletonList{i};
                 
-                % reduction du squelette pour centrer sur les pixels
+                % reduce skeleton to snap on image pixels
                 [S2, skel2] = snapCurveToPixels(S, skel);
                 S2List{i} = S2;
                 
-                % calcule les valeurs
+                % compute values within image
                 img = this.getIntensityImage(i);
                 values{i} = imEvaluate(img, skel2);
             end
             
-            % recupere la taille des images resultat, et calcule le "Kymographe en
-            % niveau de gris...")
+            % Compute kymograph using specified kymograph size
             nx = this.settings.finalResultLength;
             this.intensityImage = kymographFromValues(S2List, values, nx);
-            
-            % affiche le resultat
-            figure;
-            imagesc(this.intensityImage);
-            set(gca, 'ydir', 'normal');
-            colormap gray;
         end
         
         function image = getIntensityImage(this, index)
