@@ -56,10 +56,10 @@ function KymoRodMenuDialog_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
 % Choose default command line output for KymoRodMenuDialog
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'KymoRod')
+if nargin == 4 && isa(varargin{1}, 'KymoRodData')
     app = varargin{1};
 elseif nargin == 3
-    app = KymoRod();
+    app = KymoRodData();
 end
 
 setappdata(0, 'app', app);

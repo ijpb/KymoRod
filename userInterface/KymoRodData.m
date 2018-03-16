@@ -1,13 +1,13 @@
-classdef KymoRod < handle
+classdef KymoRodData < handle
 % Class for storing data of the "KymoRod" application
 %
 % This class contains a reference to the current settings, the currently
 % loaded data, and most of the data processing methods. 
 %
-% KR = KymoRod()
+% KR = KymoRodData()
 % Creates a new KymoRod data structure with default settings
 %
-% KR = KymoRod(SETTINGS)
+% KR = KymoRodData(SETTINGS)
 % Creates a new KymoRod data structure with pre-determined settings
 %
     
@@ -138,13 +138,13 @@ classdef KymoRod < handle
     
     %% Constructor
     methods
-        function this = KymoRod(varargin)
+        function this = KymoRodData(varargin)
             % Create a new data structure for storing application data
             %
-            % KR = KymoRod()
+            % KR = KymoRodData()
             % Creates a new KymoRod data structure with default settings
             %
-            % KR = KymoRod(SETTINGS)
+            % KR = KymoRodData(SETTINGS)
             % Creates a new KymoRod data structure with pre-determinated
             % settings
             
@@ -163,7 +163,7 @@ classdef KymoRod < handle
             setCommandWindowLevel(this.logger, log4m.WARN);
             
             % log the object instanciation
-            versionString = char(KymoRod.appliVersion);
+            versionString = char(KymoRodData.appliVersion);
             this.logger.info('KymoRod', ...
                 ['Create new KymoRod instance, V-' versionString]);
             
@@ -203,7 +203,7 @@ classdef KymoRod < handle
                 end
             end
             
-            this.logger.debug('KymoRod.setProcessingStep', ...
+            this.logger.debug('KymoRodData.setProcessingStep', ...
                 ['Set processing step to ' char(newStep)]);
             
 
@@ -524,7 +524,7 @@ classdef KymoRod < handle
         function computeThresholdValues(this)
             % compute threshold values for all images
             
-            this.logger.info('KymoRod.computeThresholdValues', ...
+            this.logger.info('KymoRodData.computeThresholdValues', ...
                 'Compute Image Thresholds');
             
             if this.processingStep == ProcessingStep.None
@@ -603,7 +603,7 @@ classdef KymoRod < handle
         function computeContours(this)
             % compute the contour for each image
             
-            this.logger.info('KymoRod.computeContours', ...
+            this.logger.info('KymoRodData.computeContours', ...
                 'Compute binary images contours');
             
             if this.processingStep < ProcessingStep.Threshold
@@ -665,7 +665,7 @@ classdef KymoRod < handle
         function computeSkeletons(this)
             % compute all skeletons from smoothed contours
             
-            this.logger.info('KymoRod.computeSkeletons', ...
+            this.logger.info('KymoRodData.computeSkeletons', ...
                 'Compute skeletons from contours');
 
             if this.processingStep < ProcessingStep.Contour
@@ -728,7 +728,7 @@ classdef KymoRod < handle
             end
             parfor_progress(0);
             
-            % copy temporary arrays to KymoRod instance
+            % copy temporary arrays to KymoRodData instance
             this.skeletonList       = skelList;
             this.radiusList         = radList;
             this.scaledContourList  = contListMm;
@@ -778,7 +778,7 @@ classdef KymoRod < handle
             % Compute curvlinear abscissa on skeleton and align them
             
             disp('Compute angles and curvature');
-            this.logger.info('KymoRod.computeSkeletonAlignedAbscissa', ...
+            this.logger.info('KymoRodData.computeSkeletonAlignedAbscissa', ...
                 'Compute curvilinear abscissa of skeletons');
 
             % number of images
@@ -804,7 +804,7 @@ classdef KymoRod < handle
             % compute angle and curvature of all skeletons
             
             disp('Compute angles and curvature');
-            this.logger.info('KymoRod.computeAnglesAndCurvatures', ...
+            this.logger.info('KymoRodData.computeAnglesAndCurvatures', ...
                 'Compute vertical angles and curvatures');
 
             % get input data
@@ -860,13 +860,13 @@ classdef KymoRod < handle
             % Compute displacements between all couples of frames
 
             disp('Displacement');
-            this.logger.info('KymoRod.computeDisplacements', ...
+            this.logger.info('KymoRodData.computeDisplacements', ...
                 'Compute displacements');
             
             % settings
             ws = this.settings.windowSize1;
             L = 4 * ws * this.settings.pixelSize / 1000;
-            this.logger.debug('KymoRod.computeDisplacements', ...
+            this.logger.debug('KymoRodData.computeDisplacements', ...
                 sprintf('Value of L=%f', L));
             
             nFrames = frameNumber(this);
@@ -917,7 +917,7 @@ classdef KymoRod < handle
             if length(SK1) <= 2*80 || length(SK2) <= 2*80
                 % case of too small skeletons
                 msg = sprintf('Skeletons %d or %d has not enough vertices', i, i2);
-                this.logger.warn('KymoRod.computeFrameDisplacement', msg);
+                this.logger.warn('KymoRodData.computeFrameDisplacement', msg);
                 warning(msg); %#ok<SPWRN>
                 displ = [1 0; 1 1];
                 return;
@@ -928,7 +928,7 @@ classdef KymoRod < handle
             % check result is large enough
             if size(displ, 1) == 1
                 msg = sprintf('Displacement from frame %d to frame %d resulted in small array', i, i2);
-                this.logger.warn('KymoRod.computeFrameDisplacement', msg);
+                this.logger.warn('KymoRodData.computeFrameDisplacement', msg);
                 warning(msg); %#ok<SPWRN>
                 displ = [1 0;1 1];
                 return;
@@ -943,7 +943,7 @@ classdef KymoRod < handle
 
             % Elongation
             disp('Elongation');
-            this.logger.info('KymoRod.computeElongations', ...
+            this.logger.info('KymoRodData.computeElongations', ...
                 'Compute elongations');
 
             % initialize results
@@ -964,7 +964,7 @@ classdef KymoRod < handle
             this.elongationList = Elg;
             
             %  Space-time mapping
-            this.logger.info('KymoRod.computeElongations', ...
+            this.logger.info('KymoRodData.computeElongations', ...
                 'Reconstruct elongation kymograph');
             nx = this.settings.finalResultLength;
             
@@ -1110,8 +1110,8 @@ classdef KymoRod < handle
             % 
             % deprecated: use showCurrentKymograph instead
             
-            warning('KymoRod:showKymoGraph', ...
-                'KymoRod.showKymoGraph() is deprecated, use showCurrentKymograph instead');
+            warning('KymoRodData:showKymoGraph', ...
+                'KymoRodData.showKymoGraph() is deprecated, use showCurrentKymograph instead');
             
             if nargin < 2
                 type = 'elongation';
@@ -1158,7 +1158,7 @@ classdef KymoRod < handle
         function write(this, fileName)
             % Save in a text file the different options used to compute kymographs
             
-            this.logger.info('KymoRod.write', ...
+            this.logger.info('KymoRodData.write', ...
                 ['Save kymorod object in file: ' fileName]);
 
             % open in text mode, erasing content if it exists
@@ -1173,8 +1173,8 @@ classdef KymoRod < handle
             fprintf(f, '# saved: %s\n', datestr(now,0));
             
             % save also modification date of the main class          
-            baseDir = fileparts(which('KymoRod'));
-            fileInfo = dir(fullfile(baseDir, 'KymoRod.m'));
+            baseDir = fileparts(which('KymoRodData'));
+            fileInfo = dir(fullfile(baseDir, 'KymoRodData.m'));
             fprintf(f, '# KymoRod version: %s (%s)\n', ...
                 char(this.appliVersion), fileInfo.date);
             fprintf(f, '\n');
@@ -1192,7 +1192,7 @@ classdef KymoRod < handle
             fprintf(f, 'indexStep = %d\n', this.indexStep);
             fprintf(f, '\n');
             
-            string = KymoRod.booleanToString(this.inputImagesLazyLoading);
+            string = KymoRodData.booleanToString(this.inputImagesLazyLoading);
             fprintf(f, 'inputImagesLazyLoading = %s\n', string);
             fprintf(f, '\n');
             
@@ -1249,13 +1249,13 @@ classdef KymoRod < handle
     %% Static methods
     methods (Static)
         function app = read(fileName)
-            % Initialize a new instance of "KymoRod" from saved text file
+            % Initialize a new instance of "KymoRodData" from saved text file
             %
             % See also
             %    load, write
             
             % create new empty appdata class
-            app = KymoRod();
+            app = KymoRodData();
             
             % open in text reading mode
             f = fopen(fileName, 'rt');
@@ -1354,7 +1354,7 @@ classdef KymoRod < handle
         end
         
         function app = load(fileName)
-            % Initialize a new KymoRod instance from a saved binary file
+            % Initialize a new KymoRodData instance from a saved binary file
             %
             % Example
             %    save(app, 'savedKymo.mat');
@@ -1378,10 +1378,10 @@ classdef KymoRod < handle
             % parse version number from version string
             version = VersionNumber(data.serialVersion);
             if version.major == 0 && version.minor == 11
-                app = KymoRod.load_V_0_11(data);
+                app = KymoRodData.load_V_0_11(data);
             elseif version.major == 0 && ismember(version.minor, [8 10])
                 % just to fix bug introduced in version 0.10.0
-                app = KymoRod.load_V_0_8(data);
+                app = KymoRodData.load_V_0_8(data);
             else
                 error('Could not parse file with serial version %s', ...
                     char(data.serialVersion));
@@ -1401,7 +1401,7 @@ classdef KymoRod < handle
             % (corresponds to KymoRod applications 0.11.x and upward)
             
             % creates a new empty instance
-            app = KymoRod();
+            app = KymoRodData();
 
             fields = fieldnames(data);
             for i = 1:length(fields)
@@ -1437,7 +1437,7 @@ classdef KymoRod < handle
             % (corresponds to KymoRod applications 0.8.x to 0.10.x)
             
             % creates empty instance
-            app = KymoRod();
+            app = KymoRodData();
 
             % parse settings from structure        
             app.settings = KymoRodSettings.fromStruct(data.settings);

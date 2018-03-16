@@ -121,7 +121,7 @@ function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFN
 close(handles.mainFigure);
 
 % create new empty application data structure
-app = KymoRod();
+app = KymoRodData();
 
 % initialize with default directory
 path = fileparts(mfilename('fullpath'));
@@ -158,7 +158,7 @@ logger.info('KymoRodStartupDialog', ...
 settings = KymoRodSettings.read(fullfile(folderName, fileName));
 
 % create new application, and setup its settings
-app = KymoRod;
+app = KymoRodData;
 app.settings = settings;
 
 % choose input images

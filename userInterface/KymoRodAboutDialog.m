@@ -54,7 +54,7 @@ function KymoRodAboutDialog_OpeningFcn(hObject, eventdata, handles, varargin) %#
 
 
 % Update some text handles with current information
-string = sprintf('Version %s', char(KymoRod.appliVersion));
+string = sprintf('Version %s', char(KymoRodData.appliVersion));
 set(handles.versionText, 'string', string);
 
 % Choose default command line output for KymoRodAboutDialog

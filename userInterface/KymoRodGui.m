@@ -92,7 +92,7 @@ methods
             ['Open analysis from file: ' fullfile(folderName, fileName)]);
 
         % read application data corresponding to selected file
-        app = KymoRod.load(fullfile(folderName, fileName));
+        app = KymoRodData.load(fullfile(folderName, fileName));
 
         % ensure input directory is valid, otherwise, ask for a new one.
         while exist(app.inputImagesDir, 'dir') == 0
@@ -216,7 +216,7 @@ methods
         % create new empty application data structure, using same settings
         app = get(hObject, 'UserData');
         settings = app.settings;
-        newApp = KymoRod(settings);
+        newApp = KymoRodData(settings);
         
         % initialize with default directory
         path = fileparts(mfilename('fullpath'));

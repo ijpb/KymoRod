@@ -55,7 +55,7 @@ function ValidateSkeletonDialog_OpeningFcn(hObject, eventdata, handles, varargin
 % Choose default command line output for Skeleton
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'KymoRod')
+if nargin == 4 && isa(varargin{1}, 'KymoRodData')
     app = varargin{1};
     setappdata(0, 'app', app);
     

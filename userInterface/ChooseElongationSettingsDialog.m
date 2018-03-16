@@ -56,13 +56,13 @@ function ChooseElongationSettingsDialog_OpeningFcn(hObject, eventdata, handles, 
 % Choose default command line output for ChooseElongationSettingsDialog
 handles.output = hObject;
 
-if nargin == 4 && isa(varargin{1}, 'KymoRod')
+if nargin == 4 && isa(varargin{1}, 'KymoRodData')
     app = varargin{1};
     setappdata(0, 'app', app);
  
 else
     % if user come from ValidateSkeleton
-    error('StartElongation should be called with an KymoRod object');
+    error('StartElongation should be called with an KymoRodData object');
 end
 
 app.logger.info('ChooseElongationSettingsDialog_OpeningFcn', ...

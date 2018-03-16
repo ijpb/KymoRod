@@ -53,8 +53,8 @@ function SelectInputImagesDialog_OpeningFcn(hObject, eventdata, handles, varargi
 % varargin   command line arguments to SelectInputImagesDialog (see VARARGIN)
 
 % check input validity
-if nargin ~= 4 || ~isa(varargin{1}, 'KymoRod')
-    error('Requires an KymoRod object as input argument');
+if nargin ~= 4 || ~isa(varargin{1}, 'KymoRodData')
+    error('Requires an KymoRodData object as input argument');
 end
 
 app = varargin{1};
