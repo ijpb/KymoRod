@@ -710,25 +710,33 @@ frameNumber = length(indices);
 % extract index of first frame to display
 frameIndex = min(app.currentFrameIndex, length(indices));
 
-% read sample image
+% determine index of file to read
 if frameIndex > 0
     fileIndex = indices(frameIndex);
 else
     fileIndex = 1;
 end
 
+% read image to display
 currentImageName = fileList(fileIndex).name;
 img = imread(fullfile(folderName, currentImageName));
 
 % keep image size
 app.frameImageSize = [size(img, 1) size(img, 2)];
 
-% display current frame frame
+% eventually converts to uint8
+if isa(img, 'uint16') && ndims(img) == 2 %#ok<ISMAT>
+    img = uint8(double(img) * 255 / double(max(img(:))));
+%     img = uint8(imadjust(double(img)) * 255);
+end
+
+% display current frame image
 if isfield(handles, 'currentFrameImage')
     set(handles.currentFrameImage, 'CData', img);
 else
     axes(handles.currentFrameAxes);
     handles.currentFrameImage = imshow(img);
+    set(handles.currentFrameAxes, 'CLim', [0 255]);
 end
 
 % display the index and name of current frame

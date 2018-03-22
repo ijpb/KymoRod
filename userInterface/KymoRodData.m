@@ -343,13 +343,22 @@ classdef KymoRodData < handle
         function image = getSegmentableImage(this, index)
             % Return the image that can be used for computing segmentation
             % (without smoothing)
+            
+            % get the image
             image = getImage(this, index);
+            
+            % extract the channel used for segmentation
             if ndims(image) > 2 %#ok<ISMAT>
                 switch lower(this.settings.imageSegmentationChannel)
                     case 'red',     image = image(:,:,1);
                     case 'green',   image = image(:,:,2);
                     case 'blue',    image = image(:,:,3);
                 end
+            end
+            
+            % eventually converts to uint8
+            if isa(image, 'uint16') && ndims(image) == 2 %#ok<ISMAT>
+                image = uint8(double(image) * 255 / double(max(image(:))));
             end
         end
         
@@ -475,6 +484,7 @@ classdef KymoRodData < handle
             
             img = getSmoothedImage(this, index);
             thresh = this.thresholdValues(index);
+           
             seg = img > thresh;
         end
 
