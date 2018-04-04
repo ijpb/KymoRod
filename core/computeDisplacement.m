@@ -32,8 +32,6 @@ function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
 
 % identify in each image the pixels containing a portion of skeleton.
 % S1px and S2px contain curvilinear abscissa for corresponding pixels.
-% [x1, y1, S1pix] = snapFunctionToPixels(img1, skel1, S1);
-% [x2, y2, S2pix] = snapFunctionToPixels(img2, skel2, S2);
 [S1px, x1, y1] = snapCurveToPixels(S1, skel1);
 [S2px, x2, y2] = snapCurveToPixels(S2, skel2);
 
