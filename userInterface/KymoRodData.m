@@ -358,7 +358,8 @@ classdef KymoRodData < handle
             
             % eventually converts to uint8
             if isa(image, 'uint16') && ndims(image) == 2 %#ok<ISMAT>
-                image = uint8(double(image) * 255 / double(max(image(:))));
+                image = imAdjustDynamic(image, .1);
+%                 image = uint8(double(image) * 255 / double(max(image(:))));
             end
         end
         
