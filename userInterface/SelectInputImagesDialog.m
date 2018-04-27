@@ -726,9 +726,7 @@ app.frameImageSize = [size(img, 1) size(img, 2)];
 
 % eventually converts to uint8
 if isa(img, 'uint16') && ndims(img) == 2 %#ok<ISMAT>
-%     img = uint8(double(img) * 255 / double(max(img(:))));
     img = imAdjustDynamic(img, .1);
-%     img = uint8(imadjust(double(img)) * 255);
 end
 
 % display current frame image

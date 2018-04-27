@@ -774,6 +774,7 @@ classdef KymoRodData < handle
             % In case of color image, returns the green channel by default.
             img = getImage(this, index);
             if ndims(img) > 2 %#ok<ISMAT>
+                % TODO: use channel
                 img = img(:,:,2);
             end
         end

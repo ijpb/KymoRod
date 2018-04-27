@@ -97,12 +97,29 @@ function varargout = ChooseElongationSettingsDialog_OutputFcn(hObject, eventdata
 varargout{1} = handles.output;
 
 function updateWidgets(app, handles)
-
 % setup handles with application settings
+
 settings = app.settings;
+
+% if image for displacement is grayscale or intensity, disable the widgets
+% for choosing channel
+img = getImageForDisplacement(app, 1);
+if ndims(img) == 2 %#ok<ISMAT>
+    set(handles.displacementChannelLabel,   'Enable', 'off');
+    set(handles.displacementChannelPopupMenu, 'Enable', 'off');
+else
+    values = get(handles.displacementChannelPopupMenu, 'String');
+    index = find(strcmp(cellstr(values), app.settings.displacementChannel));
+    set(handles.displacementChannelPopupMenu, 'Value', index);
+    set(handles.displacementChannelLabel,   'Enable', 'on');
+    set(handles.displacementChannelPopupMenu, 'Enable', 'on');
+end
+ 
+set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
 set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
 set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
 
+% computation of elongation
 set(handles.displacementSpatialSmoothingEdit,   'String', num2str(settings.displacementSpatialSmoothing));
 set(handles.displacementValueSmoothingEdit,     'String', num2str(settings.displacementValueSmoothing));
 set(handles.displacementResamplingDistanceEdit, 'String', num2str(settings.displacementResamplingDistance));
