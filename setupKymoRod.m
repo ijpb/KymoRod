@@ -30,5 +30,8 @@ addpath(fullfile(mainDir, 'CroissanceHypocotyle'));
 % add GUI software
 addpath(fullfile(mainDir, 'userInterface'));
 
+% and the launcher
+addpath(mainDir);
+
 disp('KymoRod Software installed!');
 
