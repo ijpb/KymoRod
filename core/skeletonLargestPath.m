@@ -21,25 +21,25 @@ function [SQ2, R2] = skeletonLargestPath(SQ, order, R)
 % initialize results
 nBranches = length(SQ);
 S = cell(nBranches, 1);
-L = zeros(nBranches, 1);
+branchLengths = zeros(nBranches, 1);
 
 % compute euclidean length of each curve
 for k = 1:nBranches
     branch = SQ{k};
     if length(branch) > 10
         S{k} = curvilinearAbscissa(branch);
-        L(k) = S{k}(end);
+        branchLengths(k) = S{k}(end);
     else
         % for small curves, replace by distance between extremities
         S{k} = 0;
-        L(k) = sqrt(sum((branch(1,:) - branch(end,:)) .^ 2));
+        branchLengths(k) = sqrt(sum((branch(1,:) - branch(end,:)) .^ 2));
     end
 end
 
 % compute cumulated length of the curve
 L2 = zeros(nBranches, 1);
 for k = 1:nBranches
-    L2(k) = sum(L(order{k}));
+    L2(k) = sum(branchLengths(order{k}));
 end
 
 % find index of furthest curve

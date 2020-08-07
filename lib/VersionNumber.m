@@ -1,5 +1,5 @@
 classdef VersionNumber < handle
-%VERSIONNUMBER Simple utility to manage version number as string
+%VERSIONNUMBER Simple utility to manage version number as string.
 %
 %   Class VersionNumber
 %

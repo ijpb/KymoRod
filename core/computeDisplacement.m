@@ -1,5 +1,5 @@
 function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
-%COMPUTEDISPLACEMENT Compute displacement between two skeletons in pixel coordinates
+% Compute displacement between two skeletons in pixel coordinates.
 % 
 %   E = computeDisplacement(SK1, SK2, S1, S2, IMG1, IMG2, WS, L)
 %   (rewritten from function 'elong5')
@@ -24,16 +24,22 @@ function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
 %           abscissa and the displacement (difference in curvilinear
 %           abscissa) 
 %
+
 % ------
 % Author: Renaud Bastien
 % e-mail: rbastien@seas.harvard.edu
 % Created: 2012-03-03,    using Matlab 7.9.0.529 (R2009b)
 % Copyright 2012 INRA - Cepia Software Platform.
 
+%% 1. Snap skeleton points 
+
 % identify in each image the pixels containing a portion of skeleton.
 % S1px and S2px contain curvilinear abscissa for corresponding pixels.
 [S1px, x1, y1] = snapCurveToPixels(S1, skel1);
 [S2px, x2, y2] = snapCurveToPixels(S2, skel2);
+
+
+%% 2. Clip skeleton points 
 
 % process only skeleton points that are not too close from border
 dim = size(img1);
@@ -48,6 +54,8 @@ x2 = x2(inds);
 y2 = y2(inds);
 S2px = S2px(inds);
 
+
+%% 3. Particle Image Velocimetry
 
 % allocate memory for result
 E = zeros(length(x1), 2);

@@ -96,9 +96,9 @@ methods
 
         % ensure input directory is valid, otherwise, ask for a new one.
         while exist(app.inputImagesDir, 'dir') == 0
-            disp(['Could not find input dir: ' app.inputImagesDir]);
+            disp(['Could not find input images dir: ' app.inputImagesDir]);
             
-            msg = sprintf('Could not find input directory:\n%s', app.inputImagesDir);
+            msg = sprintf('Could not find input images directory:\n%s', app.inputImagesDir);
             h = errordlg(msg, 'Loading Error', 'modal');
             uiwait(h);
             

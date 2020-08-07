@@ -130,7 +130,7 @@ classdef KymoRodData < handle
         % final result: elongation as a function of position and time
         elongationImage;
         
-        % intensity kymogrpah, computed by evaluating the intensity of
+        % intensity kymograph, computed by evaluating the intensity of
         % another image on the positions of the skeletons
         intensityImage;
         
@@ -567,7 +567,7 @@ classdef KymoRodData < handle
             baseValues = zeros(1, nImages);
             
             % compute threshold values
-            switch this.settings.thresholdMethod
+            switch this.settings.ThresholdMethod
                 case 'maxEntropy'
                     parfor_progress(nImages);
                     parfor i = 1 : nImages
@@ -1304,7 +1304,7 @@ classdef KymoRodData < handle
              appStruct.serialVersion = char(this.serialVersion);
              
              % clear some unnecessary data
-             appStruct.logger = []; %#ok<STRNU>
+             appStruct.logger = [];
              
              % save as a struct
              save(fileName, '-struct', 'appStruct');
