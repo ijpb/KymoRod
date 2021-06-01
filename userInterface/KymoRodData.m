@@ -567,7 +567,7 @@ classdef KymoRodData < handle
             baseValues = zeros(1, nImages);
             
             % compute threshold values
-            switch this.settings.ThresholdMethod
+            switch this.settings.thresholdMethod
                 case 'maxEntropy'
                     parfor_progress(nImages);
                     parfor i = 1 : nImages
