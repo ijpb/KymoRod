@@ -18,7 +18,6 @@ H = zeros(length(S), 1);
 for k = 1:length(E)
     kernel = exp(-((S-S(k)).^2)/(2*LX^2));
     H(k) = sum(kernel .* exp(-((D-D(k)).^2)/(2*LY^2))) / sum(kernel);
-%    D(k) = sum(exp(-((E(:,1)-E(k,1)).^2)./(2.*LX.^2)).*exp(-((E(:,2)-E(k,2)).^2)./(2.*LY.^2)))./sum(exp(-((E(:,1)-E(k,1)).^2)./(2.*LX.^2)));   
 end
 
 % keep only "valid" values

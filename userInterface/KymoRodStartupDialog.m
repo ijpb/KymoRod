@@ -80,7 +80,7 @@ varargout{1} = handles.output;
 
 
 % --- Executes on button press in loadAnalysisButton.
-function loadAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function loadAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to loadAnalysisButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -113,7 +113,7 @@ displayProcessingDialog(gui, app);
 
 
 % --- Executes on button press in newAnalysisButton.
-function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to newAnalysisButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -132,7 +132,7 @@ SelectInputImagesDialog(app);
 
 
 % --- Executes on button press in loadSettingsButton.
-function loadSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function loadSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to loadSettingsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -166,7 +166,7 @@ SelectInputImagesDialog(app);
 
 
 % --- Executes on button press in quitButton.
-function quitButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function quitButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to quitButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
