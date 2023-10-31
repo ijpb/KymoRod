@@ -94,7 +94,7 @@ varargout{1} = handles.output;
 
 %% Menu management
 
-function mainFrameMenuItem_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function mainFrameMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -107,7 +107,7 @@ KymoRodMenuDialog(app);
 %% Input directory selection
 
 % --- Executes on button press in chooseImagesDirectoryButton.
-function chooseImagesDirectoryButton_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSL>
+function chooseImagesDirectoryButton_Callback(hObject, eventdata, handles)  %#ok<INUSL>
 % To select the images from a directory
 
 % extract app data
@@ -138,11 +138,11 @@ app.intensityImagesDir = folderName;
 updateImageNameList(handles);
 
 % --- Executes on button change in channelSelectionPanel
-function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)
+function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)%#ok<INUSL>
 % this function is used to catch selection of radiobuttons in selection panel
 
 
-function filePatternEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function filePatternEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to filePatternEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -163,7 +163,7 @@ updateImageNameList(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function filePatternEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function filePatternEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to filePatternEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -176,7 +176,7 @@ end
 
 
 % --- Executes on selection change in imageChannelPopup.
-function imageChannelPopup_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function imageChannelPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageChannelPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -195,7 +195,7 @@ app.logger.info('SelectIntensityImagesDialog.m', ...
 app.settings.intensityImagesChannel = channelString;
 
 % --- Executes during object creation, after setting all properties.
-function imageChannelPopup_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function imageChannelPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageChannelPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -320,7 +320,7 @@ set(handles.selectImagesButton, 'Visible', 'On');
 %% Validation button
 
 % --- Executes on button press in selectImagesButton.
-function selectImagesButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function selectImagesButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to selectImagesButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

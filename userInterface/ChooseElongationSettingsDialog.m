@@ -127,7 +127,7 @@ set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2))
 
 
 % --------------------------------------------------------------------
-function mainFrameMenuItem_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function mainFrameMenuItem_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to mainFrameMenuItem (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -137,7 +137,7 @@ delete(gcf);
 KymoRodMenuDialog(app);
 
 
-function smoothingLengthEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function smoothingLengthEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to smoothingLengthEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -162,7 +162,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function smoothingLengthEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function smoothingLengthEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to smoothingLengthEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -174,7 +174,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -198,7 +198,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -211,7 +211,7 @@ end
 
 
 % --- Executes on selection change in displacementChannelPopupMenu.
-function displacementChannelPopupMenu_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function displacementChannelPopupMenu_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementChannelPopupMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -230,7 +230,7 @@ app.logger.info(mfilename, ...
 app.settings.displacementChannel = channelString;
 
 % --- Executes during object creation, after setting all properties.
-function displacementChannelPopupMenu_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function displacementChannelPopupMenu_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementChannelPopupMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -241,7 +241,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function displacementStepEdit_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSL>
+function displacementStepEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -263,7 +263,7 @@ app.settings.displacementStep = val;
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 % --- Executes during object creation, after setting all properties.
-function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -276,7 +276,7 @@ end
 
 
 
-function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -300,7 +300,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function correlationWindowSize1Edit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to correlationWindowSize1Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -313,7 +313,7 @@ end
 
 
 
-function displacementSpatialSmoothingEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function displacementSpatialSmoothingEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementSpatialSmoothingEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -338,7 +338,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function displacementSpatialSmoothingEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function displacementSpatialSmoothingEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementSpatialSmoothingEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -351,7 +351,7 @@ end
 
 
 
-function displacementValueSmoothingEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function displacementValueSmoothingEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementValueSmoothingEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -375,7 +375,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function displacementValueSmoothingEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function displacementValueSmoothingEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementValueSmoothingEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -388,7 +388,7 @@ end
 
 
 
-function displacementResamplingDistanceEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function displacementResamplingDistanceEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementResamplingDistanceEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -412,7 +412,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function displacementResamplingDistanceEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function displacementResamplingDistanceEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementResamplingDistanceEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -424,7 +424,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function correlationWindowSize2Edit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -447,7 +447,7 @@ app.settings.windowSize2 = val;
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 % --- Executes during object creation, after setting all properties.
-function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to correlationWindowSize2Edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -461,7 +461,7 @@ end
 
 
 % --- Executes on button press in defaultSettingsButton.
-function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to defaultSettingsButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -487,7 +487,7 @@ updateWidgets(app, handles);
 
 
 % --- Executes on button press in backToSkeletonButton.
-function backToSkeletonButton_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function backToSkeletonButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to backToSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

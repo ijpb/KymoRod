@@ -127,7 +127,7 @@ SelectInputImagesDialog(app);
 
 
 % --- Executes on button press in validateThresholdButton.
-function validateThresholdButton_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function validateThresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to validateThresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -140,7 +140,7 @@ ChooseThresholdDialog(app);
 
 
 % --- Executes on button press in validateContourButton.
-function validateContourButton_Callback(hObject, eventdata, handles)  %#ok<DEFNU,INUSD>
+function validateContourButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to validateContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -153,7 +153,7 @@ SmoothContourDialog(app);
 
 
 % --- Executes on button press in validateSkeletonButton.
-function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to validateSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -166,7 +166,7 @@ ValidateSkeletonDialog(app);
 
 
 % --- Executes on button press in elongationButton.
-function elongationButton_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function elongationButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to elongationButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -179,7 +179,7 @@ ChooseElongationSettingsDialog(app);
 
 
 % --- Executes on button press in displayKymographButton.
-function displayKymographButton_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function displayKymographButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displayKymographButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

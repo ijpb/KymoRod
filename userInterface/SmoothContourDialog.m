@@ -191,7 +191,7 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 
-function smoothValueEdit_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function smoothValueEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to smoothValueEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -222,7 +222,7 @@ setappdata(0, 'app', app);
 updateContourDisplay(handles);
 
 % --- Executes during object creation, after setting all properties.
-function smoothValueEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function smoothValueEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to smoothValueEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -235,7 +235,7 @@ end
 
 
 % --- Executes on slider movement.
-function frameIndexSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function frameIndexSlider_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to frameIndexSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -257,7 +257,7 @@ updateContourDisplay(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to frameIndexSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -289,7 +289,7 @@ set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 %% Validation and Comeback buttons
 
 % --- Executes on button press in backToTresholdButton.
-function backToTresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function backToTresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to backToTresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -304,7 +304,7 @@ ChooseThresholdDialog(app);
 
 
 % --- Executes on button press in validateContourButton.
-function validateContourButton_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function validateContourButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % hObject    handle to validateContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

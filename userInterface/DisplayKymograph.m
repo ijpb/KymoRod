@@ -332,7 +332,7 @@ end
 
 
 % --- Executes during object creation, after setting all properties.
-function colormapPopup_CreateFcn(hObject, eventdata, handles)
+function colormapPopup_CreateFcn(hObject, eventdata, handles)%#ok<INUSL>
 % hObject    handle to colormapPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -418,7 +418,7 @@ end
 
 
 % --- Executes on mouse press over axes background.
-function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)
+function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL>
 % hObject    handle to kymographAxes (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -614,7 +614,7 @@ val = get(handles.slider1, 'Value');
 axes(handles.kymographAxes);
 set(handles.kymographAxes, 'YDir', 'normal', 'YTick', []);
 if minCaxis < maxCaxis - val
-    caxis(handles.kymographAxes, [minCaxis, maxCaxis - val]); 
+    clim(handles.kymographAxes, [minCaxis, maxCaxis - val]); 
 end
 colorbar(handles.kymographAxes);
 cmapNames = get(handles.colormapPopup, 'String');
@@ -791,7 +791,7 @@ end
 
 
 % --- Executes on button press in intensityKymographButton.
-function intensityKymographButton_Callback(hObject, eventdata, handles)
+function intensityKymographButton_Callback(hObject, eventdata, handles)%#ok<INUSL>
 % hObject    handle to intensityKymographButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

@@ -138,7 +138,7 @@ classdef KymoRodSettings < handle
  
             % write header
             fprintf(f, '# KymoRod Settings\n');
-            fprintf(f, '# %s\n', datestr(now,0));
+            fprintf(f, '# %s\n', char(datetime("now")));
             fprintf(f, '\n');
             
             % write current settings

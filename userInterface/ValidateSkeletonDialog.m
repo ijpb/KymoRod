@@ -353,7 +353,7 @@ set(handles.saveSkeletonDataButton, 'Enable', 'On');
 
 
 % --- Executes on button press in showSkeleton3dButton.
-function showSkeleton3dButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function showSkeleton3dButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to showSkeleton3dButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -372,7 +372,7 @@ view(3); axis equal;
 
 
 % --- Executes on button press in saveSkeletonDataButton.
-function saveSkeletonDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function saveSkeletonDataButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to saveSkeletonDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -399,7 +399,7 @@ if folderName ~= 0
         fileName = [fileName '_skel.txt']; %#ok<AGROW>
         
         % save current skeleton
-        skel = app.skeletonList{iSkel}; %#ok<NASGU>
+        skel = app.skeletonList{iSkel};
         save(fullfile(folderName, fileName), 'skel', '-ascii');
     end
 end
@@ -410,7 +410,7 @@ set(handles.saveSkeletonDataButton, 'String', 'Save Skeleton Data');
 
 
 % --- Executes on button press in saveSkeletonRoisButton.
-function saveSkeletonRoisButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function saveSkeletonRoisButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to saveSkeletonRoisButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -449,7 +449,7 @@ set(handles.saveSkeletonRoisButton, 'String', 'Save Skeleton ROIs');
 
 
 
-function curvatureSmoothingSizeEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function curvatureSmoothingSizeEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to curvatureSmoothingSizeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -474,7 +474,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function curvatureSmoothingSizeEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function curvatureSmoothingSizeEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to curvatureSmoothingSizeEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -487,7 +487,7 @@ end
 
 
 
-function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -511,7 +511,7 @@ setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
-function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU>
+function pointNumberEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -524,7 +524,7 @@ end
 
 
 % --- Executes on button press in BackToContourButton.
-function BackToContourButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function BackToContourButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to BackToContourButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -539,7 +539,7 @@ SmoothContourDialog(app);
 
 
 % --- Executes on button press in validateSkeletonButton.
-function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function validateSkeletonButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to validateSkeletonButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

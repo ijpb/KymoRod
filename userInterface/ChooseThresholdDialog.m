@@ -220,7 +220,7 @@ set(handles.currentFrameIndexLabel, 'String', string);
 
 
 % --- Executes during object creation, after setting all properties.
-function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function frameIndexSlider_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to frameIndexSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -235,7 +235,7 @@ end
 %% Widgets for image smoothing
 
 % --- Executes on selection change in imageSmoothingMethodPopup.
-function imageSmoothingMethodPopup_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSL>
+function imageSmoothingMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageSmoothingMethodPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -257,7 +257,7 @@ updateSegmentationDisplay(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function imageSmoothingMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function imageSmoothingMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageSmoothingMethodPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -269,7 +269,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function imageSmoothingRadiusEdit_Callback(hObject, eventdata, handles)  %#ok<INUSL,DEFNU>
+function imageSmoothingRadiusEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageSmoothingRadiusEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -292,7 +292,7 @@ updateSegmentationDisplay(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function imageSmoothingRadiusEdit_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+function imageSmoothingRadiusEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageSmoothingRadiusEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -307,7 +307,7 @@ end
 %% Widgets for automated threshold
 
 % --- Executes on button press in automaticThresholdRadioButton.
-function automaticThresholdRadioButton_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)
 % hObject    handle to automaticThresholdRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -337,7 +337,7 @@ frameIndexSlider_Callback(hObject, eventdata, handles);
 
 
 % --- Executes on selection change in autoThresholdMethodPopup.
-function autoThresholdMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function autoThresholdMethodPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to autoThresholdMethodPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -366,7 +366,7 @@ displayCurrentFrameThreshold(handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function autoThresholdMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function autoThresholdMethodPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to autoThresholdMethodPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -445,7 +445,7 @@ end
 
 
 % --- Executes on button press in updateAutomaticThresholdButton.
-function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to updateAutomaticThresholdButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -533,7 +533,7 @@ set(handles.manualThresholdValueEdit2, 'String', num2str(val));
 updateWidgetsVisibility(handles);
 
 
-function manualThresholdValueEdit2_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function manualThresholdValueEdit2_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to manualThresholdValueEdit2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -550,7 +550,7 @@ updateManualThresholdValue(handles, val);
 
 
 % --- Executes during object creation, after setting all properties.
-function manualThresholdValueEdit2_CreateFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
+function manualThresholdValueEdit2_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to manualThresholdValueEdit2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
@@ -562,7 +562,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % --- Executes on slider movement.
-function manualThresholdSlider_Callback(hObject, eventdata, handles) %#ok<INUSL,DEFNU>
+function manualThresholdSlider_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to manualThresholdSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

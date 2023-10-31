@@ -1158,7 +1158,7 @@ classdef KymoRodData < handle
             
             % setup display
             set(gca, 'YDir', 'normal');
-            caxis([minCaxis, maxCaxis]); colorbar;
+            clim([minCaxis, maxCaxis]); colorbar;
             colormap jet;
             
             % annotate
@@ -1207,7 +1207,7 @@ classdef KymoRodData < handle
             
             % setup display
             set(gca, 'YDir', 'normal');
-            caxis([minCaxis, maxCaxis]); colorbar;
+            clim([minCaxis, maxCaxis]); colorbar;
             colormap jet;
             
             % annotate
@@ -1238,7 +1238,7 @@ classdef KymoRodData < handle
             
             % write header
             fprintf(f, '# KymoRod Analysis Info\n');
-            fprintf(f, '# saved: %s\n', datestr(now,0));
+            fprintf(f, '# saved: %s\n', char(datetime("now")));
             
             % save also modification date of the main class          
             baseDir = fileparts(which('KymoRodData'));

@@ -45,7 +45,7 @@ end
 
 
 % --- Executes just before SelectInputImagesDialog is made visible.
-function SelectInputImagesDialog_OpeningFcn(hObject, eventdata, handles, varargin)%#ok
+function SelectInputImagesDialog_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -101,7 +101,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = SelectInputImagesDialog_OutputFcn(hObject, eventdata, handles) %#ok<INUSL>
+function varargout = SelectInputImagesDialog_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -126,7 +126,7 @@ KymoRodMenuDialog(app);
 %% Input directory selection
 
 % --- Executes on button press in chooseInputImagesButton.
-function chooseInputImagesButton_Callback(hObject, eventdata, handles)  %#ok<INUSL>
+function chooseInputImagesButton_Callback(hObject, eventdata, handles)
 % To select the images from a directory
 
 % extract app data
@@ -165,7 +165,7 @@ function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)
 % this function is used to catch selection of radiobuttons in selection panel
 
 
-function filePatternEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function filePatternEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to filePatternEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -199,7 +199,7 @@ end
 
 
 % --- Executes on selection change in imageChannelPopup.
-function imageChannelPopup_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function imageChannelPopup_Callback(hObject, eventdata, handles)
 % hObject    handle to imageChannelPopup (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -386,7 +386,7 @@ set(handles.selectImagesButton, 'Visible', 'On');
 
 %% Calibration section
 
-function spatialResolutionEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function spatialResolutionEdit_Callback(hObject, eventdata, handles)
 % hObject    handle to spatialResolutionEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -418,7 +418,7 @@ end
 
 
 
-function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to spatialResolutionUnitEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -447,7 +447,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function timeIntervalEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function timeIntervalEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to timeIntervalEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -477,7 +477,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function timeIntervalUnitEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function timeIntervalUnitEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to timeIntervalUnitEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -508,7 +508,7 @@ end
 
 
 % --- Executes on button press in keepAllFramesRadioButton.
-function keepAllFramesRadioButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function keepAllFramesRadioButton_Callback(hObject, eventdata, handles) 
 % hObject    handle to keepAllFramesRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -534,7 +534,7 @@ setProcessingStep(app, ProcessingStep.Selection);
 guidata(hObject, handles);
 
 % --- Executes on button press in selectFrameIndicesRadioButton.
-function selectFrameIndicesRadioButton_Callback(hObject, eventdata, handles)%#ok
+function selectFrameIndicesRadioButton_Callback(hObject, eventdata, handles)
 % hObject    handle to selectFrameIndicesRadioButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -560,7 +560,7 @@ setProcessingStep(app, ProcessingStep.Selection);
 guidata(hObject, handles);
 
 
-function firstFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function firstFrameIndexEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to firstFrameIndexEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -600,7 +600,7 @@ end
 
 
 
-function lastFrameIndexEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function lastFrameIndexEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to lastFrameIndexEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -641,7 +641,7 @@ end
 
 
 
-function frameIndexStepEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function frameIndexStepEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to frameIndexStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -744,7 +744,7 @@ set(handles.currentFrameLabel, 'String', string);
 
 
 % --- Executes on button press in lazyLoadingCheckbox.
-function lazyLoadingCheckbox_Callback(hObject, eventdata, handles) %#ok<INUSL>
+function lazyLoadingCheckbox_Callback(hObject, eventdata, handles) 
 % hObject    handle to lazyLoadingCheckbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -761,7 +761,7 @@ app.inputImagesLazyLoading = value > 0;
 
 
 % --- Executes on slider movement.
-function framePreviewSlider_Callback(hObject, eventdata, handles)%#ok
+function framePreviewSlider_Callback(hObject, eventdata, handles)
 % hObject    handle to framePreviewSlider (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
