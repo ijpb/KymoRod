@@ -13,9 +13,15 @@ classdef KymoRodData < handle
     
     %% Static Properties
     properties (Constant)
-        % identifier of application version, for display in About dialog
-        % and for file releases
-        appliVersion = VersionNumber(0, 12, 1);
+        % Identifier of the application version.
+        % Used for display in About dialog and for file releases.
+        %
+        % Uses the "VersionNumber" class in the lib package.
+        %
+        % Examples: 
+        % appliVersion = VersionNumber(0, 12, 1);   % release
+        % appliVersion = VersionNumber(0, 12, 2, 'SNAPSHOT'); % dev version
+        appliVersion = VersionNumber(0, 12, 2, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
         serialVersion = VersionNumber(0, 12, 0);
