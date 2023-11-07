@@ -20,6 +20,7 @@ disp('Installing KymoRod software...');
 
 % add libraries
 addpath(fullfile(mainDir, 'lib'));
+addpath(fullfile(mainDir, 'lib', 'matimage'));
 addpath(fullfile(mainDir, 'lib', 'freezeColors'));
 addpath(fullfile(mainDir, 'lib', 'parfor'));
 
