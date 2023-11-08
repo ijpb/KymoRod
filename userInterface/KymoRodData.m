@@ -21,7 +21,7 @@ classdef KymoRodData < handle
         % Examples: 
         % appliVersion = VersionNumber(0, 12, 1);   % release
         % appliVersion = VersionNumber(0, 12, 2, 'SNAPSHOT'); % dev version
-        appliVersion = VersionNumber(0, 12, 2);
+        appliVersion = VersionNumber(0, 12, 3, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
         serialVersion = VersionNumber(0, 12, 0);
