@@ -1,5 +1,5 @@
 classdef KymoRodData < handle
-% Class for storing data of the "KymoRod" application
+% Class for storing the data of the "KymoRod" application.
 %
 % This class contains a reference to the current settings, the currently
 % loaded data, and most of the data processing methods. 
@@ -332,12 +332,12 @@ classdef KymoRodData < handle
     %% Image selection
     methods
         function n = frameNumber(this)
-            % return the total number of images selected for processing
+            % return the total number of images selected for processing.
             n = length(this.imageNameList);
         end
         
         function image = getImage(this, index)
-            % Return the image corresponding to the given frame
+            % Return the image corresponding to the given frame.
             if this.inputImagesLazyLoading
                 filePath = fullfile(this.inputImagesDir, this.imageNameList{index});
                 image = imread(filePath);
@@ -364,13 +364,13 @@ classdef KymoRodData < handle
             
             % eventually converts to uint8
             if isa(image, 'uint16') && ndims(image) == 2 %#ok<ISMAT>
-                image = imAdjustDynamic(image, .1);
+                image = imAdjustDynamic(image, 0.1);
 %                 image = uint8(double(image) * 255 / double(max(image(:))));
             end
         end
         
         function loadImageData(this)
-            % Read image data
+            % Read image data.
             % Load images, or simply read file names depending on the value
             % of the "inputImagesLazyLoading" property
             
@@ -382,7 +382,7 @@ classdef KymoRodData < handle
         end
         
         function computeImageNames(this)
-            % update list of image names from input directory and indices
+            % Update list of image names from input directory and indices.
 
             % read all files in specified directory
             inputDir = this.inputImagesDir;
