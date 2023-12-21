@@ -1,0 +1,134 @@
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration build-checksum="1628361655" file="D:\dlegland\projets\kymoRod\prog\KymoRod\KymoRod.prj" location="D:\dlegland\projets\kymoRod\prog\KymoRod" name="KymoRod" target="target.mlapps" target-name="Package App">
+    <param.appname>KymoRod</param.appname>
+    <param.authnamewatermark>R. Bastien, D. Legland, L. Fregosi, H. Hof</param.authnamewatermark>
+    <param.email>david.legland@inrae.fr</param.email>
+    <param.company>INRAE</param.company>
+    <param.icon>${PROJECT_ROOT}\KymoRod_resources\icon_24.png</param.icon>
+    <param.icons>
+      <file>${PROJECT_ROOT}\KymoRod_resources\icon_48.png</file>
+      <file>${PROJECT_ROOT}\KymoRod_resources\icon_24.png</file>
+      <file>${PROJECT_ROOT}\KymoRod_resources\icon_16.png</file>
+    </param.icons>
+    <param.summary>Interactive analysis of the growth of plant organs (hypoctoyls, roots...)</param.summary>
+    <param.description>Starting from a series of images, each frame is segmented, the contour and the skeleton are computed,
+and used to compute pixel displacements using Particle Image Velocimetry. This results in kymographs
+that describe elongation as a function of time.</param.description>
+    <param.screenshot>D:\dlegland\projets\kymoRod\prog\package\kymoRod-displayKymograph.jpg</param.screenshot>
+    <param.version>1.12.2</param.version>
+    <param.products.name>
+      <item>MATLAB</item>
+      <item>Image Processing Toolbox</item>
+    </param.products.name>
+    <param.products.id>
+      <item>1</item>
+      <item>17</item>
+    </param.products.id>
+    <param.products.version>
+      <item>23.2</item>
+      <item>23.2</item>
+    </param.products.version>
+    <param.platforms />
+    <param.output>D:\dlegland\projets\kymoRod\prog\package</param.output>
+    <param.guid>de6808db-5c40-43b1-a044-03362aa12077</param.guid>
+    <unset>
+      <param.email />
+      <param.company />
+      <param.platforms />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\KymoRod.m</file>
+    </fileset.main>
+    <fileset.depfun>
+      <file>${PROJECT_ROOT}\core\alignAbscissa.m</file>
+      <file>${PROJECT_ROOT}\core\computeCurvature.m</file>
+      <file>${PROJECT_ROOT}\core\computeDisplacement.m</file>
+      <file>${PROJECT_ROOT}\core\computeElongation.m</file>
+      <file>${PROJECT_ROOT}\core\contourSkeleton.m</file>
+      <file>${PROJECT_ROOT}\core\curvilinearAbscissa.m</file>
+      <file>${PROJECT_ROOT}\core\drawContour.m</file>
+      <file>${PROJECT_ROOT}\core\drawMarker.m</file>
+      <file>${PROJECT_ROOT}\core\drawSkeleton.m</file>
+      <file>${PROJECT_ROOT}\core\filterContour.m</file>
+      <file>${PROJECT_ROOT}\core\kymographFromValues.m</file>
+      <file>${PROJECT_ROOT}\core\maxEntropyThreshold.m</file>
+      <file>${PROJECT_ROOT}\core\removeDoubleVertices.m</file>
+      <file>${PROJECT_ROOT}\core\resampleFunction.m</file>
+      <file>${PROJECT_ROOT}\core\savePolylineAsIJRoi.m</file>
+      <file>${PROJECT_ROOT}\core\segmentContour.m</file>
+      <file>${PROJECT_ROOT}\core\skeletonBranches.m</file>
+      <file>${PROJECT_ROOT}\core\skeletonLargestPath.m</file>
+      <file>${PROJECT_ROOT}\core\skeletonVerticalAngle.m</file>
+      <file>${PROJECT_ROOT}\core\smoothAndFilterDisplacement.m</file>
+      <file>${PROJECT_ROOT}\core\smoothContour.m</file>
+      <file>${PROJECT_ROOT}\core\snapCurveToPixels.m</file>
+      <file>${PROJECT_ROOT}\CroissanceHypocotyle\angle3.m</file>
+      <file>${PROJECT_ROOT}\CroissanceHypocotyle\imAddBlackBorder.m</file>
+      <file>${PROJECT_ROOT}\CroissanceHypocotyle\moving_average.m</file>
+      <file>${PROJECT_ROOT}\lib\drawPolyline3d.m</file>
+      <file>${PROJECT_ROOT}\lib\getuserdir.m</file>
+      <file>${PROJECT_ROOT}\lib\jet.m</file>
+      <file>${PROJECT_ROOT}\lib\log4m.m</file>
+      <file>${PROJECT_ROOT}\lib\matimage\imAdjustDynamic.m</file>
+      <file>${PROJECT_ROOT}\lib\matimage\imEvaluate.m</file>
+      <file>${PROJECT_ROOT}\lib\matimage\imHistogram.m</file>
+      <file>${PROJECT_ROOT}\lib\matimage\isColorImage.m</file>
+      <file>${PROJECT_ROOT}\lib\parfor\parfor_progress.m</file>
+      <file>${PROJECT_ROOT}\lib\private\colormap_helper.m</file>
+      <file>${PROJECT_ROOT}\lib\private\rescale.m</file>
+      <file>${PROJECT_ROOT}\lib\real2rgb.m</file>
+      <file>${PROJECT_ROOT}\lib\VersionNumber.m</file>
+      <file>${PROJECT_ROOT}\lib\writeTable.m</file>
+      <file>${PROJECT_ROOT}\userInterface\ChooseElongationSettingsDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\ChooseElongationSettingsDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\ChooseThresholdDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\ChooseThresholdDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\DisplayKymograph.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\DisplayKymograph.m</file>
+      <file>${PROJECT_ROOT}\userInterface\kymorod-splash.png</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodAboutDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodAboutDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodData.m</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodGui.m</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodMenuDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodMenuDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodSettings.m</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodStartupDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodStartupDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\ProcessingStep.m</file>
+      <file>${PROJECT_ROOT}\userInterface\SelectInputImagesDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\SelectInputImagesDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\SelectIntensityImagesDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\SelectIntensityImagesDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\SmoothContourDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\SmoothContourDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\ValidateSkeletonDialog.fig</file>
+      <file>${PROJECT_ROOT}\userInterface\ValidateSkeletonDialog.m</file>
+    </fileset.depfun>
+    <fileset.resources />
+    <fileset.package />
+    <build-deliverables>
+      <file location="D:\dlegland\projets\kymoRod\prog" name="package" optional="false">D:\dlegland\projets\kymoRod\prog\package</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2023b</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
