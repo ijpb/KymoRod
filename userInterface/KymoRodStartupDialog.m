@@ -121,11 +121,8 @@ function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 close(handles.mainFigure);
 
 % create new empty application data structure
-app = KymoRodData();
-
-% initialize with default directory
-path = fileparts(mfilename('fullpath'));
-app.inputImagesDir = fullfile(path, '..', '..', '..', 'sampleImages', '01');
+gui = KymoRodGui.getInstance();
+app = createNewAnalysis(gui);
 
 % open first dialog of application
 SelectInputImagesDialog(app);

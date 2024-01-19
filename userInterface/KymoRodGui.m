@@ -4,7 +4,7 @@ classdef (Sealed) KymoRodGui < handle
 %   This class provides several GUI utility methods, such as methods for
 %   creating figure menus. 
 %   
-%   The KymoRodGui is a singleton, and can be shared byu several
+%   The KymoRodGui is a singleton, and can be shared by several
 %   application instances. To get the unique instance:
 %   GUI = KymoRodGui.getInstance();
 %
@@ -21,19 +21,25 @@ classdef (Sealed) KymoRodGui < handle
 %% Properties
 properties
     % the path to the last directory used for opening a file
-    lastOpenDir = '.';
+    % (now included in userPrefs)
+    lastOpenDir = pwd;
+
+    % User Preferences
+    userPrefs;
     
 end % end properties
 
 
 %% Constructor
 methods (Access = private)
-    function this = KymoRodGui(varargin)
-    % Constructor for KymoRodGui class
-    % 
-    % Does not require any argument.
-    %
-  
+    function obj = KymoRodGui(varargin)
+        % Constructor for KymoRodGui class
+        %
+        % Does not require any argument.
+        %
+    
+        % Initialisation of user preferneces
+        obj.userPrefs = KymoRodUserPrefs;
     end
 
 end % end constructors
@@ -61,6 +67,20 @@ methods (Static)
     end
 end
 
+%% General methods
+methods
+    function data = createNewAnalysis(obj)
+        % Create a new (empty) application data.
+        
+        % create new app dat awith current prefs
+        settings = KymoRodSettings.fromPrefs(obj.userPrefs);
+        data = KymoRodData(settings);
+        
+        % initialize with default directory
+        data.inputImagesDir = obj.userPrefs.lastOpenDir;
+    end
+
+end
 
 %% General GUI function
 
@@ -119,6 +139,9 @@ methods
             
             % let us try with the new folder...
             app.inputImagesDir = folderName;
+
+            % keep it for future opening
+            this.userPrefs.lastOpenDir = folderName;
         end
     end
     
@@ -214,14 +237,8 @@ methods
         % creates a new analysis 
         
         % create new empty application data structure, using same settings
-        app = get(hObject, 'UserData');
-        settings = app.settings;
-        newApp = KymoRodData(settings);
-        
-        % initialize with default directory
-        path = fileparts(mfilename('fullpath'));
-        newApp.inputImagesDir = fullfile(path, '..', '..', '..', 'sampleImages', '01');
-        
+        newApp = createNewAnalysis(obj);        
+
         % clear current figure
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
@@ -289,6 +306,12 @@ methods
     end
     
     function quitMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD,INUSL>
+        % save user preferences and closes application.
+
+        % save user prefs
+        save(this.userPrefs);
+
+        % closes graphical widgets
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
     end

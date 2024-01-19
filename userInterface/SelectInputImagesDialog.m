@@ -154,6 +154,10 @@ app.logger.info('SelectInputImagesDialog.m', ...
 set(handles.inputImageFolderEdit, 'String', folderName);
 app.inputImagesDir = folderName;
 
+% keep folder name is users preferences
+gui = KymoRodGui.getInstance;
+gui.userPrefs.lastOpenDir = folderName;
+
 if isfield(handles, 'currentFrameImage')
     handles = rmfield(handles, 'currentFrameImage');
 end
