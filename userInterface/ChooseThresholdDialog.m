@@ -83,7 +83,10 @@ switch app.settings.imageSmoothingMethod
         set(handles.imageSmoothingMethodPopup, 'Value', 2);
     case 'gaussian'
         set(handles.imageSmoothingMethodPopup, 'Value', 3);
+    otherwise
+        warning('Could not initialize smooting method with value: %s', app.settings.imageSmoothingMethod);
 end
+
 string = num2str(app.settings.imageSmoothingRadius);
 set(handles.imageSmoothingRadiusEdit, 'String', string);
 
@@ -92,6 +95,17 @@ set(handles.autoThresholdFinalEdit, 'String', num2str(nFrames));
 % setup slider steps for manual threshold slider
 sliderStep = min(max([1 10] ./ 255, 0.001), 1);
 set(handles.manualThresholdSlider, 'SliderStep', sliderStep); 
+
+% thresholdStrategy widgets are updated with call to updateWidgetsVisibility 
+
+switch app.settings.thresholdMethod
+    case 'maxEntropy'
+        set(handles.autoThresholdMethodPopup, 'Value', 1);
+    case 'Otsu'
+        set(handles.autoThresholdMethodPopup, 'Value', 2);
+    otherwise
+        warning('Could not initialize threshold method with value: %s', app.settings.thresholdMethod);
+end
 
 updateWidgetsVisibility(handles);
 
@@ -135,6 +149,7 @@ function varargout = ChooseThresholdDialog_OutputFcn(hObject, eventdata, handles
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
 
 %% Utility functions
 
@@ -231,7 +246,6 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 
-
 %% Widgets for image smoothing
 
 % --- Executes on selection change in imageSmoothingMethodPopup.
@@ -244,13 +258,17 @@ function imageSmoothingMethodPopup_Callback(hObject, eventdata, handles) %#ok<IN
 %        contents{get(hObject,'Value')} returns selected item from imageSmoothingMethodPopup
 
 app = getappdata(0, 'app');
+gui = KymoRodGui.getInstance();
 switch get(handles.imageSmoothingMethodPopup, 'Value')
     case 1
         app.settings.imageSmoothingMethod = 'none';
+        gui.userPrefs.settings.imageSmoothingMethod = 'none';
     case 2
         app.settings.imageSmoothingMethod = 'boxFilter';
+        gui.userPrefs.settings.imageSmoothingMethod = 'boxFilter';
     case 3
         app.settings.imageSmoothingMethod = 'gaussian';
+        gui.userPrefs.settings.imageSmoothingMethod = 'gaussian';
 end
 
 updateSegmentationDisplay(handles);
@@ -287,6 +305,8 @@ radius = round(radius);
 set(hObject, 'String', num2str(radius));
 
 app.settings.imageSmoothingRadius = radius;
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.imageSmoothingRadius = radius;
 
 updateSegmentationDisplay(handles);
 
@@ -316,6 +336,8 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)
 
 app = getappdata(0, 'app');
 app.settings.thresholdStrategy = 'auto';
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.thresholdStrategy = 'auto';
 
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose automatic threshold');
@@ -357,6 +379,8 @@ app.logger.info('ChooseThresholdDialog.m', ...
 
 % update threshold information of application
 app.settings.thresholdMethod = methodList{ind};
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.thresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
 updateSegmentationDisplay(handles);
@@ -523,6 +547,8 @@ function manualThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %M
 % extract application data
 app     = getappdata(0, 'app');
 app.settings.thresholdStrategy = 'manual';
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.thresholdStrategy = 'manual';
 
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose manual threshold method');

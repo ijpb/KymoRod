@@ -208,28 +208,7 @@ classdef KymoRodSettings < handle
             % Create new settings from user preferences.
 
             % create new empty class
-            settings = KymoRodSettings();
-            settings.pixelSize = prefs.pixelSize;
-            settings.pixelSizeUnit = prefs.pixelSizeUnit;
-            settings.timeInterval = prefs.timeInterval;
-            settings.timeIntervalUnit = prefs.timeIntervalUnit;
-            settings.imageSmoothingMethod = prefs.imageSmoothingMethod;
-            settings.imageSmoothingRadius = prefs.imageSmoothingRadius;
-            settings.imageSegmentationChannel = prefs.imageSegmentationChannel;
-            settings.thresholdStrategy = prefs.thresholdStrategy;
-            settings.thresholdMethod = prefs.thresholdMethod;
-            settings.contourSmoothingSize = prefs.contourSmoothingSize;
-            settings.firstPointLocation = prefs.firstPointLocation;
-            settings.curvatureSmoothingSize = prefs.curvatureSmoothingSize;
-            settings.finalResultLength = prefs.finalResultLength;
-            settings.displacementChannel = prefs.displacementChannel;
-            settings.displacementStep = prefs.displacementStep;
-            settings.windowSize1 = prefs.windowSize1;
-            settings.displacementSpatialSmoothing = prefs.displacementSpatialSmoothing;
-            settings.displacementValueSmoothing = prefs.displacementValueSmoothing;
-            settings.displacementResamplingDistance = prefs.displacementResamplingDistance;
-            settings.windowSize2 = prefs.windowSize2;
-            settings.intensityImagesChannel = prefs.intensityImagesChannel;
+            settings = KymoRodSettings(prefs.settings);
         end
 
         function settings = read(fileName)
@@ -273,9 +252,6 @@ classdef KymoRodSettings < handle
                 
                 % interpret values of tokens
                 switch lower(key)
-                    case lower('imageSegmentationChannel')
-                        settings.imageSegmentationChannel = value;
-                        
                     case lower('pixelSize')
                         settings.pixelSize = str2double(value);
                     case lower('pixelSizeUnit')

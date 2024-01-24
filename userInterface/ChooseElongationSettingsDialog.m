@@ -158,6 +158,9 @@ end
 
 app.settings.curvatureSmoothingSize = val;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.curvatureSmoothingSize = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -194,6 +197,10 @@ if isnan(val) || val < 0
 end
 
 app.settings.finalResultLength = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.finalResultLength = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -229,6 +236,12 @@ app.logger.info(mfilename, ...
 
 app.settings.displacementChannel = channelString;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.displacementChannel = channelString;
+
+setProcessingStep(app, ProcessingStep.Skeleton);
+
+
 % --- Executes during object creation, after setting all properties.
 function displacementChannelPopupMenu_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to displacementChannelPopupMenu (see GCBO)
@@ -260,7 +273,12 @@ if isnan(val) || val < 0
 end
 
 app.settings.displacementStep = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.displacementStep = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
+
 
 % --- Executes during object creation, after setting all properties.
 function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
@@ -296,6 +314,10 @@ if isnan(val) || val < 0
 end
 
 app.settings.windowSize1 = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.windowSize1 = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -334,6 +356,10 @@ if isnan(val) || val < 0
 end
 
 app.settings.displacementSpatialSmoothing = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.displacementSpatialSmoothing = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -371,6 +397,10 @@ if isnan(val) || val < 0
 end
 
 app.settings.displacementValueSmoothing = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.displacementValueSmoothing = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -385,7 +415,6 @@ function displacementValueSmoothingEdit_CreateFcn(hObject, eventdata, handles) %
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function displacementResamplingDistanceEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
@@ -408,6 +437,10 @@ if isnan(val) || val < 0
 end
 
 app.settings.displacementResamplingDistance = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.displacementResamplingDistance = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -444,7 +477,12 @@ if isnan(val) || val < 0
 end
 
 app.settings.windowSize2 = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.windowSize2 = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
+
 
 % --- Executes during object creation, after setting all properties.
 function correlationWindowSize2Edit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>

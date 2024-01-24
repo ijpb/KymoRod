@@ -194,6 +194,10 @@ app.logger.info('SelectIntensityImagesDialog.m', ...
 
 app.settings.intensityImagesChannel = channelString;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.intensityImagesChannel = channelString;
+
+
 % --- Executes during object creation, after setting all properties.
 function imageChannelPopup_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to imageChannelPopup (see GCBO)

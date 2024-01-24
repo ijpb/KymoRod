@@ -87,6 +87,14 @@ set(handles.spatialResolutionUnitEdit, 'String', settings.pixelSizeUnit);
 set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));
 set(handles.timeIntervalUnitEdit, 'String', settings.timeIntervalUnit);
 
+stringArray = get(handles.imageChannelPopup, 'String');
+index = find(strcmpi(strtrim(cellstr(stringArray)), settings.imageSegmentationChannel));
+if isempty(index)
+    warning('could not find settings channel string in widgets options: %s', settings.imageSegmentationChannel);
+    index = 1;
+end
+set(handles.imageChannelPopup, 'Value', index(1));
+
 set(handles.lazyLoadingCheckbox, 'Value', app.inputImagesLazyLoading);
 
 
@@ -164,6 +172,7 @@ end
 
 updateImageNameList(handles);
 
+
 % --- Executes on button change in channelSelectionPanel
 function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)
 % this function is used to catch selection of radiobuttons in selection panel
@@ -183,8 +192,11 @@ string = get(handles.filePatternEdit, 'String');
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change input images file pattern to ' string]);
 
-app.inputImagesFilePattern = string;
 disp(['update file pattern: ' string]);
+
+app.inputImagesFilePattern = string;
+gui = KymoRodGui.getInstance();
+gui.userPrefs.inputImagesFilePattern = string;
 
 updateImageNameList(handles);
 
@@ -220,6 +232,10 @@ app.logger.info('SelectInputImagesDialog.m', ...
     ['Change image segmentation channel to ' channelString]);
 
 app.settings.imageSegmentationChannel = channelString;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.imageSegmentationChannel = channelString;
+
 
 % --- Executes during object creation, after setting all properties.
 function imageChannelPopup_CreateFcn(hObject, eventdata, handles)
@@ -407,6 +423,9 @@ app.logger.info('SelectInputImagesDialog.m', ...
 resol = str2double(resolString);
 app.settings.pixelSize = resol;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.pixelSize = resol;
+
 
 % --- Executes during object creation, after setting all properties.
 function spatialResolutionEdit_CreateFcn(hObject, eventdata, handles)
@@ -438,6 +457,10 @@ app.logger.info('SelectInputImagesDialog.m', ...
 
 app.settings.pixelSizeUnit = unitString;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.pixelSizeUnit = unitString;
+
+
 % --- Executes during object creation, after setting all properties.
 function spatialResolutionUnitEdit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to spatialResolutionUnitEdit (see GCBO)
@@ -468,6 +491,10 @@ app.logger.info('SelectInputImagesDialog.m', ...
 time = str2double(timeString);
 app.settings.timeInterval = time;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.timeInterval = time;
+
+
 % --- Executes during object creation, after setting all properties.
 function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to timeIntervalEdit (see GCBO)
@@ -496,6 +523,9 @@ app.logger.info('SelectInputImagesDialog.m', ...
     ['Change time interval unit to ' unitString]);
 
 app.settings.timeIntervalUnit = unitString;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.timeIntervalUnit = unitString;
 
 
 % --- Executes during object creation, after setting all properties.
@@ -761,7 +791,10 @@ app = getappdata(0, 'app');
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change lazy loading to ' char(value)]);
 
-app.inputImagesLazyLoading = value > 0;
+flag = value > 0;
+app.inputImagesLazyLoading = flag;
+gui = KymoRodGui.getInstance();
+gui.userPrefs.inputImagesLazyLoading = flag;
 
 
 % --- Executes on slider movement.
@@ -814,6 +847,7 @@ set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
 if frameNumber > 1
     set(handles.framePreviewSlider, 'Visible', 'On');
 end
+
 
 %% Validation buttons
 

@@ -253,14 +253,18 @@ function firstSkeletonPointPopup_Callback(hObject, eventdata, handles)%#ok
 % determine origin of skeleton
 val2 = get(handles.firstSkeletonPointPopup, 'Value');
 stringList = get(handles.firstSkeletonPointPopup, 'String');
-originDirection = stringList{val2};
+skeletonOrigin = stringList{val2};
 
 app = getappdata(0, 'app');
 app.logger.info('ValidateSkeleton.m', ...
-    ['Change skeleton first point to ' originDirection]);
+    ['Change skeleton first point to ' skeletonOrigin]);
 
 % store in app settings
-app.settings.firstPointLocation = originDirection;
+app.settings.firstPointLocation = skeletonOrigin;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.firstPointLocation = skeletonOrigin;
+
 
 % --- Executes during object creation, after setting all properties.
 function firstSkeletonPointPopup_CreateFcn(hObject, eventdata, handles)%#ok
@@ -470,6 +474,9 @@ end
 
 app.settings.curvatureSmoothingSize = val;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.curvatureSmoothingSize = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 
@@ -507,6 +514,10 @@ if isnan(val) || val < 0
 end
 
 app.settings.finalResultLength = val;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.finalResultLength = val;
+
 setProcessingStep(app, ProcessingStep.Skeleton);
 
 

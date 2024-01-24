@@ -206,13 +206,16 @@ app.logger.info('SmoothContourDialog.m', ...
     ['Set smoothing value to ' smoothString]);
 
 % Take the value from the slider, rounded to have an integer
-smooth = round(str2double(smoothString));
+smoothingSize = round(str2double(smoothString));
 
 % set the smooth
-set(handles.smoothValueSlider, 'Value', smooth);
+set(handles.smoothValueSlider, 'Value', smoothingSize);
 
 % update app data 
-app.settings.contourSmoothingSize = smooth;
+app.settings.contourSmoothingSize = smoothingSize;
+
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.contourSmoothingSize = smoothingSize;
 
 setProcessingStep(app, ProcessingStep.Contour);
 

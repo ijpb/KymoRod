@@ -19,80 +19,12 @@ classdef KymoRodUserPrefs < handle
 %% Properties
 properties
     lastOpenDir = '';
+    inputImagesFilePattern = '*.*';
 
-    % spatial calibration of input images
-    pixelSize = 1000 / 253;
+    inputImagesLazyLoading = true;
 
-    % The unit name for spatial calibration. Default value is 'µm'
-    pixelSizeUnit = 'µm';
-
-    % time interval between two frames. Default value is 10.
-    timeInterval = 10;
-    % The unit name for time interval. Default value is 'min'
-    timeIntervalUnit = 'min';
-
-    % specify the smoothing method applied on gray-scale image before
-    % segmentation. Should be one of 'none', 'boxFilter', 'gaussian'
-    imageSmoothingMethod = 'boxFilter';
-
-    % the radius of the smoothing filter applied on gray scale image
-    % before segmentation
-    imageSmoothingRadius = 2;
-
-    % in case of color images, specify the channel used for segmentation
-    imageSegmentationChannel = 'red';
-
-    % the stategy for setting up the threshold method on each image
-    % Can be one of {'auto'}, 'manual'.
-    thresholdStrategy = 'auto';
-
-    % the method for computing threshold on each image
-    % Can be one of {'maxEntropy'}, 'Otsu'.
-    thresholdMethod = 'maxEntropy';
-    
-    % length of window for smoothing coutours. Default value is 20.
-    contourSmoothingSize = 20;
-
-    % location of the first point of the skeleton.
-    % Can be one of 'bottom' (default), 'top', 'left', 'right'.
-    firstPointLocation = 'bottom';
-
-    % smoothing window size for computation of curvature.
-    % Default value is 10.
-    curvatureSmoothingSize = 10;
-
-    % the number of points used to discretize signal on each skeleton.
-    % Default value is 500.
-    finalResultLength = 500;
-
-    % in case of color images, specify the channel used for computing
-    % displacement
-    displacementChannel = 'red';
-
-    % length of displacement (in pixels). Default value is 2.
-    displacementStep = 2;
-
-    % size of first correlation window (in pixels). Default value is 5.
-    windowSize1 = 5;
-
-    % smooth displacement curve giving more weight to spatially closer values.
-    % Default value is 0.1.
-    displacementSpatialSmoothing = .1;
-
-    % smooth displacement curve giving more weight to similar values
-    % Default value is 1e-2.
-    displacementValueSmoothing = 1e-2;
-
-    % discretisation step of the filtered displacement curve
-    % Default value is 5e-3.
-    displacementResamplingDistance = 5e-3;
-
-    % size of second correlation window (in pixels). Not used anymore?
-    windowSize2 = 20;
-
-    intensityImagesChannel = 'red';
-
-
+    % Settings for an analysis.
+    settings;
 end % end properties
 
 
@@ -101,19 +33,20 @@ methods
     function obj = KymoRodUserPrefs(varargin)
         % Constructor for KymoRodUserPrefs class.
 
+        % initialize default settings
+        obj.settings = KymoRodSettings;
     end
 
 end % end constructors
 
 
-
 %% input / output methods
 methods
     function save(obj)
-        % Save save user preferences into user config file.
+        % SAVE Save user preferences into user config file.
         %
         % usage:
-        %   save()
+        %   save(prefs)
         %
         % See also
         %   load
@@ -144,53 +77,11 @@ methods
 
         % spatial calibration of input images
         fprintf(f, 'lastOpenDir = %s\n', obj.lastOpenDir);
+        fprintf(f, 'inputImagesFilePattern = %s\n', obj.inputImagesFilePattern);
+        fprintf(f, 'inputImagesLazyLoading = %s\n', booleanToString(obj.inputImagesLazyLoading));
         fprintf(f, '\n');
 
-        % spatial calibration of input images
-        fprintf(f, 'pixelSize = %g\n', obj.pixelSize);
-        fprintf(f, 'pixelSizeUnit = %s\n', obj.pixelSizeUnit);
-        
-        % time interval between two frames
-        fprintf(f, 'timeInterval = %g\n', obj.timeInterval);
-        fprintf(f, 'timeIntervalUnit = %s\n', obj.timeIntervalUnit);
-        fprintf(f, '\n');
-
-        % smoothing of images before threshold
-        fprintf(f, 'imageSmoothingMethod = %s\n', obj.imageSmoothingMethod);
-        fprintf(f, 'imageSmoothingRadius = %d\n', obj.imageSmoothingRadius);
-
-        % the method used for computing thresholds
-        fprintf(f, 'imageSegmentationChannel = %s\n', obj.imageSegmentationChannel);
-        fprintf(f, 'thresholdStrategy = %s\n', obj.thresholdStrategy);
-        fprintf(f, 'thresholdMethod = %s\n', obj.thresholdMethod);
-
-        % length of window for smoothing coutours
-        fprintf(f, 'contourSmoothingSize = %d\n', obj.contourSmoothingSize);
-        fprintf(f, '\n');
-
-        % information for computation of skeletons
-        fprintf(f, 'firstPointLocation = %s\n', obj.firstPointLocation);
-        fprintf(f, '\n');
-
-        % smoothing window size for computation of curvature
-        fprintf(f, 'curvatureSmoothingSize = %d\n', obj.curvatureSmoothingSize);
-        fprintf(f, 'finalResultLength = %d\n', obj.finalResultLength);
-        fprintf(f, '\n');
-
-        % info for computation of displacement
-        fprintf(f, 'displacementChannel = %s\n', obj.displacementChannel);
-        fprintf(f, 'displacementStep = %d\n', obj.displacementStep);
-        fprintf(f, 'windowSize1 = %d\n', obj.windowSize1);
-
-        % info for filtering displacement curves
-        fprintf(f, 'displacementSpatialSmoothing = %f\n', obj.displacementSpatialSmoothing);
-        fprintf(f, 'displacementValueSmoothing = %f\n', obj.displacementValueSmoothing);
-        fprintf(f, 'displacementResamplingDistance = %f\n', obj.displacementResamplingDistance);
-        fprintf(f, 'windowSize2 = %d\n', obj.windowSize2);
-        fprintf(f, '\n');
-
-        % info for computing intensity kymograph
-        fprintf(f, 'intensityImagesChannel = %s\n', obj.intensityImagesChannel);
+        writeSettings(obj.settings, f);
 
         % close the file
         fclose(f);
@@ -258,55 +149,59 @@ methods (Static)
             % interpret values of tokens
             if strcmpi(key, 'lastOpenDir')
                 prefs.lastOpenDir = value;
+            elseif strcmpi(key, 'inputImagesFilePattern')
+                prefs.inputImagesFilePattern = value;
+            elseif strcmpi(key, 'inputImagesLazyLoading')
+                prefs.inputImagesLazyLoading = strcmp(value, 'true');
 
             elseif strcmpi(key, 'pixelSize')
-                prefs.pixelSize = str2double(value);
+                prefs.settings.pixelSize = str2double(value);
             elseif strcmpi(key, 'pixelSizeUnit')
-                prefs.pixelSizeUnit = value;
+                prefs.settings.pixelSizeUnit = value;
             elseif strcmpi(key, 'timeInterval')
-                prefs.timeInterval = str2double(value);
+                prefs.settings.timeInterval = str2double(value);
             elseif strcmpi(key, 'timeIntervalUnit')
-                prefs.timeIntervalUnit = value;
+                prefs.settings.timeIntervalUnit = value;
 
             elseif strcmpi(key, 'imageSmoothingMethod')
-                prefs.imageSmoothingMethod = value;
+                prefs.settings.imageSmoothingMethod = value;
             elseif strcmpi(key, 'imageSmoothingRadius')
-                prefs.imageSmoothingRadius = str2double(value);
+                prefs.settings.imageSmoothingRadius = str2double(value);
             elseif strcmpi(key, 'imageSegmentationChannel')
-                prefs.imageSegmentationChannel = value;
+                prefs.settings.imageSegmentationChannel = value;
             elseif strcmpi(key, 'thresholdStrategy')
-                prefs.thresholdStrategy = value;
+                prefs.settings.thresholdStrategy = value;
             elseif strcmpi(key, 'thresholdMethod')
-                prefs.thresholdMethod = value;
+                prefs.settings.thresholdMethod = value;
 
             elseif strcmpi(key, 'contourSmoothingSize')
-                prefs.contourSmoothingSize = str2double(value);
+                prefs.settings.contourSmoothingSize = str2double(value);
             elseif strcmpi(key, 'firstPointLocation')
-                prefs.firstPointLocation = value;
+                prefs.settings.firstPointLocation = value;
 
             elseif strcmpi(key, 'curvatureSmoothingSize')
-                prefs.curvatureSmoothingSize = str2double(value);
+                prefs.settings.curvatureSmoothingSize = str2double(value);
             elseif strcmpi(key, 'finalResultLength')
-                prefs.finalResultLength = value;
+                prefs.settings.finalResultLength = value;
 
             elseif strcmpi(key, 'displacementChannel')
-                prefs.displacementChannel = value;
+                prefs.settings.displacementChannel = value;
             elseif strcmpi(key, 'displacementStep')
-                prefs.displacementStep = str2double(value);
+                prefs.settings.displacementStep = str2double(value);
             elseif strcmpi(key, 'windowSize1')
-                prefs.windowSize1 = str2double(value);
+                prefs.settings.windowSize1 = str2double(value);
 
             elseif strcmpi(key, 'displacementSpatialSmoothing')
-                prefs.displacementSpatialSmoothing = str2double(value);
+                prefs.settings.displacementSpatialSmoothing = str2double(value);
             elseif strcmpi(key, 'displacementValueSmoothing')
-                prefs.displacementValueSmoothing = str2double(value);
+                prefs.settings.displacementValueSmoothing = str2double(value);
             elseif strcmpi(key, 'displacementResamplingDistance')
-                prefs.displacementResamplingDistance = str2double(value);
+                prefs.settings.displacementResamplingDistance = str2double(value);
             elseif strcmpi(key, 'windowSize2')
-                prefs.windowSize2 = str2double(value);
+                prefs.settings.windowSize2 = str2double(value);
 
             elseif strcmpi(key, 'intensityImagesChannel')
-                prefs.intensityImagesChannel = value;
+                prefs.settings.intensityImagesChannel = value;
 
             else
                 warning(['Unrecognized preference parameter: ' key]);
@@ -320,3 +215,12 @@ end
 
 end % end classdef
 
+%% some utility methods
+function string = booleanToString(bool)
+if bool
+    string = 'true';
+else
+    string = 'false';
+end
+end
+    

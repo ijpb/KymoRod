@@ -158,6 +158,9 @@ settings = KymoRodSettings.read(fullfile(folderName, fileName));
 app = KymoRodData;
 app.settings = settings;
 
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings = KymoRodSettings(settings);
+
 % choose input images
 SelectInputImagesDialog(app);
 

@@ -38,8 +38,13 @@ methods (Access = private)
         % Does not require any argument.
         %
     
-        % Initialisation of user preferneces
-        obj.userPrefs = KymoRodUserPrefs;
+        % Initialisation of user preferences
+        obj.userPrefs = KymoRodUserPrefs();
+        try
+            obj.userPrefs = KymoRodUserPrefs.load();
+        catch
+            warning('Enable to read default properties. If this is the first time to run KymoRod, this is normal.');
+        end
     end
 
 end % end constructors
@@ -78,6 +83,8 @@ methods
         
         % initialize with default directory
         data.inputImagesDir = obj.userPrefs.lastOpenDir;
+        data.inputImagesFilePattern = obj.userPrefs.inputImagesFilePattern;
+        data.inputImagesLazyLoading = obj.userPrefs.inputImagesLazyLoading;
     end
 
 end
