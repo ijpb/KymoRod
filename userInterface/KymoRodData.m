@@ -21,10 +21,10 @@ classdef KymoRodData < handle
         % Examples: 
         % appliVersion = VersionNumber(0, 12, 1);   % release
         % appliVersion = VersionNumber(0, 12, 2, 'SNAPSHOT'); % dev version
-        appliVersion = VersionNumber(0, 12, 3, 'SNAPSHOT');
+        appliVersion = VersionNumber(0, 13, 0, 'SNAPSHOT');
 
         % identifier of class version, used for saving and loading files
-        serialVersion = VersionNumber(0, 12, 0);
+        serialVersion = VersionNumber(0, 13, 0);
     end
     
     %% Properties
@@ -573,7 +573,7 @@ classdef KymoRodData < handle
             baseValues = zeros(1, nImages);
             
             % compute threshold values
-            switch this.settings.thresholdMethod
+            switch this.settings.autoThresholdMethod
                 case 'maxEntropy'
                     parfor_progress(nImages);
                     parfor i = 1 : nImages
@@ -594,7 +594,7 @@ classdef KymoRodData < handle
                     
                 otherwise
                     error(['Could not recognize threshold method: ' ...
-                        this.settings.thresholdMethod]);
+                        this.settings.autoThresholdMethod]);
             end
             
             this.baseThresholdValues = baseValues;
@@ -707,7 +707,7 @@ classdef KymoRodData < handle
             smooth = this.settings.contourSmoothingSize;
             
             organShape = 'boucle';
-            originDirection = this.settings.firstPointLocation;
+            originDirection = this.settings.skeletonOrigin;
             
             % allocate memory for results
             skelList    = cell(nFrames, 1);
@@ -1449,9 +1449,9 @@ classdef KymoRodData < handle
             
             % parse version number from version string
             version = VersionNumber(data.serialVersion);
-            if version.major == 0 && version.minor == 12
-                app = KymoRodData.load_V_0_11(data);
-            elseif version.major == 0 && version.minor == 11
+            if version.major == 0 && ismember(version.minor, [11 12 13])
+                % from version 11, changes concern only the Settings class,
+                % that manages its own reading version
                 app = KymoRodData.load_V_0_11(data);
             elseif version.major == 0 && ismember(version.minor, [8 10])
                 % just to fix bug introduced in version 0.10.0
@@ -1469,7 +1469,8 @@ classdef KymoRodData < handle
                 app.baseThresholdValues = app.thresholdValues;
             end
         end
-        
+
+           
         function app = load_V_0_11(data)
             % Initialize a new instance from a structure with 0.8 format
             % (corresponds to KymoRod applications 0.11.x and upward)

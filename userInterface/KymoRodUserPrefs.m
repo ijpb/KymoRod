@@ -171,18 +171,22 @@ methods (Static)
                 prefs.settings.imageSegmentationChannel = value;
             elseif strcmpi(key, 'thresholdStrategy')
                 prefs.settings.thresholdStrategy = value;
-            elseif strcmpi(key, 'thresholdMethod')
-                prefs.settings.thresholdMethod = value;
+            % elseif strcmpi(key, 'thresholdMethod')
+            %     prefs.settings.thresholdMethod = value;
+            elseif strcmpi(key, 'autoThresholdMethod') || strcmpi(key, 'thresholdMethod')
+                prefs.settings.autoThresholdMethod = value;
+            elseif strcmpi(key, 'manualThresholdValue')
+                prefs.settings.manualThresholdValue = str2double(value);
 
             elseif strcmpi(key, 'contourSmoothingSize')
                 prefs.settings.contourSmoothingSize = str2double(value);
-            elseif strcmpi(key, 'firstPointLocation')
-                prefs.settings.firstPointLocation = value;
+            elseif strcmpi(key, 'skeletonOrigin') || strcmpi(key, 'firstPointLocation')
+                prefs.settings.skeletonOrigin = value;
 
             elseif strcmpi(key, 'curvatureSmoothingSize')
                 prefs.settings.curvatureSmoothingSize = str2double(value);
             elseif strcmpi(key, 'finalResultLength')
-                prefs.settings.finalResultLength = value;
+                prefs.settings.finalResultLength = str2double(value);
 
             elseif strcmpi(key, 'displacementChannel')
                 prefs.settings.displacementChannel = value;

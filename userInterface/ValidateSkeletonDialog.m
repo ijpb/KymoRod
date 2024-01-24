@@ -130,7 +130,7 @@ switch direction
         set(handles.filterDirectionPopup, 'Value', 7);
 end
 
-dirInitial  = app.settings.firstPointLocation;
+dirInitial  = app.settings.skeletonOrigin;
 switch dirInitial
     case 'bottom'
         set(handles.firstSkeletonPointPopup, 'Value', 1);
@@ -257,13 +257,15 @@ skeletonOrigin = stringList{val2};
 
 app = getappdata(0, 'app');
 app.logger.info('ValidateSkeleton.m', ...
-    ['Change skeleton first point to ' skeletonOrigin]);
+    ['Change skeleton origin to ' skeletonOrigin]);
 
 % store in app settings
-app.settings.firstPointLocation = skeletonOrigin;
+app.settings.skeletonOrigin = skeletonOrigin;
 
 gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.firstPointLocation = skeletonOrigin;
+gui.userPrefs.settings.skeletonOrigin = skeletonOrigin;
+
+setProcessingStep(app, ProcessingStep.Contour);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -289,15 +291,6 @@ function updateSkeletonButton_Callback(hObject, eventdata, handles)%#ok
 set(handles.updateSkeletonButton, 'Enable', 'Off');
 set(handles.updateSkeletonButton, 'String', 'Wait please...');
 pause(0.01);
-
-app = getappdata(0, 'app');
-
-% parse popup containing info for starting skeleton
-val2 = get(handles.firstSkeletonPointPopup, 'Value');
-dirInitial = get(handles.firstSkeletonPointPopup, 'String');
-dirInitial  = dirInitial{val2};
-
-app.settings.firstPointLocation = dirInitial;
 
 computeAllSkeletons(handles);
 updateCurrentDisplay(handles);

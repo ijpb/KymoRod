@@ -82,6 +82,7 @@ end
 
 % setup some widgets with current settings
 settings = app.settings;
+set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
 set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
 set(handles.spatialResolutionUnitEdit, 'String', settings.pixelSizeUnit);
 set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));

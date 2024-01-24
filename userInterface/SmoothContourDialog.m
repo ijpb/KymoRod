@@ -157,17 +157,19 @@ set(handles.smoothValueSlider, 'Enable', 'Off');
 app  = getappdata(0, 'app');
 
 % Take the value from the slide bar, rounded to have an integer
-smooth = round(get(handles.smoothValueSlider, 'Value')); 
+smoothingSize = round(get(handles.smoothValueSlider, 'Value')); 
 
-smoothString = num2str(smooth);
+smoothString = num2str(smoothingSize);
 app.logger.info('SmoothContourDialog.m', ...
     ['Set smoothing value to ' smoothString]);
 
 % set the smooth
-set(handles.smoothValueEdit, 'String', num2str(smooth));
+set(handles.smoothValueEdit, 'String', num2str(smoothingSize));
 
 % update app data 
-app.settings.contourSmoothingSize = smooth;
+app.settings.contourSmoothingSize = smoothingSize;
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.contourSmoothingSize = smoothingSize;
 setProcessingStep(app, ProcessingStep.Contour);
 
 setappdata(0, 'app', app);

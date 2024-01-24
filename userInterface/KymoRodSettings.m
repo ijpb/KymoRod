@@ -36,9 +36,13 @@ classdef KymoRodSettings < handle
         thresholdStrategy = 'auto';
         
         % the method for computing threshold on each image
+        % (renamed from 'thresholdMethod')
         % Can be one of {'maxEntropy'}, 'Otsu'.
-        thresholdMethod = 'maxEntropy';
+        autoThresholdMethod = 'maxEntropy';
         
+        % The threshold value for manual threshold
+        manualThresholdValue = 50;
+
 
         %% Contour and skeleton
         
@@ -46,8 +50,9 @@ classdef KymoRodSettings < handle
         contourSmoothingSize = 20;
         
         % location of the first point of the skeleton.
+        % (renamed from 'firstPointLocation')
         % Can be one of 'bottom' (default), 'top', 'left', 'right'.
-        firstPointLocation = 'bottom';
+        skeletonOrigin = 'bottom';
         
 
         %% Curvature and angle
@@ -101,7 +106,7 @@ classdef KymoRodSettings < handle
     
     %% Constructor
     methods
-        function this = KymoRodSettings(varargin)
+        function obj = KymoRodSettings(varargin)
             % Create a new data structure for storing application data
             
             if ~isempty(varargin)
@@ -110,7 +115,7 @@ classdef KymoRodSettings < handle
                     % copy each field of the data structure
                     names = properties(var1);
                     for i = 1:length(names)
-                        this.(names{i}) = var1.(names{i});
+                        obj.(names{i}) = var1.(names{i});
                     end
                 else
                     error(['Unable to create KymoRodSettings from object of class ' class(var1)]);
@@ -123,7 +128,7 @@ classdef KymoRodSettings < handle
     
     %% input / output methods
     methods
-        function write(this, fileName)
+        function write(obj, fileName)
             % Save the different options used to compute kymographs
             %
             % usage:
@@ -142,61 +147,63 @@ classdef KymoRodSettings < handle
             fprintf(f, '\n');
             
             % write current settings
-            writeSettings(this, f);
+            writeSettings(obj, f);
             
             % close the file
             fclose(f);
         end
         
-        function writeSettings(this, f)
+        function writeSettings(obj, f)
             % write current settings into an opened file 
              
             % spatial calibration of input images
-            fprintf(f, 'pixelSize = %g\n', this.pixelSize);
-            fprintf(f, 'pixelSizeUnit = %s\n', this.pixelSizeUnit);
+            fprintf(f, 'pixelSize = %g\n', obj.pixelSize);
+            fprintf(f, 'pixelSizeUnit = %s\n', obj.pixelSizeUnit);
             fprintf(f, '\n');
             
             % time interval between two frames
-            fprintf(f, 'timeInterval = %g\n', this.timeInterval);
-            fprintf(f, 'timeIntervalUnit = %s\n', this.timeIntervalUnit);
+            fprintf(f, 'timeInterval = %g\n', obj.timeInterval);
+            fprintf(f, 'timeIntervalUnit = %s\n', obj.timeIntervalUnit);
             fprintf(f, '\n');
 
             % smoothing of images before threshold
-            fprintf(f, 'imageSmoothingMethod = %s\n', this.imageSmoothingMethod);
-            fprintf(f, 'imageSmoothingRadius = %d\n', this.imageSmoothingRadius);
+            fprintf(f, 'imageSmoothingMethod = %s\n', obj.imageSmoothingMethod);
+            fprintf(f, 'imageSmoothingRadius = %d\n', obj.imageSmoothingRadius);
 
             % the method used for computing thresholds
-            fprintf(f, 'imageSegmentationChannel = %s\n', this.imageSegmentationChannel);
-            fprintf(f, 'thresholdStrategy = %s\n', this.thresholdStrategy);
-            fprintf(f, 'thresholdMethod = %s\n', this.thresholdMethod);
+            fprintf(f, 'imageSegmentationChannel = %s\n', obj.imageSegmentationChannel);
+            fprintf(f, 'thresholdStrategy = %s\n', obj.thresholdStrategy);
+            fprintf(f, 'autoThresholdMethod = %s\n', obj.autoThresholdMethod);
+            fprintf(f, 'manualThresholdValue = %d\n', obj.manualThresholdValue);
+            fprintf(f, '\n');
             
             % length of window for smoothing coutours
-            fprintf(f, 'contourSmoothingSize = %d\n', this.contourSmoothingSize);
+            fprintf(f, 'contourSmoothingSize = %d\n', obj.contourSmoothingSize);
             fprintf(f, '\n');
             
             % information for computation of skeletons
-            fprintf(f, 'firstPointLocation = %s\n', this.firstPointLocation);
+            fprintf(f, 'skeletonOrigin = %s\n', obj.skeletonOrigin);
             fprintf(f, '\n');
            
             % smoothing window size for computation of curvature
-            fprintf(f, 'curvatureSmoothingSize = %d\n', this.curvatureSmoothingSize);
-            fprintf(f, 'finalResultLength = %d\n', this.finalResultLength);
+            fprintf(f, 'curvatureSmoothingSize = %d\n', obj.curvatureSmoothingSize);
+            fprintf(f, 'finalResultLength = %d\n', obj.finalResultLength);
             fprintf(f, '\n');
             
             % info for computation of displacement
-            fprintf(f, 'displacementChannel = %s\n', this.displacementChannel);
-            fprintf(f, 'displacementStep = %d\n', this.displacementStep);
-            fprintf(f, 'windowSize1 = %d\n', this.windowSize1);
+            fprintf(f, 'displacementChannel = %s\n', obj.displacementChannel);
+            fprintf(f, 'displacementStep = %d\n', obj.displacementStep);
+            fprintf(f, 'windowSize1 = %d\n', obj.windowSize1);
 
             % info for filtering displacement curves
-            fprintf(f, 'displacementSpatialSmoothing = %f\n', this.displacementSpatialSmoothing);
-            fprintf(f, 'displacementValueSmoothing = %f\n', this.displacementValueSmoothing);
-            fprintf(f, 'displacementResamplingDistance = %f\n', this.displacementResamplingDistance);
-            fprintf(f, 'windowSize2 = %d\n', this.windowSize2);
+            fprintf(f, 'displacementSpatialSmoothing = %f\n', obj.displacementSpatialSmoothing);
+            fprintf(f, 'displacementValueSmoothing = %f\n', obj.displacementValueSmoothing);
+            fprintf(f, 'displacementResamplingDistance = %f\n', obj.displacementResamplingDistance);
+            fprintf(f, 'windowSize2 = %d\n', obj.windowSize2);
             fprintf(f, '\n');
             
             % info for computing intensity kymograph
-            fprintf(f, 'intensityImagesChannel = %s\n', this.intensityImagesChannel);
+            fprintf(f, 'intensityImagesChannel = %s\n', obj.intensityImagesChannel);
             
         end
         
@@ -271,14 +278,16 @@ classdef KymoRodSettings < handle
                         settings.imageSegmentationChannel = value;
                     case lower('thresholdStrategy')
                         settings.thresholdStrategy = value;
-                    case lower('thresholdMethod')
-                        settings.thresholdMethod = value;
+                    case {lower('autoThresholdMethod'), lower('thresholdMethod')}
+                        settings.autoThresholdMethod = value;
+                    case lower('manualThresholdValue')
+                        settings.manualThresholdValue = str2double(value);
 
                     case lower('contourSmoothingSize')
                         settings.contourSmoothingSize = str2double(value);
                         
-                    case lower('firstPointLocation')
-                        settings.firstPointLocation = value;
+                    case {lower('skeletonOrigin'), lower('firstPointLocation')}
+                        settings.skeletonOrigin = value;
         
                     case lower('curvatureSmoothingSize')
                         settings.curvatureSmoothingSize = str2double(value);

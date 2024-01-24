@@ -98,17 +98,21 @@ set(handles.manualThresholdSlider, 'SliderStep', sliderStep);
 
 % thresholdStrategy widgets are updated with call to updateWidgetsVisibility 
 
-switch app.settings.thresholdMethod
+switch app.settings.autoThresholdMethod
     case 'maxEntropy'
         set(handles.autoThresholdMethodPopup, 'Value', 1);
     case 'Otsu'
         set(handles.autoThresholdMethodPopup, 'Value', 2);
     otherwise
-        warning('Could not initialize threshold method with value: %s', app.settings.thresholdMethod);
+        warning('Could not initialize threshold method with value: %s', app.settings.autoThresholdMethod);
 end
 
-updateWidgetsVisibility(handles);
+thresholdValue = app.settings.manualThresholdValue;
+set(handles.manualThresholdValueEdit2, 'String', num2str(thresholdValue));
+set(handles.manualThresholdSlider, 'Value', thresholdValue);
 
+
+updateWidgetsVisibility(handles);
 
 % setup slider for display of current frame
 set(handles.frameIndexSlider, 'Min', 1); 
@@ -378,9 +382,9 @@ app.logger.info('ChooseThresholdDialog.m', ...
     ['Set automatic threshold method: ' methodName]);
 
 % update threshold information of application
-app.settings.thresholdMethod = methodList{ind};
+app.settings.autoThresholdMethod = methodList{ind};
 gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.thresholdMethod = methodList{ind};
+gui.userPrefs.settings.autoThresholdMethod = methodList{ind};
 computeThresholdValues(app);
 
 updateSegmentationDisplay(handles);
@@ -616,6 +620,12 @@ end
 function updateManualThresholdValue(handles, value)
 
 app = getappdata(0, 'app');
+
+app.settings.manualThresholdValue = value;
+gui = KymoRodGui.getInstance();
+gui.userPrefs.settings.manualThresholdValue = value;
+
+% update array of threshold values for each image
 setThresholdValues(app, value)
 setappdata(0, 'app', app);
 
@@ -629,7 +639,6 @@ set(handles.currentFrameThresholdLabel, 'Visible', 'on');
 
 
 function updateWidgetsVisibility(handles)
-
 
 app = getappdata(0, 'app');
 
