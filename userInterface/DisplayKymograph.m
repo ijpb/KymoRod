@@ -684,18 +684,26 @@ set(handles.saveAllDataButton, 'Enable', 'Off')
 set(handles.saveAllDataButton, 'String', 'Wait please...')
 pause(0.01);
 
+gui = KymoRodGui.getInstance();
+defaultPath = gui.userPrefs.lastSaveDir;
+
 % To open the directory who the user want to save the data
 [fileName, pathName] = uiputfile('*.mat', ...
-    'Save Kymographs');
+    'Save Kymographs', defaultPath);
 
 if pathName == 0
     return;
 end
+gui.userPrefs.lastSaveDir = pathName;
 
 disp('Saving...');
 
 % retrieve application data
 app = getappdata(0, 'app');
+
+% log the path of saving
+app.logger.info('DisplayKymograph.m', ...
+    ['Save kymograph data into folder: ' pathName]);
 
 % filename of mat file
 [emptyPath, baseName, ext] = fileparts(fileName); %#ok<ASGLU>

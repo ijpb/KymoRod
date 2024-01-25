@@ -23,6 +23,8 @@ properties
 
     inputImagesLazyLoading = true;
 
+    lastSaveDir = '';
+
     % Settings for an analysis.
     settings;
 end % end properties
@@ -79,6 +81,8 @@ methods
         fprintf(f, 'lastOpenDir = %s\n', obj.lastOpenDir);
         fprintf(f, 'inputImagesFilePattern = %s\n', obj.inputImagesFilePattern);
         fprintf(f, 'inputImagesLazyLoading = %s\n', booleanToString(obj.inputImagesLazyLoading));
+        fprintf(f, '\n');
+        fprintf(f, 'lastSaveDir = %s\n', obj.lastSaveDir);
         fprintf(f, '\n');
 
         writeSettings(obj.settings, f);
@@ -153,6 +157,8 @@ methods (Static)
                 prefs.inputImagesFilePattern = value;
             elseif strcmpi(key, 'inputImagesLazyLoading')
                 prefs.inputImagesLazyLoading = strcmp(value, 'true');
+            elseif strcmpi(key, 'lastSaveDir')
+                prefs.lastSaveDir = value;
 
             elseif strcmpi(key, 'pixelSize')
                 prefs.settings.pixelSize = str2double(value);
