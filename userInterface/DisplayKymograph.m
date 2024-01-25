@@ -278,7 +278,6 @@ app = getappdata(0, 'app');
 % get the type of kymograph currently displayed
 typeList = get(handles.kymographTypePopup, 'String');
 type = strtrim(typeList(get(handles.kymographTypePopup, 'Value'), :));
-disp(type)
 
 % Choose the kymograph to display
 switch lower(type)
@@ -317,6 +316,7 @@ if strcmpi(get(handles.colorSkelHandle, 'Visible'), 'On')
 end
 
 guidata(hObject, handles);
+
 
 % --- Executes during object creation, after setting all properties.
 function kymographTypePopup_CreateFcn(hObject, eventdata, handles) %#ok<*DEFNU,INUSD>
