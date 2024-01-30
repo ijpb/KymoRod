@@ -20,10 +20,6 @@ classdef (Sealed) KymoRodGui < handle
 
 %% Properties
 properties
-    % the path to the last directory used for opening a file
-    % (now included in userPrefs)
-    lastOpenDir = pwd;
-
     % User Preferences
     userPrefs;
     
@@ -43,7 +39,7 @@ methods (Access = private)
         try
             obj.userPrefs = KymoRodUserPrefs.load();
         catch
-            warning('Enable to read default properties. If this is the first time to run KymoRod, this is normal.');
+            warning('Enable to read default properties. If this is the first time KymoRod is run, this is normal.');
         end
     end
 
@@ -92,7 +88,7 @@ end
 %% General GUI function
 
 methods
-    function app = loadKymoRodAppData(this)
+    function app = loadKymoRodAppData(obj)
         % Open File dialog to read KymoRod application data
         %
         % Returns a new instance, or empty if could not load.
@@ -111,7 +107,7 @@ methods
         end
         
         % keep path to file for future opening
-        this.lastOpenDir = folderName;
+        obj.userPrefs.lastOpenDir = folderName;
 
         % log file info
         logger = log4m.getLogger;
@@ -148,11 +144,11 @@ methods
             app.inputImagesDir = folderName;
 
             % keep it for future opening
-            this.userPrefs.lastOpenDir = folderName;
+            obj.userPrefs.lastOpenDir = folderName;
         end
     end
     
-    function displayProcessingDialog(this, app) %#ok<INUSL>
+    function displayProcessingDialog(obj, app) %#ok<INUSL>
         % Opens the appropriate dialog to display result of kymorod appdata
         
         % switch dialog depending on processing step
@@ -180,7 +176,7 @@ end
 
 %% Menu Managment methods
 methods
-    function buildFigureMenu(this, hFigure, app)
+    function buildFigureMenu(obj, hFigure, app)
         % creates standardized menu for a figure
         
         % remove default menu bar
@@ -196,51 +192,51 @@ methods
         uimenu('parent', fileMenu, ...
             'Label', 'New Analysis', ...
             'UserData', app, ...
-            'Callback', @this.newAnalysisMenuCallback);
+            'Callback', @obj.newAnalysisMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Load...', ...
             'UserData', app, ...
-            'Callback', @this.loadAppDataMenuCallback);
+            'Callback', @obj.loadAppDataMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Save As...', ...
             'UserData', app, ...
-            'Callback', @this.saveAppDataMenuCallback);
+            'Callback', @obj.saveAppDataMenuCallback);
         uimenu('parent', fileMenu, ...
             'Label', 'Quit', ...
             'Separator', 'On', ...
             'UserData', app, ...
-            'Callback', @this.quitMenuCallback);
+            'Callback', @obj.quitMenuCallback);
         
         % Populate the "Edit" menu entry
         editMenu = uimenu('parent', hFigure, 'Label', 'Edit');
         uimenu('parent', editMenu, ...
             'Label', 'Processing Step Menu...', ...
             'UserData', app, ...
-            'Callback', @this.mainMenuCallback);
+            'Callback', @obj.mainMenuCallback);
         uimenu('parent', editMenu, ...
             'Label', 'Print KymoRod Settings', ...
             'UserData', app, ...
-            'Callback', @this.printSettingsCallback);
+            'Callback', @obj.printSettingsCallback);
         
         % Populate the "Help" menu entry
         helpMenu = uimenu('parent', hFigure, 'Label', 'Help');
         uimenu('parent', helpMenu, ...
             'Label', 'Display Log File Path', ...
             'UserData', app, ...
-            'Callback', @this.displayLogFilePathMenuCallback);
+            'Callback', @obj.displayLogFilePathMenuCallback);
         uimenu('parent', helpMenu, ...
             'Label', 'Show Log File', ...
             'UserData', app, ...
-            'Callback', @this.showLogFileMenuCallback);
+            'Callback', @obj.showLogFileMenuCallback);
         uimenu('parent', helpMenu, ...
             'Separator', 'On', ...
             'Label', 'About...', ...
             'UserData', app, ...
-            'Callback', @this.aboutMenuCallback);
+            'Callback', @obj.aboutMenuCallback);
         
     end
     
-    function newAnalysisMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+    function newAnalysisMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         % creates a new analysis 
         
         % create new empty application data structure, using same settings
@@ -254,12 +250,12 @@ methods
         SelectInputImagesDialog(newApp);
     end
     
-    function loadAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function loadAppDataMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSD>
         disp('loading...');
         
         try
             % try to load the data
-            app = loadKymoRodAppData(this);
+            app = loadKymoRodAppData(obj);
             
         catch ME
             logger = log4m.getLogger;
@@ -278,10 +274,10 @@ methods
         close(hFigure);
 
         % display appropriate dialog for the application data
-        displayProcessingDialog(this, app);
+        displayProcessingDialog(obj, app);
     end
     
-    function saveAppDataMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+    function saveAppDataMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         disp('Saving...');
         
         % To open the directory who the user want to save the data
@@ -312,11 +308,11 @@ methods
         write(app, filePath);
     end
     
-    function quitMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD,INUSL>
+    function quitMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSD,INUSL>
         % save user preferences and closes application.
 
         % save user prefs
-        save(this.userPrefs);
+        save(obj.userPrefs);
 
         % closes graphical widgets
         hFig = KymoRodGui.findParentFigure(hObject);
@@ -324,27 +320,27 @@ methods
     end
     
     
-    function mainMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+    function mainMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         app = get(hObject, 'UserData');
         hFig = KymoRodGui.findParentFigure(hObject);
         delete(hFig);
         KymoRodMenuDialog(app);
     end
     
-    function printSettingsCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+    function printSettingsCallback(obj, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         app = get(hObject, 'UserData');
         disp('KymoRod Settings:');
         disp(app.settings);
     end
     
-    function displayLogFilePathMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+    function displayLogFilePathMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         app = get(hObject, 'UserData');
         path = app.logger.fullpath;
         disp('Path to log file:');
         disp(path);
     end
 
-    function showLogFileMenuCallback(this, hObject, eventdata, handles) %#ok<INUSL,INUSD>
+    function showLogFileMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSL,INUSD>
         % Display the content of the log file in a new figure
 
         % try to open log file
@@ -373,7 +369,7 @@ methods
             'String', lines);
     end
 
-    function aboutMenuCallback(this, hObject, eventdata, handles) %#ok<INUSD>
+    function aboutMenuCallback(obj, hObject, eventdata, handles) %#ok<INUSD>
         KymoRodAboutDialog;
     end
 end % end methods
