@@ -633,13 +633,25 @@ function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% open a dialog to select a PNG file
-[fileName, pathName] = uiputfile({'*.png'});
+gui = KymoRodGui.getInstance();
+defaultPath = gui.userPrefs.lastSaveDir;
 
-% check dialog was canceled
+% To open the directory who the user want to save the data
+[fileName, pathName] = uiputfile({'*.png'}, ...
+    'Save as PNG', defaultPath);
+
 if fileName == 0
     return;
 end
+gui.userPrefs.lastSaveDir = pathName;
+
+% % open a dialog to select a PNG file
+% [fileName, pathName] = uiputfile({'*.png'});
+% 
+% % check dialog was canceled
+% if fileName == 0
+%     return;
+% end
 
 app = getappdata(0, 'app');
 
@@ -656,13 +668,17 @@ function saveAsTiffButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% open a dialog to select a PNG file
-[fileName, pathName] = uiputfile({'*.tif'});
+gui = KymoRodGui.getInstance();
+defaultPath = gui.userPrefs.lastSaveDir;
 
-% check dialog was canceled
+% To open the directory who the user want to save the data
+[fileName, pathName] = uiputfile({'*.tif'}, ...
+    'Save as TIFF', defaultPath);
+
 if fileName == 0
     return;
 end
+gui.userPrefs.lastSaveDir = pathName;
 
 app = getappdata(0, 'app');
 
