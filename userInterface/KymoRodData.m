@@ -399,13 +399,12 @@ methods
         disp('Read all image names');
 
         % allocate memory for local variables
-        parfor_progress(nFrames);
         parfor i = 1:nFrames
             fileName = fileList(i).name;
             imageNames{i} = fileName;
-            parfor_progress;
+            fprintf('.');
         end
-        parfor_progress(0);
+        fprintf('\n');
 
         obj.imageNameList = imageNames;
     end
@@ -449,7 +448,6 @@ methods
         disp('Read all images');
 
         % read each image
-        parfor_progress(nImages);
         parfor i = 1:nImages
             fileName = fileList(i).name;
             imageNames{i} = fileName;
@@ -468,9 +466,9 @@ methods
             end
             images{i} = img;
 
-            parfor_progress;
+            fprintf('.');
         end
-        parfor_progress(0);
+        fprintf('\n');
 
         % keep loaded data in app
         obj.imageList = images;
@@ -532,7 +530,7 @@ methods
         %   VAL should be a scalar value.
 
         % check dimension of input array
-        if length(values) == 1
+        if isscalar(values)
             values = repmat(values, 1, frameNumber(obj));
         end
         if length(values) ~= frameNumber(obj)
@@ -573,22 +571,16 @@ methods
         % compute threshold values
         switch obj.settings.autoThresholdMethod
             case 'maxEntropy'
-                parfor_progress(nImages);
                 parfor i = 1 : nImages
                     img = getSegmentableImage(obj, i);
                     baseValues(i) = maxEntropyThreshold(img);
-                    parfor_progress;
                 end
-                parfor_progress(0);
 
             case 'Otsu'
-                parfor_progress(nImages);
                 parfor i = 1 : nImages
                     img = getSegmentableImage(obj, i);
                     baseValues(i) = round(graythresh(img) * 255);
-                    parfor_progress;
                 end
-                parfor_progress(0);
 
             otherwise
                 error(['Could not recognize threshold method: ' ...
@@ -649,7 +641,6 @@ methods
         obj.contourList = cell(nFrames, 1);
 
         % iterate over images
-        parfor_progress(nFrames);
         parfor i = 1:nFrames
             % add black border around each image, to ensure continuous contours
             img = getSegmentableImage(obj, i);
@@ -657,9 +648,9 @@ methods
             threshold = obj.thresholdValues(i);
             contours{i} = segmentContour(img, threshold);
 
-            parfor_progress;
+            fprintf('.');
         end
-        parfor_progress(0);
+        fprintf('\n');
 
         obj.contourList = contours;
 
@@ -718,7 +709,6 @@ methods
         resolMm = obj.settings.pixelSize / 1000;
 
         t0 = tic;
-        parfor_progress(nFrames);
         parfor i = 1:nFrames
             % extract current contour
             contour = getContour(obj, i);
@@ -750,9 +740,9 @@ methods
             skel2 = [skel(:,1) - origin(1), -(skel(:,2) - origin(2))];
             skelListMm{i} = skel2 * resolMm;
 
-            parfor_progress;
+            fprintf('.');
         end
-        parfor_progress(0);
+        fprintf('\n');
 
         % copy temporary arrays to KymoRodData instance
         obj.skeletonList       = skelList;
@@ -847,7 +837,6 @@ methods
         C = cell(n, 1);
 
         % iterate over skeletons in the list
-        parfor_progress(n);
         parfor i = 1:n
             curve = SK{i};
             % Check that the length of the skeleton is not too small
@@ -859,10 +848,7 @@ methods
                 A{i} = zeros(size(S{i}));
                 C{i} = zeros(size(S{i}));
             end
-            parfor_progress;
-
         end
-        parfor_progress(0);
 
         % store within class
         obj.verticalAngleList   = A;
@@ -899,7 +885,6 @@ methods
         % allocate memory for result
         displList = cell(nFrames-step, 1);
 
-        parfor_progress(nFrames - step);
         parfor i = 1:nFrames - step
             % index of next skeleton
             i2 = i + step;
@@ -907,10 +892,10 @@ methods
             % compute displacement between current couple of frames
             displ = computeFrameDisplacement(obj, i, i2);
             displList{i} = displ;
-            parfor_progress;
 
+            fprintf('.');
         end
-        parfor_progress(0);
+        fprintf('\n');
 
         obj.displacementList = displList;
     end
@@ -975,12 +960,9 @@ methods
         Elg = cell(n, 1);
 
         % iterate over displacement curves
-        parfor_progress(n);
         parfor i = 1:n
             [Elg{i}, E2{i}] = computeFrameElongation(obj, i);
-            parfor_progress;
         end
-        parfor_progress(0);
 
         % store results
         obj.smoothedDisplacementList = E2;

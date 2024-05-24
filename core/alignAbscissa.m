@@ -25,8 +25,6 @@ nx = 2000;
 % allocate array for storing shift in indices
 dec = zeros(length(S), 1);
 
-parfor_progress(length(S));
-
 % keep the min of all curvilinear abscissa
 Smin = zeros(length(S), 1);
 
@@ -86,9 +84,7 @@ for k = 2:length(S)
 	
 	% also keep the global minimum over all curvilinear abscissa
     Smin(k) = S{k}(1);
-    parfor_progress;
 end
-parfor_progress(0);
 
 % keep global origin
 Sm = min(Smin);
