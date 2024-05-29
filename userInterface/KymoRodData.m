@@ -135,9 +135,25 @@ properties
     % final result: elongation as a function of position and time
     elongationImage;
 
+
+    % reconstructed Kymograph of skeleton radius in absissa and time
+    radiusKymograph;
+
+    % reconstructed Kymograph of angle with vertical in absissa and time
+    verticalAngleKymograph;
+
+    % reconstructed Kymograph of curvature in absissa and time
+    curvatureKymograph;
+
+    % final result: elongation as a function of position and time
+    elongationKymograph;
+
+
     % intensity kymograph, computed by evaluating the intensity of
     % another image on the positions of the skeletons
     intensityImage;
+    intensityKymograph;
+
 
     % the type of kymograph used for display
     % should be one of 'radius' (default), 'verticalAngle',
@@ -860,10 +876,32 @@ methods
     function computeCurvaturesAndAbscissaImages(obj)
         nx  = obj.settings.finalResultLength;
         Sa  = obj.abscissaList;
-
+        
+        % compute images
         obj.curvatureImage     = kymographFromValues(Sa, obj.curvatureList, nx);
         obj.verticalAngleImage = kymographFromValues(Sa, obj.verticalAngleList, nx);
         obj.radiusImage        = kymographFromValues(Sa, obj.radiusList, nx);
+
+        % compute axis for time
+        nFrames = length(Sa);
+        timeData = (0:(nFrames-1)) * obj.settings.timeInterval * obj.indexStep;
+        timeAxis = kymorod.core.PlotAxis(timeData, 'Name', 'Time', 'Unit', obj.settings.timeIntervalUnit);
+
+        % compute axis for curvilinear abscissa
+        Smax = max(cellfun(@max, Sa));
+        Smin = min(cellfun(@min, Sa));
+        positions = linspace(Smin, Smax, nx);
+        posAxis = kymorod.core.PlotAxis(positions, 'Name', 'Curvilinear Abscissa', 'Unit', obj.settings.pixelSizeUnit);
+
+        obj.radiusKymograph = kymorod.core.Kymograph(obj.radiusImage, ....
+            'Name', 'Radius', ...
+            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+        obj.verticalAngleKymograph = kymorod.core.Kymograph(obj.verticalAngleImage, ...
+            'Name', 'Vertical Angle', ...
+            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+        obj.curvatureKymograph = kymorod.core.Kymograph(obj.curvatureImage, ...
+            'Name', 'Curvature', ...
+            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
     end
 
     function computeDisplacements(obj)
@@ -986,6 +1024,14 @@ methods
         end
         obj.elongationImage = kymographFromValues(S, A, nx);
 
+        % retrieve axes from previous kymograph
+        timeAxis = obj.radiusKymograph.TimeAxis;
+        posAxis = obj.radiusKymograph.PositionAxis;
+
+        obj.elongationKymograph = kymorod.core.Kymograph(obj.elongationImage, ....
+            'Name', 'Elongation', ...
+            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+        
         setProcessingStep(obj, ProcessingStep.Elongation);
     end
 
@@ -1077,6 +1123,15 @@ methods
         % Compute kymograph using specified kymograph size
         nx = obj.settings.finalResultLength;
         obj.intensityImage = kymographFromValues(S2List, values, nx);
+
+        % retrieve axes from previous kymograph
+        timeAxis = obj.radiusKymograph.timeAxis;
+        posAxis = obj.radiusKymograph.PositionAxis;
+
+        obj.intensityKymograph = kymorod.core.Kymograph(obj.intensityImage, ....
+            'Name', 'Intensity', ...
+            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+        
     end
 
     function image = getIntensityImage(this, index)
@@ -1109,6 +1164,24 @@ methods
                 img = obj.intensityImage;
         end
     end
+
+    function kymo = getCurrentKymograph(obj)
+        % Return the current kymograph.
+        % (defined by this.kymographDisplayType)
+
+        switch obj.kymographDisplayType
+            case 'radius'
+                kymo = obj.radiusKymograph;
+            case 'verticalAngle'
+                kymo = obj.verticalAngleKymograph;
+            case 'curvature'
+                kymo = obj.curvatureKymograph;
+            case 'elongation'
+                kymo = obj.elongationKymograph;
+            case 'intensity'
+                kymo = obj.intensityKymograph;
+        end
+    end
 end
 
 
@@ -1119,30 +1192,40 @@ methods
         % Display the current kymograph on a new figure.
 
         % get floating-point image corresponding to kymograph
-        img = getKymographMatrix(obj);
+        kymo = getCurrentKymograph(obj);
+        % img = getKymographMatrix(obj);
+        % 
+        % % compute display extent for elongation kymograph
+        % validatgeDisplayRange(kymo);
+        % % minCaxis = kymo.DisplayRange(1);
+        % % maxCaxis = kymo.DisplayRange(2);
+        % % minCaxis = min(img(:));
+        % % maxCaxis = max(img(:));
+        % 
+        % % retrieve numerical values for x and y axes
+        % xdata = xData(kymo);
+        % ydata = yData(kymo);
+        % % % compute references for x and y axes
+        % % timeInterval = obj.settings.timeInterval;
+        % % xdata = (0:(size(img, 2)-1)) * timeInterval * obj.indexStep;
+        % % Sa = obj.abscissaList{end};
+        % % ydata = linspace(Sa(1), Sa(end), obj.settings.finalResultLength);
+        % 
+        % % display current kymograph
+        % hImg = imagesc(xdata, ydata, img);
+        % 
+        % % setup display
+        % set(gca, 'YDir', 'normal');
+        % clim(kymo.DisplayRange); colorbar;
+        % colormap jet;
+        % 
+        % % annotate
+        % xlabel(sprintf('Time (%s)', obj.settings.timeIntervalUnit));
+        % ylabel(sprintf('Geodesic position (%s)', obj.settings.pixelSizeUnit));
+        % title(obj.kymographDisplayType);
 
-        % compute display extent for elongation kymograph
-        minCaxis = min(img(:));
-        maxCaxis = max(img(:));
-
-        % compute references for x and y axes
-        timeInterval = obj.settings.timeInterval;
-        xdata = (0:(size(img, 2)-1)) * timeInterval * obj.indexStep;
-        Sa = obj.abscissaList{end};
-        ydata = linspace(Sa(1), Sa(end), obj.settings.finalResultLength);
-
-        % display current kymograph
-        hImg = imagesc(xdata, ydata, img);
-
-        % setup display
-        set(gca, 'YDir', 'normal');
-        clim([minCaxis, maxCaxis]); colorbar;
+        hImg = show(kymo);
         colormap jet;
-
-        % annotate
-        xlabel(sprintf('Time (%s)', obj.settings.timeIntervalUnit));
-        ylabel(sprintf('Geodesic position (%s)', obj.settings.pixelSizeUnit));
-        title(obj.kymographDisplayType);
 
         if nargout > 0
             varargout = {hImg};

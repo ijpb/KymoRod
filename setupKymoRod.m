@@ -22,7 +22,7 @@ disp('Installing KymoRod software...');
 addpath(fullfile(mainDir, 'lib'));
 addpath(fullfile(mainDir, 'lib', 'matimage'));
 addpath(fullfile(mainDir, 'lib', 'freezeColors'));
-addpath(fullfile(mainDir, 'lib', 'parfor'));
+%addpath(fullfile(mainDir, 'lib', 'parfor'));
 
 % add the core programs
 addpath(fullfile(mainDir, 'core'));
