@@ -865,13 +865,17 @@ methods
         % compute axis for time
         nFrames = length(Sa);
         timeData = (0:(nFrames-1)) * obj.settings.timeInterval * obj.indexStep;
-        timeAxis = kymorod.core.PlotAxis(timeData, 'Name', 'Time', 'Unit', obj.settings.timeIntervalUnit);
+        timeAxis = kymorod.core.PlotAxis(timeData, ...
+            'Name', 'Time', ...
+            'Unit', obj.settings.timeIntervalUnit);
 
         % compute axis for curvilinear abscissa
         Smax = max(cellfun(@max, Sa));
         Smin = min(cellfun(@min, Sa));
         positions = linspace(Smin, Smax, nx);
-        posAxis = kymorod.core.PlotAxis(positions, 'Name', 'Curvilinear Abscissa', 'Unit', obj.settings.pixelSizeUnit);
+        posAxis = kymorod.core.PlotAxis(positions, ...
+            'Name', 'Curvilinear Abscissa', ...
+            'Unit', 'mm');
 
         % compute images
         radiusImage = kymographFromValues(Sa, obj.radiusList, nx);
