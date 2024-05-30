@@ -125,7 +125,7 @@ methods
 
     function validateDisplayRange(obj)
         % Make sure DisplayRange is computed.
-        if isempty(obj.DisplayRange)
+        if isempty(obj.DisplayRange) || diff(obj.DisplayRange) == 0
             mini = min(obj.Data(:));
             maxi = max(obj.Data(:));
             obj.DisplayRange = [mini maxi];
