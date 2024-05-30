@@ -21,6 +21,10 @@ properties
     
     % list of handles to the various gui items
     Handles;
+
+    KymographTypes = {'Radius', 'Vertical Angle', 'Curvature', 'Elongation', 'Intensity'};
+
+    ColormapNames = {'Jet', 'Parula', 'Blue-White-Red'};
     
 end
 
@@ -41,7 +45,7 @@ methods
             'NextPlot', 'new', ...
             'Name', 'Kymograph Display', ...
             'CloseRequestFcn', @obj.close);
-        obj.Handles.figure = fig;
+        obj.Handles.Figure = fig;
         
         % create main figure menu
         createFigureMenu(fig);
@@ -74,28 +78,51 @@ methods
             mainPanel = uix.VBox('Parent', hf, ...
                 'Units', 'normalized', ...
                 'Position', [0 0 1 1]);
-            
+
+            controlPanel = uix.HButtonBox('Parent', mainPanel);
+            uicontrol('Parent', controlPanel, 'Style', 'text', ...
+                'String', 'Kymograph:', ...
+                'FontSize', 10);
+            obj.Handles.KymographType = uicontrol(...
+                'Parent', controlPanel, ...
+                'Style', 'popupmenu', ...
+                'String', obj.KymographTypes, ...
+                'FontSize', 10, ...
+                'Callback', @(src, evt) obj.onKymographDropdownChanged);
+            uicontrol('Parent', controlPanel, 'Style', 'text', ...
+                'String', 'Colormap:', ...
+                'FontSize', 10);
+            obj.Handles.ColormapName = uicontrol(...
+                'Parent', controlPanel, ...
+                'Style', 'popupmenu', ...
+                'String', obj.ColormapNames, ...
+                'FontSize', 10, ...
+                'Callback', @(src, evt) obj.onColormapDropdownChanged);
+            set(controlPanel, ...
+                'ButtonSize', [130 35], ...
+                'Spacing', 5);
+
             % creates an axis that fills the available space
             ax = axes('Parent', uicontainer('Parent', mainPanel), ...
                 'YDir', 'normal');
             
             % intialize image display with default image.
             kymo = getCurrentKymograph(obj.AppData);
-            hIm = imagesc(kymo.Data, 'parent', ax);
+            hIm = imagesc(ax, kymo.Data);
             
             % keep widgets handles
-            obj.Handles.imageAxis = ax;
-            obj.Handles.image = hIm;
+            obj.Handles.ImageAxis = ax;
+            obj.Handles.Image = hIm;
             
             % info panel for cursor position and value
-            obj.Handles.infoPanel = uicontrol(...
+            obj.Handles.StatusBar = uicontrol(...
                 'Parent', mainPanel, ...
                 'Style', 'text', ...
                 'String', ' x=    y=     I=', ...
                 'HorizontalAlignment', 'left');
             
             % right panel fixed size, the remaining for left panel
-            mainPanel.Heights = [-1 20];
+            mainPanel.Heights = [35 -1 20];
         end
     end
 end
@@ -114,17 +141,22 @@ methods
         ydata = yData(kymo);
 
         % update image display
-        obj.Handles.image = imagesc(obj.Handles.imageAxis, ...
-            img, 'xdata', xdata, 'ydata', ydata);
-        set(obj.Handles.imageAxis, ...
+        set(obj.Handles.Image, ...
+            'CData', img, ...
+            'XData', xdata, ...
+            'YData', ydata ...
+            );
+        set(obj.Handles.ImageAxis, ...
             'DataAspectRatioMode', 'auto', ...
+            'XLim', xdata([1 end]), ...
+            'YLim', ydata([1 end]), ...
             'YDir', 'normal', ...
             'CLim', kymo.DisplayRange);
 
         % update graph annotations
-        title(kymo.Name);
-        xlabel(createLabel(kymo.TimeAxis));
-        ylabel(createLabel(kymo.PositionAxis));
+        title(obj.Handles.ImageAxis, kymo.Name);
+        xlabel(obj.Handles.ImageAxis, createLabel(kymo.TimeAxis));
+        ylabel(obj.Handles.ImageAxis, createLabel(kymo.PositionAxis));
     end
 
     function updateTitle(obj, varargin) %#ok<INUSD>
@@ -132,7 +164,7 @@ methods
     end
 
     function close(obj, varargin)
-        delete(obj.Handles.figure);
+        delete(obj.Handles.Figure);
     end
 end
 
@@ -214,6 +246,26 @@ methods
         kymo.DisplayRange = [vmin vmax];
 
         updateDisplay(obj);
+    end
+end
+
+%% Methods for widget callbacks
+methods
+    function onKymographDropdownChanged(obj)
+        app = obj.AppData;
+        index = obj.Handles.KymographType.Value;
+        typeList = {'radius', 'verticalAngle', 'curvature', 'elongation', 'intensity'};
+        app.kymographDisplayType = typeList{index};
+        updateDisplay(obj);
+    end
+
+    function onColormapDropdownChanged(obj)
+        index = obj.Handles.ColormapName.Value;
+        switch index
+            case 1, colormap(obj.Handles.ImageAxis, jet(256));
+            case 2, colormap(obj.Handles.ImageAxis, 'parula');
+            case 3, colormap(obj.Handles.ImageAxis, blue2White2Red);
+        end
     end
 end
 
