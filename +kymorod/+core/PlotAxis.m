@@ -72,5 +72,21 @@ methods
     end
 end % end methods
 
+
+%% Serialization methods
+methods
+    function str = toStruct(obj)
+        str = struct('Type', 'kymorod.core.PlotAxis', ...
+            'Data', obj.Data, ...
+            'Name', obj.Name, ...
+            'Unit', obj.Unit);
+    end
+end
+methods (Static)
+    function axis = fromStruct(str)
+        axis = kymorod.core.PlotAxis(str.Data, 'Name', str.Name, 'Unit', str.Unit);
+    end
+end
+
 end % end classdef
 

@@ -123,19 +123,6 @@ properties
     elongationList;
 
 
-    % reconstructed image of skeleton radius in absissa and time
-    radiusImage;
-
-    % reconstructed image of angle with vertical in absissa and time
-    verticalAngleImage;
-
-    % reconstructed image of curvature in absissa and time
-    curvatureImage;
-
-    % final result: elongation as a function of position and time
-    elongationImage;
-
-
     % reconstructed Kymograph of skeleton radius in absissa and time
     radiusKymograph;
 
@@ -148,10 +135,8 @@ properties
     % final result: elongation as a function of position and time
     elongationKymograph;
 
-
     % intensity kymograph, computed by evaluating the intensity of
     % another image on the positions of the skeletons
-    intensityImage;
     intensityKymograph;
 
 
@@ -313,14 +298,14 @@ methods
             obj.smoothedDisplacementList = {};
             obj.elongationList = {};
 
-            clearResultImages();
+            clearResultKymographs();
         end
 
-        function clearResultImages()
-            obj.curvatureImage = [];
-            obj.verticalAngleImage = [];
-            obj.radiusImage = [];
-            obj.elongationImage = [];
+        function clearResultKymographs()
+            obj.curvatureKymograph = [];
+            obj.verticalAngleKymograph = [];
+            obj.radiusKymograph = [];
+            obj.elongationKymograph = [];
         end
     end
 end
@@ -876,11 +861,6 @@ methods
     function computeCurvaturesAndAbscissaImages(obj)
         nx  = obj.settings.finalResultLength;
         Sa  = obj.abscissaList;
-        
-        % compute images
-        obj.curvatureImage     = kymographFromValues(Sa, obj.curvatureList, nx);
-        obj.verticalAngleImage = kymographFromValues(Sa, obj.verticalAngleList, nx);
-        obj.radiusImage        = kymographFromValues(Sa, obj.radiusList, nx);
 
         % compute axis for time
         nFrames = length(Sa);
@@ -893,13 +873,19 @@ methods
         positions = linspace(Smin, Smax, nx);
         posAxis = kymorod.core.PlotAxis(positions, 'Name', 'Curvilinear Abscissa', 'Unit', obj.settings.pixelSizeUnit);
 
-        obj.radiusKymograph = kymorod.core.Kymograph(obj.radiusImage, ....
+        % compute images
+        radiusImage = kymographFromValues(Sa, obj.radiusList, nx);
+        obj.radiusKymograph = kymorod.core.Kymograph(radiusImage, ....
             'Name', 'Radius', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
-        obj.verticalAngleKymograph = kymorod.core.Kymograph(obj.verticalAngleImage, ...
+
+        verticalAngleImage = kymographFromValues(Sa, obj.verticalAngleList, nx);
+        obj.verticalAngleKymograph = kymorod.core.Kymograph(verticalAngleImage, ...
             'Name', 'Vertical Angle', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
-        obj.curvatureKymograph = kymorod.core.Kymograph(obj.curvatureImage, ...
+
+        curvatureImage = kymographFromValues(Sa, obj.curvatureList, nx);
+        obj.curvatureKymograph = kymorod.core.Kymograph(curvatureImage, ...
             'Name', 'Curvature', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
     end
@@ -1022,13 +1008,13 @@ methods
                 A{k} = signal(:, 2);
             end
         end
-        obj.elongationImage = kymographFromValues(S, A, nx);
+        elongationImage = kymographFromValues(S, A, nx);
 
         % retrieve axes from previous kymograph
         timeAxis = obj.radiusKymograph.TimeAxis;
         posAxis = obj.radiusKymograph.PositionAxis;
 
-        obj.elongationKymograph = kymorod.core.Kymograph(obj.elongationImage, ....
+        obj.elongationKymograph = kymorod.core.Kymograph(elongationImage, ....
             'Name', 'Elongation', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
         
@@ -1122,13 +1108,13 @@ methods
 
         % Compute kymograph using specified kymograph size
         nx = obj.settings.finalResultLength;
-        obj.intensityImage = kymographFromValues(S2List, values, nx);
+        intensityImage = kymographFromValues(S2List, values, nx);
 
         % retrieve axes from previous kymograph
         timeAxis = obj.radiusKymograph.timeAxis;
         posAxis = obj.radiusKymograph.PositionAxis;
 
-        obj.intensityKymograph = kymorod.core.Kymograph(obj.intensityImage, ....
+        obj.intensityKymograph = kymorod.core.Kymograph(intensityImage, ....
             'Name', 'Intensity', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
         
@@ -1151,18 +1137,8 @@ methods
         % Return the array of values representing the current kymograph.
         % (defined by this.kymographDisplayType)
 
-        switch obj.kymographDisplayType
-            case 'radius'
-                img = obj.radiusImage;
-            case 'verticalAngle'
-                img = obj.verticalAngleImage;
-            case 'curvature'
-                img = obj.curvatureImage;
-            case 'elongation'
-                img = obj.elongationImage;
-            case 'intensity'
-                img = obj.intensityImage;
-        end
+        kymo = getCurrentKymograph(obj);
+        img = kymo.Data;
     end
 
     function kymo = getCurrentKymograph(obj)
@@ -1193,37 +1169,7 @@ methods
 
         % get floating-point image corresponding to kymograph
         kymo = getCurrentKymograph(obj);
-        % img = getKymographMatrix(obj);
-        % 
-        % % compute display extent for elongation kymograph
-        % validatgeDisplayRange(kymo);
-        % % minCaxis = kymo.DisplayRange(1);
-        % % maxCaxis = kymo.DisplayRange(2);
-        % % minCaxis = min(img(:));
-        % % maxCaxis = max(img(:));
-        % 
-        % % retrieve numerical values for x and y axes
-        % xdata = xData(kymo);
-        % ydata = yData(kymo);
-        % % % compute references for x and y axes
-        % % timeInterval = obj.settings.timeInterval;
-        % % xdata = (0:(size(img, 2)-1)) * timeInterval * obj.indexStep;
-        % % Sa = obj.abscissaList{end};
-        % % ydata = linspace(Sa(1), Sa(end), obj.settings.finalResultLength);
-        % 
-        % % display current kymograph
-        % hImg = imagesc(xdata, ydata, img);
-        % 
-        % % setup display
-        % set(gca, 'YDir', 'normal');
-        % clim(kymo.DisplayRange); colorbar;
-        % colormap jet;
-        % 
-        % % annotate
-        % xlabel(sprintf('Time (%s)', obj.settings.timeIntervalUnit));
-        % ylabel(sprintf('Geodesic position (%s)', obj.settings.pixelSizeUnit));
-        % title(obj.kymographDisplayType);
-
+        
         hImg = show(kymo);
         colormap jet;
 
@@ -1247,10 +1193,10 @@ methods
         end
 
         switch type
-            case 'elongation', img = obj.elongationImage;
-            case 'radius', img = obj.radiusImage;
-            case 'curvature', img = obj.curvatureImage;
-            case 'verticalAngle', img = obj.verticalAngleImage;
+            case 'elongation', img = obj.elongationKymograph.Data;
+            case 'radius', img = obj.radiusKymograph.Data;
+            case 'curvature', img = obj.curvatureKymograph.Data;
+            case 'verticalAngle', img = obj.verticalAngleKymograph.Data;
         end
 
         % compute display extent for elongation kymograph
@@ -1377,6 +1323,37 @@ methods
         % save as a struct
         save(fileName, '-struct', 'appStruct');
     end
+
+    function str = toStruct(obj)
+        % Convert this instance into a Matlab struct.
+        %
+
+        str = struct(obj);
+
+        % also convert fields that are classes to structs or char
+        str.settings = struct(obj.settings);
+        str.processingStep = char(obj.processingStep);
+        str.appliVersion = char(obj.appliVersion);
+        str.serialVersion = char(obj.serialVersion);
+        
+        % convert fields that expose the "toStruct" method
+        fields = [...
+            "radiusKymograph", ...
+            "verticalAngleKymograph", ...
+            "curvatureKymograph", ...
+            "elongationKymograph", ...
+            "intensityKymograph", ...
+            ];
+        for fieldName = fields
+            if ~isempty(obj.(fieldName))
+                str.(fieldName) = toStruct(obj.(fieldName));
+            end
+        end
+        
+        % clear some unnecessary data
+        str.logger = [];
+    end
+
 end % I/O Methods
 
 
@@ -1495,7 +1472,7 @@ methods (Static)
         %    app2 = load('savedKymo.mat');
         %
         % See also
-        %   read, save
+        %   read, save, fromStruct
 
         % load fields from within the mat file
         data = load(fileName);
@@ -1511,10 +1488,15 @@ methods (Static)
 
         % parse version number from version string
         version = VersionNumber(data.serialVersion);
-        if version.major == 0 && ismember(version.minor, [11 12 13])
+        if version.major == 0 && ismember(version.minor, 13)
+            % from V0.13, introduces Kymograph class
+            app = KymoRodData.fromStruct(data);
+
+        elseif version.major == 0 && ismember(version.minor, [11 12 13])
             % from version 11, changes concern only the Settings class,
             % that manages its own reading version
             app = KymoRodData.load_V_0_11(data);
+
         elseif version.major == 0 && ismember(version.minor, [8 10])
             % just to fix bug introduced in version 0.10.0
             app = KymoRodData.load_V_0_8(data);
@@ -1529,6 +1511,58 @@ methods (Static)
         end
         if isempty(app.baseThresholdValues)
             app.baseThresholdValues = app.thresholdValues;
+        end
+    end
+
+    function app = fromStruct(data)
+        % Convert a Matlab structure into a KymoRodData instance.
+        %
+        % Used by the "load" function.
+        % (corresponds to KymoRod applications 0.13.x and upward)
+        % Used by the "load" function.
+
+        % creates a new empty instance
+        app = KymoRodData();
+        
+        % iterate over struct fields to choose relevant processing
+        fields = fieldnames(data);
+        for i = 1:length(fields)
+            name = fields{i};
+            value = data.(name);
+
+            % iterate over specific cases
+            if any(strcmpi(name, {'appliVersion', 'serialVersion', 'logger'}))
+                % do not override static fields
+                continue;
+
+            elseif strcmpi(name, 'settings')
+                % Initialize settings
+                KymoRodSettings.fromStruct(data.settings);
+            elseif strcmpi(name, 'processingStep')
+                app.processingStep = ProcessingStep.parse(value);
+
+            elseif strcmpi(name, 'radiusKymograph')
+                app.radiusKymograph = kymorod.core.Kymograph.fromStruct(value);
+            elseif strcmpi(name, 'verticalAngleKymograph')
+                app.verticalAngleKymograph = kymorod.core.Kymograph.fromStruct(value);
+            elseif strcmpi(name, 'curvatureKymograph')
+                app.curvatureKymograph = kymorod.core.Kymograph.fromStruct(value);
+            elseif strcmpi(name, 'elongationKymograph')
+                app.elongationKymograph = kymorod.core.Kymograph.fromStruct(value);
+            elseif strcmpi(name, 'intensityKymograph')
+                app.intensityKymograph = kymorod.core.Kymograph.fromStruct(value);
+            else
+                % otherwise, use generic processing
+
+                % check that the field exists
+                if ~isfield(data, name)
+                    warning(['Try to initialize an unknown field: ' name]);
+                    continue;
+                end
+
+                % simply copy the value of the field
+                app.(name) = value;
+            end
         end
     end
 

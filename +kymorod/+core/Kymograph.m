@@ -134,5 +134,44 @@ methods
 
 end % end methods
 
+
+%% Serialization methods
+methods
+    function str = toStruct(obj)
+        str = struct('Type', 'kymorod.core.Kymograph', ...
+            'Data', obj.Data, ...
+            'DisplayRange', obj.DisplayRange, ...
+            'Name', obj.Name, ...
+            'TimeAxis', toStruct(obj.TimeAxis), ...
+            'PositionAxis', toStruct(obj.PositionAxis));
+    end
+end
+
+methods (Static)
+    function kymo = fromStruct(str)
+        % Create a new Kymograph instance from a Matlab struct.
+
+        % check case of empty data -> return empty Kymograph
+        if isempty(str)
+            kymo = kymorod.core.Kymograph([]);
+            return;
+        end
+        
+        % create kymograph from data
+        kymo = kymorod.core.Kymograph(str.Data, 'Name', str.Name);
+
+        % aslo setup optional properties
+        if ~isempty(str.DisplayRange)
+            kymo.DisplayRange = str.DisplayRange;
+        end
+        if ~isempty(str.TimeAxis)
+            kymo.TimeAxis = kymorod.core.PlotAxis.fromStruct(str.TimeAxis);
+        end
+        if ~isempty(str.PositionAxis)
+            kymo.PositionAxis = kymorod.core.PlotAxis.fromStruct(str.PositionAxis);
+        end
+    end
+end
+
 end % end classdef
 

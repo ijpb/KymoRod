@@ -102,10 +102,10 @@ handles.imageMarker     = drawMarker(skeleton(1, :), ...
 % depending on which data have been processed, only some kymographs may be
 % displayed.
 typeList = {'radius', 'verticalAngle', 'curvature'};
-if ~isempty(app.elongationImage)
+if ~isempty(app.elongationKymograph)
     typeList = [typeList, {'elongation'}];
 end
-if ~isempty(app.intensityImage)
+if ~isempty(app.intensityKymograph)
     typeList = [typeList, {'intensity'}];
 end
 set(handles.kymographTypePopup, 'String', char(typeList));
@@ -283,27 +283,21 @@ type = strtrim(typeList(get(handles.kymographTypePopup, 'Value'), :));
 switch lower(type)
     case 'radius'
         app.kymographDisplayType = 'radius';
-        img = app.radiusImage;
     case lower('verticalAngle')
         app.kymographDisplayType = 'verticalAngle';
-        img = app.verticalAngleImage;
     case 'curvature'
         app.kymographDisplayType = 'curvature';
-        img = app.curvatureImage;
     case 'elongation'
         app.kymographDisplayType = 'elongation';
-        img = app.elongationImage;
     case 'intensity'
         app.kymographDisplayType = 'intensity';
-        img = app.intensityImage;
 end
 
-minCaxis = min(img(:));
-maxCaxis = max(img(:));
-
-setappdata(0, 'minCaxis', minCaxis);
-setappdata(0, 'maxCaxis', maxCaxis);
-
+% setup Widget for control of display range
+kymo = getCurrentKymograph(app);
+validateDisplayRange(kymo);
+minCaxis = kymo.DisplayRange(1);
+maxCaxis = kymo.DisplayRange(2);
 set(handles.slider1, 'Min', minCaxis);
 set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
@@ -589,10 +583,14 @@ function updateKymographDisplay(handles)
 
 app = getappdata(0, 'app');
 
-minCaxis = getappdata(0, 'minCaxis');
-maxCaxis = getappdata(0, 'maxCaxis');
+% retrieve kymograph data
+kymo = getCurrentKymograph(app);
+img = kymo.Data;
 
-img = getKymographMatrix(app);
+% also retrieve display range
+validateDisplayRange(kymo);
+minCaxis = kymo.DisplayRange(1);
+maxCaxis = kymo.DisplayRange(2);
 
 % display current kymograph
 timeStep = app.settings.timeInterval;
@@ -636,7 +634,7 @@ function saveAsPngButton_Callback(hObject, eventdata, handles) %#ok<INUSD>
 gui = KymoRodGui.getInstance();
 defaultPath = gui.userPrefs.lastSaveDir;
 
-% To open the directory who the user want to save the data
+% open a dialog to select a PNG file
 [fileName, pathName] = uiputfile({'*.png'}, ...
     'Save as PNG', defaultPath);
 
@@ -644,14 +642,6 @@ if fileName == 0
     return;
 end
 gui.userPrefs.lastSaveDir = pathName;
-
-% % open a dialog to select a PNG file
-% [fileName, pathName] = uiputfile({'*.png'});
-% 
-% % check dialog was canceled
-% if fileName == 0
-%     return;
-% end
 
 app = getappdata(0, 'app');
 
