@@ -559,6 +559,8 @@ setProcessingStep(app, ProcessingStep.Kymograph);
 delete(gcf);
 
 disp('Display Kymographs');
+
 DisplayKymograph(app);
+kymorod.gui.KymographDisplayFrame(app);
 
 
