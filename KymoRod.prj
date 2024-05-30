@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="1628361655" file="D:\dlegland\projets\kymoRod\prog\KymoRod\KymoRod.prj" location="D:\dlegland\projets\kymoRod\prog\KymoRod" name="KymoRod" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="2149868369" file="D:\dlegland\projets\kymoRod\prog\KymoRod\KymoRod.prj" location="D:\dlegland\projets\kymoRod\prog\KymoRod" name="KymoRod" target="target.mlapps" target-name="Package App">
     <param.appname>KymoRod</param.appname>
     <param.authnamewatermark>R. Bastien, D. Legland, L. Fregosi, H. Hof</param.authnamewatermark>
     <param.email>david.legland@inrae.fr</param.email>
@@ -15,7 +15,7 @@
 and used to compute pixel displacements using Particle Image Velocimetry. This results in kymographs
 that describe elongation as a function of time.</param.description>
     <param.screenshot>D:\dlegland\projets\kymoRod\prog\package\kymoRod-displayKymograph.jpg</param.screenshot>
-    <param.version>1.12.2</param.version>
+    <param.version>1.12.3</param.version>
     <param.products.name>
       <item>MATLAB</item>
       <item>Image Processing Toolbox</item>
@@ -25,11 +25,11 @@ that describe elongation as a function of time.</param.description>
       <item>17</item>
     </param.products.id>
     <param.products.version>
-      <item>23.2</item>
-      <item>23.2</item>
+      <item>24.1</item>
+      <item>24.1</item>
     </param.products.version>
     <param.platforms />
-    <param.output>D:\dlegland\projets\kymoRod\prog\package</param.output>
+    <param.output>D:\dlegland\projets\kymoRod</param.output>
     <param.guid>de6808db-5c40-43b1-a044-03362aa12077</param.guid>
     <unset>
       <param.email />
@@ -40,6 +40,29 @@ that describe elongation as a function of time.</param.description>
       <file>${PROJECT_ROOT}\KymoRod.m</file>
     </fileset.main>
     <fileset.depfun>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GenericDialog\GenericDialog.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\+mixin\Container.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\Box.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\ButtonBox.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\calcPixelSizes.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\ChildEvent.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\ChildObserver.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\Container.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\FigureData.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\FigureObserver.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\HBox.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\HButtonBox.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\Node.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\set.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\setPosition.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\tracking.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\validateScalarStringOrCharacterArray.m</file>
+      <file>C:\Users\dlegland\AppData\Roaming\MathWorks\MATLAB Add-Ons\Toolboxes\GUI Layout Toolbox\layout\+uix\VBox.m</file>
+      <file>D:\dlegland\lib\matlab\useful\blue2White2Red.m</file>
+      <file>${PROJECT_ROOT}\+kymorod\+core\Kymograph.m</file>
+      <file>${PROJECT_ROOT}\+kymorod\+core\PlotAxis.m</file>
+      <file>${PROJECT_ROOT}\+kymorod\+gui\KymographDisplayFrame.m</file>
+      <file>${PROJECT_ROOT}\+kymorod\+util\parseAxisHandle.m</file>
       <file>${PROJECT_ROOT}\core\alignAbscissa.m</file>
       <file>${PROJECT_ROOT}\core\computeCurvature.m</file>
       <file>${PROJECT_ROOT}\core\computeDisplacement.m</file>
@@ -73,7 +96,6 @@ that describe elongation as a function of time.</param.description>
       <file>${PROJECT_ROOT}\lib\matimage\imEvaluate.m</file>
       <file>${PROJECT_ROOT}\lib\matimage\imHistogram.m</file>
       <file>${PROJECT_ROOT}\lib\matimage\isColorImage.m</file>
-      <file>${PROJECT_ROOT}\lib\parfor\parfor_progress.m</file>
       <file>${PROJECT_ROOT}\lib\private\colormap_helper.m</file>
       <file>${PROJECT_ROOT}\lib\private\rescale.m</file>
       <file>${PROJECT_ROOT}\lib\real2rgb.m</file>
@@ -95,6 +117,7 @@ that describe elongation as a function of time.</param.description>
       <file>${PROJECT_ROOT}\userInterface\KymoRodSettings.m</file>
       <file>${PROJECT_ROOT}\userInterface\KymoRodStartupDialog.fig</file>
       <file>${PROJECT_ROOT}\userInterface\KymoRodStartupDialog.m</file>
+      <file>${PROJECT_ROOT}\userInterface\KymoRodUserPrefs.m</file>
       <file>${PROJECT_ROOT}\userInterface\ProcessingStep.m</file>
       <file>${PROJECT_ROOT}\userInterface\SelectInputImagesDialog.fig</file>
       <file>${PROJECT_ROOT}\userInterface\SelectInputImagesDialog.m</file>
@@ -108,11 +131,11 @@ that describe elongation as a function of time.</param.description>
     <fileset.resources />
     <fileset.package />
     <build-deliverables>
-      <file location="D:\dlegland\projets\kymoRod\prog" name="package" optional="false">D:\dlegland\projets\kymoRod\prog\package</file>
+      <file location="D:\dlegland\projets" name="kymoRod" optional="false">D:\dlegland\projets\kymoRod</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2023b</root>
+      <root>C:\Program Files\MATLAB\R2024a</root>
       <toolboxes />
     </matlab>
     <platform>
