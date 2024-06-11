@@ -1115,7 +1115,7 @@ methods
         intensityImage = kymographFromValues(S2List, values, nx);
 
         % retrieve axes from previous kymograph
-        timeAxis = obj.radiusKymograph.timeAxis;
+        timeAxis = obj.radiusKymograph.TimeAxis;
         posAxis = obj.radiusKymograph.PositionAxis;
 
         obj.intensityKymograph = kymorod.core.Kymograph(intensityImage, ....
