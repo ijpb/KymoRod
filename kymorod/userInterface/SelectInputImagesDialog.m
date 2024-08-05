@@ -79,25 +79,24 @@ if getProcessingStep(app) > ProcessingStep.None
     handles = updateFramePreview(handles);
 end
 
-
 % setup some widgets with current settings
-settings = app.settings;
-set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
-set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
-set(handles.spatialResolutionUnitEdit, 'String', settings.pixelSizeUnit);
-set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));
-set(handles.timeIntervalUnitEdit, 'String', settings.timeIntervalUnit);
+ana = app.analysis;
+imageList = ana.InputImages.ImageList;
+calib = ana.InputImages.Calibration;
+set(handles.filePatternEdit, 'String', imageList.FileNamePattern);
+set(handles.spatialResolutionEdit, 'String', num2str(calib.PixelSize));
+set(handles.spatialResolutionUnitEdit, 'String', calib.PixelSizeUnit);
+set(handles.timeIntervalEdit, 'String', num2str(calib.TimeInterval));
+set(handles.timeIntervalUnitEdit, 'String', calib.TimeIntervalUnit);
 
 stringArray = get(handles.imageChannelPopup, 'String');
-index = find(strcmpi(strtrim(cellstr(stringArray)), settings.imageSegmentationChannel));
+index = find(strcmpi(strtrim(cellstr(stringArray)), imageList.Channel));
 if isempty(index)
-    warning('could not find settings channel string in widgets options: %s', settings.imageSegmentationChannel);
+    warning('could not find settings channel string in widgets options: %s', imageList.Channel);
     index = 1;
 end
 set(handles.imageChannelPopup, 'Value', index(1));
-
-set(handles.lazyLoadingCheckbox, 'Value', app.inputImagesLazyLoading);
-
+set(handles.lazyLoadingCheckbox, 'Value', imageList.LazyLoading);
 
 % Choose default command line output for SelectInputImagesDialog
 handles.output = hObject;
@@ -142,7 +141,7 @@ function chooseInputImagesButton_Callback(hObject, eventdata, handles)
 app = getappdata(0, 'app');
 
 % open a dialog to select input image folder, restricting type to images
-folderName = app.inputImagesDir;
+folderName = app.analysis.InputImages.ImageList.Directory;
 [fileName, folderName] = uigetfile(...
     {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
     '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
@@ -161,7 +160,7 @@ app.logger.info('SelectInputImagesDialog.m', ...
 
 % update inner variables and GUI
 set(handles.inputImageFolderEdit, 'String', folderName);
-app.inputImagesDir = folderName;
+app.analysis.InputImages.ImageList.Directory = folderName;
 
 % keep folder name is users preferences
 gui = KymoRodGui.getInstance;
@@ -195,7 +194,8 @@ app.logger.info('SelectInputImagesDialog.m', ...
 
 disp(['update file pattern: ' string]);
 
-app.inputImagesFilePattern = string;
+app.analysis.InputImages.ImageList.FileNamePattern = string;
+% app.inputImagesFilePattern = string;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.inputImagesFilePattern = string;
 
@@ -232,7 +232,7 @@ channelString = char(strtrim(stringArray(value,:)));
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change image segmentation channel to ' channelString]);
 
-app.settings.imageSegmentationChannel = channelString;
+app.analysis.InputImages.ImageList.Channel = string;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.imageSegmentationChannel = channelString;
@@ -264,16 +264,16 @@ hDialog = msgbox(...
     'Read Images');
 
 % read new list of image names, used to compute frame number
-folderName  = app.inputImagesDir;
-filePattern = app.inputImagesFilePattern;
-imageNames  = readImageNameList(folderName, filePattern);
-app.imageNameList = imageNames;
+fprintf('Read image name list...');
+imageList = app.analysis.InputImages.ImageList;
+computeFileNameList(imageList);
+fprintf(' done\n');
 
 if ishandle(hDialog)
     close(hDialog);
 end
 
-if isempty(app.imageNameList)
+if isempty(imageList.FileNameList)
     errordlg({'The chosen directory contains no file.', ...
         'Please choose another one'}, ...
         'Empty Directory Error', 'modal');
@@ -293,8 +293,8 @@ end
 setProcessingStep(app, ProcessingStep.Selection);
 
 % choose to display color image selection
-info = imfinfo(fullfile(app.inputImagesDir, app.imageNameList{1}));
-if strcmpi(info(1).ColorType, 'grayscale')
+img = imread(fullfile(imageList.Directory, imageList.FileNameList{1}));
+if ismatrix(img)
     set(handles.imageChannelLabel, 'Enable', 'Off');
     set(handles.imageChannelPopup, 'Enable', 'Off');
 else
@@ -303,10 +303,10 @@ else
 end
 
 % init image selection indices
-frameNumber = length(app.imageNameList);
-app.firstIndex = 1;
-app.lastIndex = frameNumber;
-app.indexStep = 1;
+frameNumber = length(imageList.FileNameList);
+imageList.IndexFirst = 1;
+imageList.IndexLast = frameNumber;
+imageList.IndexStep = 1;
 
 makeAllWidgetsVisible(handles);
 
@@ -316,34 +316,12 @@ handles = updateFramePreview(handles);
 guidata(handles.figure1, handles);
 
 
-function imageNames = readImageNameList(folderName, filePattern)
-    
-fprintf('Read image name list...');
-
-% list files in chosen directory
-fileList = dir(fullfile(folderName, filePattern));
-fileList = fileList(~[fileList.isdir]);
-
-% no file matching pattern
-if isempty(fileList)
-    fprintf(' no file found\n');
-    imageNames = {};
-    return;
-end
-
-% populate the list of image names
-frameNumber = length(fileList);
-imageNames = cell(frameNumber, 1);
-parfor i = 1:frameNumber
-    imageNames{i} = fileList(i).name;
-end
-
-fprintf(' done\n');
-
 function makeAllWidgetsVisible(handles)
 
 % update widgets with app information
 app = getappdata(0, 'app');
+imageList = app.analysis.InputImages.ImageList;
+calib = app.analysis.InputImages.Calibration;
 
 % show all panels
 set(handles.inputImagesPanel, 'Visible', 'On');
@@ -351,12 +329,12 @@ set(handles.calibrationPanel, 'Visible', 'On');
 set(handles.frameSelectionPanel, 'Visible', 'On');
 
 % update input data widgets
-set(handles.inputImageFolderEdit, 'String', app.inputImagesDir);
-set(handles.filePatternEdit, 'String', app.inputImagesFilePattern);
+set(handles.inputImageFolderEdit, 'String', imageList.Directory);
+set(handles.filePatternEdit, 'String', imageList.FileNamePattern);
 
 % choose to display color image selection
-info = imfinfo(fullfile(app.inputImagesDir, app.imageNameList{1}));
-if strcmpi(info(1).ColorType, 'grayscale')
+img = imread(fullfile(imageList.Directory, imageList.FileNameList{1}));
+if ismatrix(img)
     set(handles.imageChannelLabel, 'Enable', 'Off');
     set(handles.imageChannelPopup, 'Enable', 'Off');
 else
@@ -365,9 +343,9 @@ else
 end
 
 % update calibration widgets
-settings = app.settings;
-set(handles.spatialResolutionEdit, 'String', num2str(settings.pixelSize));
-set(handles.timeIntervalEdit, 'String', num2str(settings.timeInterval));
+% TODO: also update units
+set(handles.spatialResolutionEdit, 'String', num2str(calib.PixelSize));
+set(handles.timeIntervalEdit, 'String', num2str(calib.TimeInterval));
 
 % display image preview
 set(handles.currentFrameLabel, 'Visible', 'On');
@@ -378,17 +356,14 @@ frameSelectionHandles = [...
     handles.lastFrameIndexLabel, handles.lastFrameIndexEdit, ...
     handles.frameIndexStepLabel, handles.frameIndexStepEdit  ];
 
-nFiles = getFileNumber(app);
-if app.firstIndex == 1 && app.lastIndex == nFiles && app.indexStep == 1
+nFiles = length(imageList.FileNameList);
+if imageList.IndexFirst == 1 && imageList.IndexLast == nFiles && imageList.IndexStep == 1
     set(handles.keepAllFramesRadioButton, 'Value', 1);
     set(handles.selectFrameIndicesRadioButton, 'Value', 0);
-    % make file selection widgets invisible
     set(frameSelectionHandles, 'Visible', 'Off');
-
 else
     set(handles.keepAllFramesRadioButton, 'Value', 0);
     set(handles.selectFrameIndicesRadioButton, 'Value', 1);
-    % make file selection widgets visible
     set(frameSelectionHandles, 'Visible', 'On');
 end
 
@@ -397,9 +372,9 @@ set(handles.keepAllFramesRadioButton, 'String', string);
 string = sprintf('Select a range among the %d frames', nFiles);
 set(handles.selectFrameIndicesRadioButton, 'String', string);
 
-set(handles.firstFrameIndexEdit, 'String', num2str(app.firstIndex));
-set(handles.lastFrameIndexEdit, 'String', num2str(app.lastIndex));
-set(handles.frameIndexStepEdit, 'String', num2str(app.indexStep));
+set(handles.firstFrameIndexEdit, 'String', num2str(imageList.IndexFirst));
+set(handles.lastFrameIndexEdit, 'String', num2str(imageList.IndexLast));
+set(handles.frameIndexStepEdit, 'String', num2str(imageList.IndexStep));
 
 set(handles.wholeWorkflowButton, 'Visible', 'On');
 set(handles.selectImagesButton, 'Visible', 'On');
@@ -416,17 +391,17 @@ function spatialResolutionEdit_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of spatialResolutionEdit as a double
 
 app = getappdata(0, 'app');
+calib = app.analysis.InputImages.Calibration;
 resolString = get(handles.spatialResolutionEdit, 'String');
 
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change spatial resolution to ' resolString]);
 
 resol = str2double(resolString);
-app.settings.pixelSize = resol;
+calib.PixelSize = resol;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.pixelSize = resol;
-
 
 % --- Executes during object creation, after setting all properties.
 function spatialResolutionEdit_CreateFcn(hObject, eventdata, handles)
@@ -441,7 +416,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to spatialResolutionUnitEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -451,16 +425,16 @@ function spatialResolutionUnitEdit_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of spatialResolutionUnitEdit as a double
 
 app = getappdata(0, 'app');
+calib = app.analysis.InputImages.Calibration;
 unitString = get(handles.spatialResolutionUnitEdit, 'String');
 
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change spatial resolution unit to ' unitString]);
 
-app.settings.pixelSizeUnit = unitString;
+calib.PixelSizeUnit = unitString;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.pixelSizeUnit = unitString;
-
 
 % --- Executes during object creation, after setting all properties.
 function spatialResolutionUnitEdit_CreateFcn(hObject, eventdata, handles)
@@ -484,17 +458,17 @@ function timeIntervalEdit_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of timeIntervalEdit as a double
 
 app = getappdata(0, 'app');
+calib = app.analysis.InputImages.Calibration;
 timeString = get(handles.timeIntervalEdit, 'String');
 
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change time interval between frames to ' timeString]);
 
 time = str2double(timeString);
-app.settings.timeInterval = time;
+calib.TimeInterval = time;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.timeInterval = time;
-
 
 % --- Executes during object creation, after setting all properties.
 function timeIntervalEdit_CreateFcn(hObject, eventdata, handles)
@@ -518,12 +492,13 @@ function timeIntervalUnitEdit_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of timeIntervalUnitEdit as a double
 
 app = getappdata(0, 'app');
+calib = app.analysis.InputImages.Calibration;
 unitString = get(handles.timeIntervalUnitEdit, 'String');
 
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change time interval unit to ' unitString]);
 
-app.settings.timeIntervalUnit = unitString;
+calib.TimeIntervalUnit = unitString;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.timeIntervalUnit = unitString;
@@ -604,6 +579,7 @@ function firstFrameIndexEdit_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of firstFrameIndexEdit as a double
 
 app = getappdata(0, 'app');
+imageList = app.analysis.InputImages.ImageList;
 string = strtrim(get(hObject, 'String'));
 
 app.logger.info('SelectInputImagesDialog.m', ...
@@ -614,12 +590,11 @@ val = parseValue(string);
 val = max(val, 1);
 
 % update app data
-app.firstIndex = val;
+imageList.IndexFirst = val;
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function firstFrameIndexEdit_CreateFcn(hObject, eventdata, handles)
@@ -634,7 +609,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function lastFrameIndexEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to lastFrameIndexEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -644,6 +618,7 @@ function lastFrameIndexEdit_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of lastFrameIndexEdit as a double
 
 app = getappdata(0, 'app');
+imageList = app.analysis.InputImages.ImageList;
 string = strtrim(get(hObject, 'String'));
 
 app.logger.info('SelectInputImagesDialog.m', ...
@@ -655,7 +630,7 @@ nFiles = getFileNumber(app);
 val = parseValue(string);
 val = min(val, nFiles);
 
-app.lastIndex = val;
+imageList.LastFirst = val;
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
@@ -675,7 +650,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function frameIndexStepEdit_Callback(hObject, eventdata, handles) 
 % hObject    handle to frameIndexStepEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -684,20 +658,21 @@ function frameIndexStepEdit_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of frameIndexStepEdit as text
 %        str2double(get(hObject,'String')) returns contents of frameIndexStepEdit as a double
 
-string = strtrim(get(hObject, 'String'));
-
 app = getappdata(0, 'app');
+
+string = strtrim(get(hObject, 'String'));
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change frame index step to ' string]);
 
+imageList = app.analysis.InputImages.ImageList;
+
 val = parseValue(string);
 
-app.indexStep = val;
+imageList.IndexStep = val;
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
 updateFramePreview(handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function frameIndexStepEdit_CreateFcn(hObject, eventdata, handles)
@@ -730,17 +705,18 @@ function handles = updateFramePreview(handles)
 
 % extract app data
 app = getappdata(0, 'app');
+imageList = app.analysis.InputImages.ImageList;
 
 % extract global data
-folderName  = app.inputImagesDir;
-fileList = dir(fullfile(folderName, app.inputImagesFilePattern));
+folderName  = imageList.Directory;
+fileList = dir(fullfile(folderName, imageList.FileNamePattern));
 
 % ensure no directory is load (can happen under linux)
 fileList = fileList(~[fileList.isdir]);
 
 % determine indices of files to read
-indices = app.firstIndex:app.indexStep:app.lastIndex;
-frameNumber = length(indices);
+indices = selectedFileIndices(imageList);
+frameCount = length(indices);
 
 % extract index of first frame to display
 frameIndex = min(app.currentFrameIndex, length(indices));
@@ -757,10 +733,11 @@ currentImageName = fileList(fileIndex).name;
 img = imread(fullfile(folderName, currentImageName));
 
 % keep image size
-app.frameImageSize = [size(img, 1) size(img, 2)];
+app.analysis.InputImages.ImageSize = [size(img, 1) size(img, 2)];
 
 % eventually converts to uint8
 if isa(img, 'uint16') && ndims(img) == 2 %#ok<ISMAT>
+    % TODO: adapt to use a method in 'kymorod' package
     img = imAdjustDynamic(img, .1);
 end
 
@@ -774,7 +751,7 @@ else
 end
 
 % display the index and name of current frame
-string = sprintf('frame %d / %d (%s)', frameIndex, frameNumber, currentImageName);
+string = sprintf('frame %d / %d (%s)', frameIndex, frameCount, currentImageName);
 set(handles.currentFrameLabel, 'String', string);
 
 
@@ -793,7 +770,7 @@ app.logger.info('SelectInputImagesDialog.m', ...
     ['Change lazy loading to ' char(value)]);
 
 flag = value > 0;
-app.inputImagesLazyLoading = flag;
+app.analysis.InputImages.ImageList.LazyLoading = flag;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.inputImagesLazyLoading = flag;
 
@@ -831,21 +808,21 @@ function updateFrameSliderBounds(handles)
 app = getappdata(0, 'app');
 
 % determine indices of files to read
-indices = app.firstIndex:app.indexStep:app.lastIndex;
-frameNumber = length(indices);
+indices = selectedFileIndices(app.analysis.InputImages.ImageList);
+frameCount = length(indices);
 
-frameIndex = min(app.currentFrameIndex, frameNumber);
+frameIndex = min(app.currentFrameIndex, frameCount);
 
 set(handles.framePreviewSlider, 'Visible', 'Off');
 set(handles.framePreviewSlider, 'Value', frameIndex);
 set(handles.framePreviewSlider, 'Min', 1);
-set(handles.framePreviewSlider, 'Max', max(frameNumber, 1));
+set(handles.framePreviewSlider, 'Max', max(frameCount, 1));
 % setup slider such that 1 image is changed at a time
-step1 = 1 / max(frameNumber, 1);
-step2 = max(min(10 / frameNumber, .5), step1);
+step1 = 1 / max(frameCount, 1);
+step2 = max(min(10 / frameCount, .5), step1);
 set(handles.framePreviewSlider, 'SliderStep', [step1 step2]);
 
-if frameNumber > 1
+if frameCount > 1
     set(handles.framePreviewSlider, 'Visible', 'On');
 end
 

@@ -68,6 +68,7 @@ methods (Static)
     end
 end
 
+
 %% General methods
 methods
     function data = createNewAnalysis(obj)
@@ -81,9 +82,15 @@ methods
         data.inputImagesDir = obj.userPrefs.lastOpenDir;
         data.inputImagesFilePattern = obj.userPrefs.inputImagesFilePattern;
         data.inputImagesLazyLoading = obj.userPrefs.inputImagesLazyLoading;
-    end
 
+        % initializes new analysis
+        imgList = data.analysis.InputImages.ImageList;
+        imgList.Directory = obj.userPrefs.lastOpenDir;
+        imgList.FileNamePattern = obj.userPrefs.inputImagesFilePattern;
+        imgList.LazyLoading = obj.userPrefs.inputImagesLazyLoading;
+    end
 end
+
 
 %% General GUI function
 

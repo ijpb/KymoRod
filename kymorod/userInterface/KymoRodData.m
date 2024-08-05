@@ -27,10 +27,14 @@ properties (Constant)
     serialVersion = VersionNumber(0, 13, 0);
 end
 
+
 %% Properties
 properties
     % an instance of log4m, for logging.
     logger;
+
+    % the current analysis, as an instance of 'Analysis' class.
+    analysis;
 
     % the set of settings for the different processing steps
     % as an instance of KymoRodSettings.
@@ -44,33 +48,11 @@ properties
     % index of current frame for display
     currentFrameIndex = 1;
 
-    % list of images to process.
-    % If lazy loading option is set to true, this array is not used.
-    imageList = {};
-
-    % informations to retrieve input image
-    imageNameList = {};
-    inputImagesDir = '';
-    inputImagesFilePattern = '*.*';
-
     % informations to retrieve intensity images
     % (for computing the intensity kymograph)
     intensityImagesNameList = {};
     intensityImagesDir = '';
     intensityImagesFilePattern = '*.*';
-
-    % flag indicating whether images are loaded in memory or read from
-    % files only when necessary
-    inputImagesLazyLoading = true;
-
-    % informations to select images from input directory
-    firstIndex = 1;
-    lastIndex = 1;
-    indexStep = 1;
-
-    % the size of frame images, to prepare possibility of displaying
-    % results without reading images
-    frameImageSize = [0 0];
 
     % the list of threshold values used to segment images
     thresholdValues = [];
@@ -151,6 +133,34 @@ properties
 end
 
 
+%% Legacy properties
+% Properties defiend here are being replaced by the 'analysis' property.
+properties
+    % list of images to process.
+    % If lazy loading option is set to true, this array is not used.
+    imageList = {};
+
+    % informations to retrieve input image
+    imageNameList = {};
+    inputImagesDir = '';
+    inputImagesFilePattern = '*.*';
+
+    % flag indicating whether images are loaded in memory or read from
+    % files only when necessary
+    inputImagesLazyLoading = true;
+
+    % informations to select images from input directory
+    firstIndex = 1;
+    lastIndex = 1;
+    indexStep = 1;
+
+    % the size of frame images, to prepare possibility of displaying
+    % results without reading images
+    frameImageSize = [0 0];
+
+end
+
+
 %% Constructor
 methods
     function obj = KymoRodData(varargin)
@@ -181,13 +191,16 @@ methods
         versionString = char(KymoRodData.appliVersion);
         obj.logger.info('KymoRod', ...
             ['Create new KymoRod instance, V-' versionString]);
-
+        
         % initialize settings of the new appli
         if ~isempty(varargin) && isa(varargin{1}, 'KymoRodSettings')
             obj.settings = varargin{1};
         else
             obj.settings = KymoRodSettings;
         end
+        
+        % initializes new analysis
+        obj.analysis = kymorod.app.Analysis;
     end
 end
 
@@ -263,6 +276,7 @@ methods
         function clearImageData()
             obj.imageList = {};
             obj.imageNameList = {};
+            clear(obj.analysis.InputImages.ImageList);
 
             clearSegmentationData();
         end
@@ -332,18 +346,13 @@ end
 %% Image selection
 methods
     function n = frameNumber(obj)
-        % return the total number of images selected for processing.
-        n = length(obj.imageNameList);
+        % Return the total number of images selected for processing.
+        n = frameCount(obj.analysis.InputImages);
     end
 
-    function image = getImage(obj, index)
+    function img = getImage(obj, index)
         % Return the image corresponding to the given frame.
-        if obj.inputImagesLazyLoading
-            filePath = fullfile(obj.inputImagesDir, obj.imageNameList{index});
-            image = imread(filePath);
-        else
-            image = obj.imageList{index};
-        end
+        img = getImage(obj.analysis.InputImages.ImageList, index);
     end
 
     function image = getSegmentableImage(obj, index)
@@ -373,108 +382,27 @@ methods
         % Load images, or simply read file names depending on the value
         % of the "inputImagesLazyLoading" property
 
-        if obj.inputImagesLazyLoading
-            computeImageNames(obj);
-        else
-            readAllImages(obj);
-        end
+        updateImageData(obj.analysis.InputImages.ImageList);
     end
 
     function computeImageNames(obj)
         % Update list of image names from input directory and indices.
 
-        % read all files in specified directory
-        inputDir = obj.inputImagesDir;
-        pattern  = obj.inputImagesFilePattern;
-        fileList = dir(fullfile(inputDir, pattern));
-
-        % ensure no directory is load
-        fileList = fileList(~[fileList.isdir]);
-
-        % select images corresponding to indices selection
-        fileIndices = obj.firstIndex:obj.indexStep:obj.lastIndex;
-        fileList = fileList(fileIndices);
-        nFrames = length(fileList);
-
-        imageNames = cell(nFrames, 1);
         disp('Read all image names');
-
-        % allocate memory for local variables
-        parfor i = 1:nFrames
-            fileName = fileList(i).name;
-            imageNames{i} = fileName;
-            fprintf('.');
-        end
-        fprintf('\n');
-
-        obj.imageNameList = imageNames;
+        computeImageFileNameList(obj.analysis.InputImages.ImageList);
     end
 
     function nFiles = getFileNumber(obj)
-        % compute the number of files matching input dir and name pattern.
+        % Compute the number of files matching input dir and name pattern.
 
-        % read all files in specified directory
-        inputDir = obj.inputImagesDir;
-        pattern  = obj.inputImagesFilePattern;
-        fileList = dir(fullfile(inputDir, pattern));
-
-        % ensure no directory is load
-        fileList = fileList(~[fileList.isdir]);
-        nFiles = length(fileList);
+        nFiles = length(getFileList(obj.analysis.InputImages.ImageList));
     end
 
     function readAllImages(obj)
         % load all images based on settings.
         % refresh imageList and imageNameList
 
-        % read all files in specified directory
-        fileList = dir(fullfile(obj.inputImagesDir, obj.inputImagesFilePattern));
-
-        % ensure no directory is load
-        fileList = fileList(~[fileList.isdir]);
-
-        % select images corresponding to indices selection
-        fileIndices = obj.firstIndex:obj.indexStep:obj.lastIndex;
-        fileList = fileList(fileIndices);
-        nImages = length(fileList);
-
-        % allocate memory
-        images = cell(nImages, 1);
-        imageNames = cell(nImages, 1);
-
-        % keep variables outside parfor loop to ensure avoiding overhead
-        inputDir = obj.inputImagesDir;
-        channelName = lower(obj.settings.imageSegmentationChannel);
-
-        disp('Read all images');
-
-        % read each image
-        parfor i = 1:nImages
-            fileName = fileList(i).name;
-            imageNames{i} = fileName;
-            img = imread(fullfile(inputDir, fileName));
-
-            % in case of color image, select which channel should be kept
-            if ndims(img) > 2 %#ok<ISMAT>
-                switch channelName
-                    case 'red',     img = img(:,:,1);
-                    case 'green',   img = img(:,:,2);
-                    case 'blue',    img = img(:,:,3);
-                    case 'intensity', img = rgb2gray(img);
-                    otherwise
-                        error(['could not recognise channel name: ' channelName]);
-                end
-            end
-            images{i} = img;
-
-            fprintf('.');
-        end
-        fprintf('\n');
-
-        % keep loaded data in app
-        obj.imageList = images;
-        obj.imageNameList = imageNames;
-
+        updateImageData(obj.analysis.InputImages.ImageList);
         setProcessingStep(obj, ProcessingStep.Selection);
     end
 end
@@ -707,7 +635,8 @@ methods
 
         disp('Skeletonization');
         % spatial resolution of images in millimetres
-        resolMm = obj.settings.pixelSize / 1000;
+        resolMm = obj.analysis.InputImages.Calibration.PixelSize / 1000;
+        % resolMm = obj.settings.pixelSize / 1000;
 
         t0 = tic;
         parfor i = 1:nFrames
@@ -862,9 +791,14 @@ methods
         nx  = obj.settings.finalResultLength;
         Sa  = obj.abscissaList;
 
+        inputImages = obj.analysis.InputImages;
+        timeInterval = inputImages.Calibration.TimeInterval;
+        frameStep = inputImages.ImageList.IndexStep;
+
         % compute axis for time
         nFrames = length(Sa);
-        timeData = (0:(nFrames-1)) * obj.settings.timeInterval * obj.indexStep;
+        timeData = (0:(nFrames-1)) * timeInterval * frameStep;
+        % timeData = (0:(nFrames-1)) * obj.settings.timeInterval * obj.indexStep;
         timeAxis = kymorod.core.PlotAxis(timeData, ...
             'Name', 'Time', ...
             'Unit', obj.settings.timeIntervalUnit);
@@ -903,7 +837,8 @@ methods
 
         % settings
         ws = obj.settings.windowSize1;
-        L = 4 * ws * obj.settings.pixelSize / 1000;
+        % TODO: find appropriate name for 'L' and include into Data
+        L = 4 * ws * obj.analysis.InputImages.Calibration.PixelSize / 1000;
         obj.logger.debug('KymoRodData.computeDisplacements', ...
             sprintf('Value of L=%f', L));
 
@@ -947,7 +882,8 @@ methods
 
         % settings
         ws = obj.settings.windowSize1;
-        L = 4 * ws * obj.settings.pixelSize / 1000;
+        % TODO: find appropriate name for 'L' and include into Data
+        L = 4 * ws * obj.analysis.InputImages.Calibration.PixelSize / 1000;
 
         % check if the two skeletons are large enough
         if length(SK1) <= 2*80 || length(SK2) <= 2*80
@@ -1043,7 +979,7 @@ methods
         end
 
         % get some settings
-        t0      = obj.settings.timeInterval;
+        t0      = obj.analysis.InputImages.Calibration.TimeInterval;
         step    = obj.settings.displacementStep;
         ws2     = obj.settings.windowSize2;
 
@@ -1124,12 +1060,12 @@ methods
         
     end
 
-    function image = getIntensityImage(this, index)
-        filePath = fullfile(this.intensityImagesDir, this.intensityImagesNameList{index});
+    function image = getIntensityImage(obj, index)
+        filePath = fullfile(obj.intensityImagesDir, obj.intensityImagesNameList{index});
         image = imread(filePath);
 
         if ndims(image) > 2 %#ok<ISMAT>
-            switch lower(this.settings.intensityImagesChannel)
+            switch lower(obj.settings.intensityImagesChannel)
                 case 'red',     image = image(:,:,1);
                 case 'green',   image = image(:,:,2);
                 case 'blue',    image = image(:,:,3);
@@ -1208,8 +1144,10 @@ methods
         maxCaxis = max(img(:));
 
         % compute references for x and y axes
-        timeInterval = obj.settings.timeInterval;
-        xdata = (0:(size(img, 2)-1)) * timeInterval * obj.indexStep;
+        calib = obj.analysis.InputImages.Calibration;
+        timeInterval = calib.TimeInterval;
+        frameStep = obj.analysis.InputImages.ImageList.IndexStep;
+        xdata = (0:(size(img, 2)-1)) * timeInterval * frameStep;
         Sa = obj.abscissaList{end};
         ydata = linspace(Sa(1), Sa(end), obj.settings.finalResultLength);
 
@@ -1222,8 +1160,8 @@ methods
         colormap jet;
 
         % annotate
-        xlabel(sprintf('Time (%s)', obj.settings.timeIntervalUnit));
-        ylabel(sprintf('Geodesic position (%s)', obj.settings.pixelSizeUnit));
+        xlabel(sprintf('Time (%s)', calib.TimeIntervalUnit));
+        ylabel(sprintf('Geodesic position (%s)', calib.PixelSizeUnit));
         title(type);
 
         if nargout > 0
@@ -1240,6 +1178,8 @@ methods
 
         obj.logger.info('KymoRodData.write', ...
             ['Save kymorod object in file: ' fileName]);
+
+        updateLegacyProperties(obj);
 
         % open in text mode, erasing content if it exists
         f = fopen(fileName, 'w+t');
@@ -1312,8 +1252,9 @@ methods
         %    app2 = load('savedKymo.mat');
 
         % convert to a structure to save fields
-        warning('off', 'MATLAB:structOnObject');
-        appStruct = struct(obj);
+        appStruct = toStruct(obj);
+
+        appStruct = rmfield(appStruct, 'analysis');
 
         % also convert fields that are classes to structs or char
         appStruct.settings = struct(obj.settings);
@@ -1332,6 +1273,8 @@ methods
         % Convert this instance into a Matlab struct.
         %
 
+        updateLegacyProperties(obj);
+        warning('off', 'MATLAB:structOnObject');
         str = struct(obj);
 
         % also convert fields that are classes to structs or char
@@ -1356,6 +1299,45 @@ methods
         
         % clear some unnecessary data
         str.logger = [];
+    end
+
+    function updateLegacyProperties(obj)
+        % Update legacy properties from the 'analysis' property.
+        imgList = obj.analysis.InputImages.ImageList;
+        obj.imageNameList = imgList.ImageFileNameList;
+        obj.inputImagesDir = imgList.Directory;
+        obj.inputImagesFilePattern = imgList.FileNamePattern;
+        obj.inputImagesLazyLoading = imgList.LazyLoading;
+        obj.firstIndex = imgList.IndexFirst;
+        obj.lastIndex = imgList.IndexLast;
+        obj.indexStep = imgList.IndexStep;
+        obj.frameImageSize = obj.analysis.InputImages.ImageSize;
+
+        calib = obj.analysis.InputImages.Calibration;
+        obj.settings.pixelSize = calib.PixelSize;
+        obj.settings.pixelSizeUnit = calib.PixelSizeUnit;
+        obj.settings.timeInterval = calib.TimeInterval;
+        obj.settings.timeIntervalUnit = calib.TimeIntervalUnit;
+    end
+
+    function updateAnalyis(obj)
+        % Update the 'analysis' property from the legacy properties.
+        obj.analysis = kymorod.app.Analysis;
+        imgList = obj.analysis.InputImages.ImageList;
+        imgList.Directory = obj.inputImagesDir;
+        imgList.FileNamePattern = obj.inputImagesFilePattern;
+        imgList.LazyLoading = obj.inputImagesLazyLoading;
+        imgList.IndexFirst = obj.firstIndex;
+        imgList.IndexLast = obj.lastIndex;
+        imgList.IndexStep = obj.indexStep;
+        imgList.ImageFileNameList = obj.imageNameList;
+        obj.analysis.InputImages= obj.frameImageSize;
+
+        calib = obj.analysis.InputImages.Calibration;
+        calib.PixelSize = obj.settings.pixelSize;
+        calib.PixelSizeUnit = obj.settings.pixelSizeUnit;
+        calib.TimeInterval = obj.settings.timeInterval;
+        calib.TimeIntervalUnit = obj.settings.timeIntervalUnit;
     end
 
 end % I/O Methods
@@ -1466,6 +1448,8 @@ methods (Static)
 
         % close file
         fclose(f);
+
+        updateAnalyis(app);
     end
 
     function app = load(fileName)
@@ -1516,6 +1500,8 @@ methods (Static)
         if isempty(app.baseThresholdValues)
             app.baseThresholdValues = app.thresholdValues;
         end
+
+        updateAnalyis(app);
     end
 
     function app = fromStruct(data)
@@ -1568,6 +1554,8 @@ methods (Static)
                 app.(name) = value;
             end
         end
+
+        updateAnalyis(app);
     end
 
     function app = load_V_0_11(data)
