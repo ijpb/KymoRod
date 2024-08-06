@@ -115,7 +115,7 @@ end % end constructors
 methods
     function n = imageCount(obj)
         % Returns the number of images in the list.
-        n = length(obj.FileNameList);
+        n = length(selectedFileIndices(obj));
     end
     
     function img = getImage(obj, index)

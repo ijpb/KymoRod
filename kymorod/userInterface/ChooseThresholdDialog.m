@@ -76,10 +76,10 @@ buildFigureMenu(gui, hObject, app);
 frameIndex = app.currentFrameIndex;
 nFrames = frameNumber(app);
 
-switch app.settings.imageSmoothingMethod
+switch lower(app.analysis.Parameters.ImageSmoothingMethodName)
     case 'none'
         set(handles.imageSmoothingMethodPopup, 'Value', 1);
-    case 'boxFilter'
+    case 'boxfilter'
         set(handles.imageSmoothingMethodPopup, 'Value', 2);
     case 'gaussian'
         set(handles.imageSmoothingMethodPopup, 'Value', 3);
@@ -87,7 +87,7 @@ switch app.settings.imageSmoothingMethod
         warning('Could not initialize smooting method with value: %s', app.settings.imageSmoothingMethod);
 end
 
-string = num2str(app.settings.imageSmoothingRadius);
+string = num2str(app.analysis.Parameters.ImageSmoothingRadius);
 set(handles.imageSmoothingRadiusEdit, 'String', string);
 
 set(handles.autoThresholdFinalEdit, 'String', num2str(nFrames));
@@ -97,9 +97,8 @@ sliderStep = min(max([1 10] ./ 255, 0.001), 1);
 set(handles.manualThresholdSlider, 'SliderStep', sliderStep); 
 
 % thresholdStrategy widgets are updated with call to updateWidgetsVisibility 
-
-switch app.settings.autoThresholdMethod
-    case 'maxEntropy'
+switch app.analysis.Parameters.AutoThresholdMethod
+    case 'MaxEntropy'
         set(handles.autoThresholdMethodPopup, 'Value', 1);
     case 'Otsu'
         set(handles.autoThresholdMethodPopup, 'Value', 2);
@@ -107,10 +106,9 @@ switch app.settings.autoThresholdMethod
         warning('Could not initialize threshold method with value: %s', app.settings.autoThresholdMethod);
 end
 
-thresholdValue = app.settings.manualThresholdValue;
+thresholdValue = app.analysis.Parameters.ManualThresholdValue;
 set(handles.manualThresholdValueEdit2, 'String', num2str(thresholdValue));
 set(handles.manualThresholdSlider, 'Value', thresholdValue);
-
 
 updateWidgetsVisibility(handles);
 
@@ -165,8 +163,8 @@ app = getappdata(0, 'app');
 
 frameIndex = app.currentFrameIndex;
 
-currentThreshold = int16(app.thresholdValues(frameIndex));
-baseThreshold = int16(app.baseThresholdValues(frameIndex));
+currentThreshold = int16(app.analysis.ThresholdValues(frameIndex));
+baseThreshold = int16(app.analysis.InitialThresholdValues(frameIndex));
 diffThreshold = currentThreshold - baseThreshold;
 
 if diffThreshold >= 0
@@ -265,13 +263,13 @@ app = getappdata(0, 'app');
 gui = KymoRodGui.getInstance();
 switch get(handles.imageSmoothingMethodPopup, 'Value')
     case 1
-        app.settings.imageSmoothingMethod = 'none';
+        app.analysis.Parameters.ImageSmoothingMethodName = 'None';
         gui.userPrefs.settings.imageSmoothingMethod = 'none';
     case 2
-        app.settings.imageSmoothingMethod = 'boxFilter';
+        app.analysis.Parameters.ImageSmoothingMethodName = 'BoxFilter';
         gui.userPrefs.settings.imageSmoothingMethod = 'boxFilter';
     case 3
-        app.settings.imageSmoothingMethod = 'gaussian';
+        app.analysis.Parameters.ImageSmoothingMethodName = 'Gaussian';
         gui.userPrefs.settings.imageSmoothingMethod = 'gaussian';
 end
 
@@ -308,7 +306,7 @@ end
 radius = round(radius);
 set(hObject, 'String', num2str(radius));
 
-app.settings.imageSmoothingRadius = radius;
+app.analysis.Parameters.ImageSmoothingRadius = radius;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.imageSmoothingRadius = radius;
 
@@ -339,7 +337,7 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of automaticThresholdRadioButton
 
 app = getappdata(0, 'app');
-app.settings.thresholdStrategy = 'auto';
+app.analysis.Parameters.ThresholdStrategy = 'Auto';
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.thresholdStrategy = 'auto';
 
@@ -375,14 +373,14 @@ app = getappdata(0, 'app');
 
 % choose new method for threshold
 ind = get(handles.autoThresholdMethodPopup, 'Value');
-methodList = {'maxEntropy', 'Otsu'};
+methodList = {'MaxEntropy', 'Otsu'};
 methodName = methodList{ind};
 
 app.logger.info('ChooseThresholdDialog.m', ...
     ['Set automatic threshold method: ' methodName]);
 
 % update threshold information of application
-app.settings.autoThresholdMethod = methodList{ind};
+app.analysis.Parameters.AutoThresholdMethod = methodList{ind};
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.autoThresholdMethod = methodList{ind};
 computeThresholdValues(app);
@@ -481,15 +479,15 @@ function updateAutomaticThresholdButton_Callback(hObject, eventdata, handles) %#
 % extract application data
 app     = getappdata(0, 'app');
 
-addThres = strtrim(get(handles.autoThresholdValueEdit, 'String'));
-start   = strtrim(get(handles.autoThresholdStartEdit, 'String'));
-fin     = strtrim(get(handles.autoThresholdFinalEdit, 'String'));
+delta = strtrim(get(handles.autoThresholdValueEdit, 'String'));
+first  = strtrim(get(handles.autoThresholdStartEdit, 'String'));
+last   = strtrim(get(handles.autoThresholdFinalEdit, 'String'));
 
 % check input validity
-if isempty(start) || isempty(fin)
+if isempty(first) || isempty(last)
     return;
 end
-if addThres == 0
+if delta == 0
     warning('Select a value to add to the current threshold');
     return;
 end
@@ -497,19 +495,19 @@ end
 % print info into log file
 app.logger.info('ChooseThresholdDialog.m', ...
     sprintf('add threshold value %s to frames %s to %s', ...
-    addThres, start, fin));
+    delta, first, last));
 
 % convert to numeric values
-start   = str2double(start);
-fin     = str2double(fin);
-addThres = str2double(addThres);
+first = str2double(first);
+last  = str2double(last);
+delta = str2double(delta);
 
 % check input validity
-if isempty(start) || isempty(fin) || isempty(addThres)
+if isempty(first) || isempty(last) || isempty(delta)
     warning('Set a numeric value for the edit text');
     return;
 end
-if start > fin
+if first > last
     warning('The first value must be smaller than the second value');
     return;
 end
@@ -520,8 +518,8 @@ set(handles.updateAutomaticThresholdButton, 'String', 'Wait please...');
 pause(0.01);
 
 % update modified threshold values
-for i = start : fin
-    app.thresholdValues(i) = app.baseThresholdValues(i) + addThres;
+for i = first : last
+    app.analysis.ThresholdValues(i) = app.analysis.InitialThresholdValues(i) + delta;
 end
 
 % update widgets with new values
@@ -550,7 +548,7 @@ function manualThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %M
 
 % extract application data
 app     = getappdata(0, 'app');
-app.settings.thresholdStrategy = 'manual';
+app.analysis.Parameters.ThresholdStrategy = 'Manual';
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.thresholdStrategy = 'manual';
 
@@ -621,7 +619,7 @@ function updateManualThresholdValue(handles, value)
 
 app = getappdata(0, 'app');
 
-app.settings.manualThresholdValue = value;
+app.analysis.Parameters.ManualThresholdValue = value;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.manualThresholdValue = value;
 
@@ -642,7 +640,7 @@ function updateWidgetsVisibility(handles)
 
 app = getappdata(0, 'app');
 
-autoThreshold = strcmp(app.settings.thresholdStrategy, 'auto');
+autoThreshold = strcmpi(app.analysis.Parameters.ThresholdStrategy, 'Auto');
 if autoThreshold
     keyAuto = 'on';
     keyManual = 'off';

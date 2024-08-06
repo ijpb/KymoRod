@@ -24,7 +24,14 @@ properties
 
     % The input images for segmentation, as an instance of TimeLapseImage.
     InputImages;
+
+    % The list of threshold values used to segment images
+    ThresholdValues;
     
+    % the list of threshold values computed automatically, without
+    % manual correction
+    InitialThresholdValues = [];
+
 end % end properties
 
 

@@ -54,13 +54,6 @@ properties
     intensityImagesDir = '';
     intensityImagesFilePattern = '*.*';
 
-    % the list of threshold values used to segment images
-    thresholdValues = [];
-
-    % the list of threshold values computed automatically, without
-    % manual correction
-    baseThresholdValues = [];
-
     % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
     contourList = {};
 
@@ -157,6 +150,13 @@ properties
     % the size of frame images, to prepare possibility of displaying
     % results without reading images
     frameImageSize = [0 0];
+
+    % the list of threshold values used to segment images
+    thresholdValues = [];
+
+    % the list of threshold values computed automatically, without
+    % manual correction
+    baseThresholdValues = [];
 
 end
 
@@ -415,8 +415,7 @@ methods
         % Return the specified frame after smoothing and binarization.
 
         img = getSmoothedImage(obj, index);
-        thresh = obj.thresholdValues(index);
-
+        thresh = obj.analysis.ThresholdValues(index);
         seg = img > thresh;
     end
 
@@ -425,27 +424,27 @@ methods
 
         img = getSegmentableImage(obj, index);
 
-        switch obj.settings.imageSmoothingMethod
-            case 'none'
+        switch lower(obj.analysis.Parameters.ImageSmoothingMethodName)
+            case lower('None')
                 % no smoothing -> simply copy image
                 imgf = img;
 
-            case 'boxFilter'
+            case lower('BoxFilter')
                 % smooth with flat box filter
-                radius = obj.settings.imageSmoothingRadius;
+                radius = obj.analysis.Parameters.ImageSmoothingRadius;
                 diam = 2 * radius + 1;
                 imgf = imfilter(img, ones(diam, diam) / diam^2, 'replicate');
 
-            case 'gaussian'
+            case lower('Gaussian')
                 % smooth with gaussian filter
-                radius = obj.settings.imageSmoothingRadius;
+                radius = obj.analysis.Parameters.ImageSmoothingRadius;
                 diam = 2 * radius + 1;
                 h = fspecial('gaussian', [diam diam], radius);
                 imgf = imfilter(img, h, 'replicate');
 
             otherwise
                 error(['Can not handle smoothing method: ' ...
-                    obj.settings.imageSmoothingMethod]);
+                    obj.analysis.Parameters.ImageSmoothingMethodName]);
         end
     end
 
@@ -468,8 +467,8 @@ methods
 
         % update local variables
         values = values(:)';
-        obj.baseThresholdValues = values;
-        obj.thresholdValues = values;
+        obj.analysis.InitialThresholdValues = values;
+        obj.analysis.ThresholdValues = values;
 
         % update processing step
         setProcessingStep(obj, ProcessingStep.Threshold);
@@ -486,7 +485,7 @@ methods
         end
 
         nImages = frameNumber(obj);
-        obj.baseThresholdValues = zeros(nImages, 1);
+        obj.analysis.InitialThresholdValues = zeros(nImages, 1);
 
         % Compute the threshold values
         disp('Segmentation');
@@ -498,14 +497,14 @@ methods
         baseValues = zeros(1, nImages);
 
         % compute threshold values
-        switch obj.settings.autoThresholdMethod
-            case 'maxEntropy'
+        switch lower(obj.analysis.Parameters.AutoThresholdMethod)
+            case lower('MaxEntropy')
                 parfor i = 1 : nImages
                     img = getSegmentableImage(obj, i);
                     baseValues(i) = maxEntropyThreshold(img);
                 end
 
-            case 'Otsu'
+            case lower('Otsu')
                 parfor i = 1 : nImages
                     img = getSegmentableImage(obj, i);
                     baseValues(i) = round(graythresh(img) * 255);
@@ -513,13 +512,12 @@ methods
 
             otherwise
                 error(['Could not recognize threshold method: ' ...
-                    obj.settings.autoThresholdMethod]);
+                    obj.analysis.Parameters.AutoThresholdMethod]);
         end
 
-        obj.baseThresholdValues = baseValues;
-
-        % reset current threshold to base values
-        obj.thresholdValues = obj.baseThresholdValues;
+        % setup threshold values
+        obj.analysis.InitialThresholdValues = baseValues;
+        obj.analysis.ThresholdValues = obj.analysis.InitialThresholdValues;
 
         if ishandle(hDialog)
             close(hDialog);
@@ -574,7 +572,8 @@ methods
             % add black border around each image, to ensure continuous contours
             img = getSegmentableImage(obj, i);
             img = imAddBlackBorder(img);
-            threshold = obj.thresholdValues(i);
+            threshold = obj.analysis.ThresholdValues(i);
+            % threshold = obj.thresholdValues(i);
             contours{i} = segmentContour(img, threshold);
 
             fprintf('.');
@@ -1331,13 +1330,21 @@ methods
         imgList.IndexLast = obj.lastIndex;
         imgList.IndexStep = obj.indexStep;
         imgList.ImageFileNameList = obj.imageNameList;
-        obj.analysis.InputImages= obj.frameImageSize;
+        obj.analysis.InputImages = obj.frameImageSize;
 
         calib = obj.analysis.InputImages.Calibration;
         calib.PixelSize = obj.settings.pixelSize;
         calib.PixelSizeUnit = obj.settings.pixelSizeUnit;
         calib.TimeInterval = obj.settings.timeInterval;
         calib.TimeIntervalUnit = obj.settings.timeIntervalUnit;
+
+        obj.analysis.ThresholdValues = obj.thresholdValues;
+        obj.analysis.InitialThresholdValues = obj.baseThresholdValues;
+        obj.analysis.Parameters.ImageSmoothingMethodName = obj.settings.imageSmoothingMethod;
+        obj.analysis.Parameters.ImageSmoothingRadius = obj.settings.imageSmoothingRadius;
+        obj.analysis.Parameters.ThreshodStrategy = obj.settings.thresholdStrategy;
+        obj.analysis.Parameters.AutoThresholdMethod = obj.settings.autoThresholdMethod;
+        obj.analysis.Parameters.ManualThresholdValue = obj.settings.manualThresholdValue;
     end
 
 end % I/O Methods

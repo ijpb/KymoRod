@@ -26,6 +26,18 @@ properties
     % before segmentation
     ImageSmoothingRadius = 2;
 
+    % The stategy for setting up the threshold method on each image
+    % Can be one of {'Auto'}, 'Manual'.
+    ThresholdStrategy = 'Auto';
+
+    % The method for computing threshold on each image
+    % (renamed from 'thresholdMethod')
+    % Can be one of {'MaxEntropy'}, 'Otsu'.
+    AutoThresholdMethod = 'MaxEntropy';
+
+    % The threshold value for manual threshold
+    ManualThresholdValue = 50;
+
 end % end properties
 
 
