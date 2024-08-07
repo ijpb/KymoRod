@@ -54,9 +54,6 @@ properties
     intensityImagesDir = '';
     intensityImagesFilePattern = '*.*';
 
-    % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
-    contourList = {};
-
     % list of contours after rescaling, and translation wrt skeleton
     % origin (old CT).
     scaledContourList = {};
@@ -157,6 +154,9 @@ properties
     % the list of threshold values computed automatically, without
     % manual correction
     baseThresholdValues = [];
+
+    % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
+    contourList = {};
 
 end
 
@@ -573,7 +573,6 @@ methods
             img = getSegmentableImage(obj, i);
             img = imAddBlackBorder(img);
             threshold = obj.analysis.ThresholdValues(i);
-            % threshold = obj.thresholdValues(i);
             contours{i} = segmentContour(img, threshold);
 
             fprintf('.');
@@ -581,6 +580,7 @@ methods
         fprintf('\n');
 
         obj.contourList = contours;
+        obj.analysis.ContourList = contours;
 
         if ishandle(hDialog)
             close(hDialog);
@@ -620,7 +620,7 @@ methods
         % number of images
         nFrames = frameNumber(obj);
 
-        smooth = obj.settings.contourSmoothingSize;
+        smooth = obj.analysis.Parameters.contourSmoothingSize;
 
         organShape = 'boucle';
         originDirection = obj.settings.skeletonOrigin;
@@ -635,7 +635,6 @@ methods
         disp('Skeletonization');
         % spatial resolution of images in millimetres
         resolMm = obj.analysis.InputImages.Calibration.PixelSize / 1000;
-        % resolMm = obj.settings.pixelSize / 1000;
 
         t0 = tic;
         parfor i = 1:nFrames
@@ -1317,6 +1316,18 @@ methods
         obj.settings.pixelSizeUnit = calib.PixelSizeUnit;
         obj.settings.timeInterval = calib.TimeInterval;
         obj.settings.timeIntervalUnit = calib.TimeIntervalUnit;
+
+        params = obj.analysis.Parameters;
+        obj.settings.imageSmoothingMethod = params.ImageSmoothingMethodName;
+        obj.settings.imageSmoothingRadius = params.ImageSmoothingRadius;
+        obj.settings.thresholdStrategy = params.ThreshodStrategy;
+        obj.settings.autoThresholdMethod = params.AutoThresholdMethod;
+        obj.settings.manualThresholdValue = params.ManualThresholdValue;
+        obj.settings.contourSmoothingSize = params.ContourSmoothingSize;
+
+        obj.thresholdValues = obj.analysis.ThresholdValues;
+        obj.baseThresholdValues = obj.analysis.InitialThresholdValues;
+        obj.contourList = obj.analysis.ContourList;
     end
 
     function updateAnalyis(obj)
@@ -1338,13 +1349,18 @@ methods
         calib.TimeInterval = obj.settings.timeInterval;
         calib.TimeIntervalUnit = obj.settings.timeIntervalUnit;
 
+        params = obj.analysis.Parameters;
+        params.ImageSmoothingMethodName = obj.settings.imageSmoothingMethod;
+        params.ImageSmoothingRadius = obj.settings.imageSmoothingRadius;
+        params.ThreshodStrategy = obj.settings.thresholdStrategy;
+        params.AutoThresholdMethod = obj.settings.autoThresholdMethod;
+        params.ManualThresholdValue = obj.settings.manualThresholdValue;
+        params.ContourSmoothingSize = obj.settings.contourSmoothingSize;
+
         obj.analysis.ThresholdValues = obj.thresholdValues;
         obj.analysis.InitialThresholdValues = obj.baseThresholdValues;
-        obj.analysis.Parameters.ImageSmoothingMethodName = obj.settings.imageSmoothingMethod;
-        obj.analysis.Parameters.ImageSmoothingRadius = obj.settings.imageSmoothingRadius;
-        obj.analysis.Parameters.ThreshodStrategy = obj.settings.thresholdStrategy;
-        obj.analysis.Parameters.AutoThresholdMethod = obj.settings.autoThresholdMethod;
-        obj.analysis.Parameters.ManualThresholdValue = obj.settings.manualThresholdValue;
+        obj.analysis.ContourList = obj.contourList;
+
     end
 
 end % I/O Methods

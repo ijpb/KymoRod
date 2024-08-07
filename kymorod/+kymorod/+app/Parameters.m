@@ -38,6 +38,9 @@ properties
     % The threshold value for manual threshold
     ManualThresholdValue = 50;
 
+    % The length of window for smoothing coutours. Default value is 20.
+    ContourSmoothingSize = 20;
+
 end % end properties
 
 

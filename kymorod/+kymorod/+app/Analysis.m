@@ -25,12 +25,15 @@ properties
     % The input images for segmentation, as an instance of TimeLapseImage.
     InputImages;
 
-    % The list of threshold values used to segment images
+    % The list of threshold values used to segment images.
     ThresholdValues;
     
     % the list of threshold values computed automatically, without
-    % manual correction
+    % manual correction.
     InitialThresholdValues = [];
+
+    % The list of contours, one polygon by cell, in pixel units.
+    ContourList = {};
 
 end % end properties
 

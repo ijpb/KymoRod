@@ -82,7 +82,7 @@ index   = app.currentFrameIndex;
 smoothMaxValue = 500;
 
 % initialize slider for smoothing value
-smooth  = app.settings.contourSmoothingSize;
+smooth  = app.analysis.Parameters.ContourSmoothingSize;
 set(handles.smoothValueSlider, 'Min', 0);
 set(handles.smoothValueSlider, 'Max', smoothMaxValue);
 set(handles.smoothValueSlider, 'Value', smooth);
@@ -167,7 +167,7 @@ app.logger.info('SmoothContourDialog.m', ...
 set(handles.smoothValueEdit, 'String', num2str(smoothingSize));
 
 % update app data 
-app.settings.contourSmoothingSize = smoothingSize;
+app.analysis.Parameters.ContourSmoothingSize = smoothingSize;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.contourSmoothingSize = smoothingSize;
 setProcessingStep(app, ProcessingStep.Contour);
@@ -213,8 +213,8 @@ smoothingSize = round(str2double(smoothString));
 % set the smooth
 set(handles.smoothValueSlider, 'Value', smoothingSize);
 
-% update app data 
-app.settings.contourSmoothingSize = smoothingSize;
+% update app data
+app.analysis.Parametdes.ContourSmoothingSize = smoothingSize;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.contourSmoothingSize = smoothingSize;
@@ -283,7 +283,8 @@ segmentedImage = app.getSegmentedImage(index);
 
 % retrieve current contour and smooth it
 contour = app.getContour(index);
-smooth  = app.settings.contourSmoothingSize;
+smooth  = app.analysis.Parameters.ContourSmoothingSize;
+% smooth  = app.settings.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 
 % display current frame image and contour
