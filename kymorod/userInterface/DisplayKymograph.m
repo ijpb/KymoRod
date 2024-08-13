@@ -90,6 +90,7 @@ set(handles.currentFrameSlider, 'SliderStep', sliderStep);
 % get geometric data for annotations
 contour = getSmoothedContour(app, frameIndex);
 skeleton = getSkeleton(app, frameIndex);
+skeleton = skeleton.Coords;
 
 % create handles for geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
@@ -278,7 +279,9 @@ app = getappdata(0, 'app');
 % get the type of kymograph currently displayed
 typeList = get(handles.kymographTypePopup, 'String');
 type = strtrim(typeList(get(handles.kymographTypePopup, 'Value'), :));
-
+if iscell(type)
+    type = type{1};
+end
 % Choose the kymograph to display
 switch lower(type)
     case 'radius'

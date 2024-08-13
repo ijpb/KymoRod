@@ -30,7 +30,7 @@ Smin = zeros(length(S), 1);
 
 % compare each signal with the previous one
 for k = 2:length(S)
-    
+    fprintf('.');
 	% total curvilinear length of each curve
     L0 = S{k-1}(end) - S{k-1}(1);
     L1 = S{k}(end);
@@ -85,6 +85,7 @@ for k = 2:length(S)
 	% also keep the global minimum over all curvilinear abscissa
     Smin(k) = S{k}(1);
 end
+fprintf('\n');
 
 % keep global origin
 Sm = min(Smin);

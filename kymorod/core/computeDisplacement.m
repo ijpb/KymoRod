@@ -10,10 +10,10 @@ function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
 %   two skeletons.
 %   
 %   Input arguments:
-%   SK1: 	skeleton associated to first frame
-%   SK2: 	skeleton associated to second frame
-%   S1: 	curvilinear abscissa of first frame skeleton
-%   S2: 	curvilinear abscissa of second frame skeleton
+%   SK1: 	skeleton associated to first frame (in pixels)
+%   SK2: 	skeleton associated to second frame (in pixels)
+%   S1: 	curvilinear abscissa of first frame skeleton (in user unit)
+%   S2: 	curvilinear abscissa of second frame skeleton (in user unit)
 %   IMG1: 	image of the first frame
 %   IMG2: 	image of the second frame
 %   WS: 	size of the correlation window (in pixels)
@@ -76,7 +76,7 @@ for k = 1:length(x1)
     V = std2(w1);
     if V < .1
         warning(['KymoRod:' mfilename], ...
-            'window around point (%d,%d) has not enough variability', j, i);
+            'window around point (%d,%d) has not enough variability, try larger window size', j, i);
         continue;
     end
         
@@ -88,7 +88,7 @@ for k = 1:length(x1)
 
     % check degenerate cases
     if isempty(inds)
-        error('Could not find enough points in second skeleton close to point (%d,%d)', j, i);
+        error('Could not find enough points in second skeleton close to point (%d,%d), try larger limit in abscissa', j, i);
     end
     
     % initialize result of image to image correlation

@@ -32,7 +32,7 @@ innerAngles = atan2(dx, dy);
 
 % add smoothing
 if length(innerAngles) > 2 * ws
-    innerAngles = kymorod.data.signal.movingAverage(innerAngles, ws);
+    innerAngles = kymorod.core.signal.movingAverage(innerAngles, ws);
 end
 
 % complete missing values at extremities

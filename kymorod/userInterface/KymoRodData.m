@@ -54,36 +54,6 @@ properties
     intensityImagesDir = '';
     intensityImagesFilePattern = '*.*';
 
-    % list of contours after rescaling, and translation wrt skeleton
-    % origin (old CT).
-    scaledContourList = {};
-
-    % list of skeletons, one curve by cell, in pixel unit (old SKVerif)
-    skeletonList = {};
-
-    % list of skeletons after rescaling, and translation wrt first
-    % point of skeleton (old 'SK').
-    scaledSkeletonList = {};
-
-    % list of radius values, in millimetres
-    radiusList = {};
-
-    % coordinates of the first point of the skeleton for each image.
-    % (in pixels)
-    originPosition = {};
-
-    % the curvilinear abscissa of each skeleton, in a cell array
-    abscissaList;
-
-    % (obsolete) the curvilinear abscissa after alignment procedure
-    alignedAbscissaList;
-
-    % the angle with the vertical of each point of each skeleton, in a
-    % cell array
-    verticalAngleList;
-
-    % the curvature of each point of each skeleton, in a cell array
-    curvatureList;
 
     % the displacement of a point to the next similar point
     displacementList;
@@ -158,6 +128,45 @@ properties
     % list of contours, one polygon by cell, in pixel unit (old 'CTVerif')
     contourList = {};
 
+    % list of contours after rescaling, and translation wrt skeleton
+    % origin (old CT).
+    % (deprecated)
+    scaledContourList = {};
+
+    % list of skeletons, one curve by cell, in pixel unit (old SKVerif)
+    % (replaced by Midlines)
+    skeletonList = {};
+
+    % list of skeletons after rescaling, and translation wrt first
+    % point of skeleton (old 'SK').
+    % (deprecated)
+    scaledSkeletonList = {};
+
+    % list of radius values, in millimetres
+    % (deprecated)
+    radiusList = {};
+
+    % coordinates of the first point of the skeleton for each image.
+    % (in pixels)
+    % (deprecated)
+    originPosition = {};
+
+    % the curvilinear abscissa of each skeleton, in a cell array
+    % (deprecated)
+    abscissaList;
+
+    % (obsolete) the curvilinear abscissa after alignment procedure
+    % (deprecated)
+    alignedAbscissaList;
+
+    % the angle with the vertical of each point of each skeleton, in a
+    % cell array
+    % (need to keep it until computation of vertical angle is totally useless) 
+    verticalAngleList;
+
+    % the curvature of each point of each skeleton, in a cell array
+    % (deprecated)
+    curvatureList;
 end
 
 
@@ -534,15 +543,16 @@ methods
         if obj.processingStep < ProcessingStep.Contour
             error('need to have contours computed');
         end
-        contour = obj.contourList{index};
+        contour = obj.analysis.Contours{index};
+        % contour = obj.contourList{index};
     end
 
     function contour = getSmoothedContour(obj, index)
         if obj.processingStep < ProcessingStep.Contour
             error('need to have contours computed');
         end
-        contour = obj.contourList{index};
-        smooth = obj.settings.contourSmoothingSize;
+        contour = obj.analysis.Contours{index};
+        smooth = obj.analysis.Parameters.ContourSmoothingSize;
         contour = smoothContour(contour, smooth);
     end
 
@@ -565,8 +575,7 @@ methods
 
         % allocate memory for contour array
         contours = cell(nFrames, 1);
-        obj.contourList = cell(nFrames, 1);
-
+        
         % iterate over images
         parfor i = 1:nFrames
             % add black border around each image, to ensure continuous contours
@@ -579,8 +588,8 @@ methods
         end
         fprintf('\n');
 
-        obj.contourList = contours;
-        obj.analysis.ContourList = contours;
+        % obj.contourList = contours;
+        obj.analysis.Contours = contours;
 
         if ishandle(hDialog)
             close(hDialog);
@@ -597,14 +606,17 @@ methods
         if obj.processingStep < ProcessingStep.Skeleton
             error('need to have skeletons computed');
         end
-        skel = obj.skeletonList{index};
+        skel = obj.analysis.Midlines{index};
+        % skel = obj.skeletonList{index};
     end
 
     function skel = getScaledkeleton(obj, index)
         if obj.processingStep < ProcessingStep.Skeleton
             error('need to have skeletons computed');
         end
-        skel = obj.scaledSkeletonList{index};
+        skel = obj.analysis.Midines{index};
+        calib = obj.analysis.InputImages.Calibration;
+        skel = calibrate(skel, calib);
     end
 
     function computeSkeletons(obj)
@@ -620,21 +632,15 @@ methods
         % number of images
         nFrames = frameNumber(obj);
 
-        smooth = obj.analysis.Parameters.contourSmoothingSize;
+        smooth = obj.analysis.Parameters.ContourSmoothingSize;
 
         organShape = 'boucle';
-        originDirection = obj.settings.skeletonOrigin;
+        originDirection = lower(obj.analysis.Parameters.SkeletonOrigin);
 
         % allocate memory for results
-        skelList    = cell(nFrames, 1);
-        radList     = cell(nFrames, 1);
-        contListMm  = cell(nFrames, 1);
-        skelListMm  = cell(nFrames, 1);
-        originList  = cell(nFrames, 1);
+        midlines = cell(nFrames, 1);
 
         disp('Skeletonization');
-        % spatial resolution of images in millimetres
-        resolMm = obj.analysis.InputImages.Calibration.PixelSize / 1000;
 
         t0 = tic;
         parfor i = 1:nFrames
@@ -649,35 +655,17 @@ methods
 
             % extract skeleton of current contour
             [skel, rad] = contourSkeleton(contour2, originDirection);
-            skelList{i} = skel;
 
-            % convert radius list to millimetres
-            radList{i} = rad * resolMm;
-
-            % coordinates of first point of skeleton (in pixels)
-            origin = skel(1,:);
-
-            % keep it after conversion in mm
-            originList{i} = origin;
-
-            % align contour at bottom left and reverse y-axis (user coordinates)
-            contour2 = [contour(:,1) - origin(1), -(contour(:,2) - origin(2))];
-            contListMm{i} = contour2 * resolMm;
-
-            % align skeleton at bottom left, and reverse y axis
-            skel2 = [skel(:,1) - origin(1), -(skel(:,2) - origin(2))];
-            skelListMm{i} = skel2 * resolMm;
+            % create midline
+            midlines{i} = kymorod.data.Midline(skel);
+            midlines{i}.Radiusses = rad;
 
             fprintf('.');
         end
         fprintf('\n');
-
-        % copy temporary arrays to KymoRodData instance
-        obj.skeletonList       = skelList;
-        obj.radiusList         = radList;
-        obj.scaledContourList  = contListMm;
-        obj.scaledSkeletonList = skelListMm;
-        obj.originPosition     = originList;
+        
+        % copy array of midlines within analysis instance 
+        obj.analysis.Midlines = midlines;
 
         t1 = toc(t0);
         disp(sprintf('elapsed time: %6.2f mn', t1 / 60)); %#ok<DSPS>
@@ -731,18 +719,22 @@ methods
 
         % allocate memory for result
         S = cell(nFrames, 1);
+        R = cell(nFrames, 1);
 
         % iterate over skeletons
+        calib = obj.analysis.InputImages.Calibration;
         for i = 1:nFrames
-            S{i} = curvilinearAbscissa(obj.scaledSkeletonList{i});
+            fprintf('.');
+            skel = obj.analysis.Midlines{i};
+            S{i} = skel.Abscissas * calib.PixelSize / 1000;
+            R{i} = skel.Radiusses;
         end
+        fprintf('\n');
 
         % Alignment of all the results
         disp('Alignment of curves');
-        Sa = alignAbscissa(S, obj.radiusList);
-
-        % store within class
-        obj.abscissaList = Sa;
+        Sa = alignAbscissa(S, R);
+        obj.analysis.AlignedAbscissas = Sa;
     end
 
     function computeAnglesAndCurvatures(obj)
@@ -753,32 +745,29 @@ methods
             'Compute vertical angles and curvatures');
 
         % get input data
-        SK = obj.scaledSkeletonList;
-        S = obj.abscissaList;
+        midlines = obj.analysis.Midlines;
 
         % size option for computing curvature
-        smooth  = obj.settings.curvatureSmoothingSize;
+        ws = obj.analysis.Parameters.CurvatureWindowSize;
 
         % allocate memory for results
-        n = length(SK);
+        n = length(midlines);
         A = cell(n, 1);
         C = cell(n, 1);
 
-        % iterate over skeletons in the list
-        parfor i = 1:n
-            curve = SK{i};
-            % Check that the length of the skeleton is not too small
-            if size(curve, 1) > 2 * smooth
-                % Computation of the angle A and the curvature C
-                [A{i}, C{i}] = computeCurvature(curve, S{i}, smooth);
-            else
-                % if the length is too small use a dummy abscissa and zeros angle
-                A{i} = zeros(size(S{i}));
-                C{i} = zeros(size(S{i}));
+        % iterate over midlines in the list
+        for i = 1:n
+            midline = midlines{i};
+            if size(midline.Coords, 1) > 2 * ws
+                computeVertexCurvature(midline, ws);
+                C{i} = midline.Curvatures;
+                A{i} = vertexVerticalAngle(midline, ws);
             end
         end
 
         % store within class
+        % Caution: original method stores calibrated curvatures; here we
+        % store curvatures in pixel units.
         obj.verticalAngleList   = A;
         obj.curvatureList       = C;
 
@@ -786,17 +775,30 @@ methods
     end
 
     function computeCurvaturesAndAbscissaImages(obj)
-        nx  = obj.settings.finalResultLength;
-        Sa  = obj.abscissaList;
+
+        % retrieve parameters
+        nFrames = frameCount(obj.analysis.InputImages);
+        calib = obj.analysis.InputImages.Calibration;
+        nx = obj.analysis.Parameters.KymographAbscissaSize;
+
+        % retrieve data
+        Sa = obj.analysis.AlignedAbscissas;
+        radiusValues = cell(1, nFrames);
+        curvatureValues = cell(1, nFrames);
+        verticalAngleValues = cell(1, nFrames);
+        for i = 1:nFrames
+            midline = calibrate(obj.analysis.Midlines{i}, calib);
+            radiusValues{i} = midline.Radiusses;
+            curvatureValues{i} = midline.Curvatures;
+            verticalAngleValues{i} = obj.verticalAngleList{i};
+        end
 
         inputImages = obj.analysis.InputImages;
-        timeInterval = inputImages.Calibration.TimeInterval;
+        timeInterval = calib.TimeInterval;
         frameStep = inputImages.ImageList.IndexStep;
 
         % compute axis for time
-        nFrames = length(Sa);
         timeData = (0:(nFrames-1)) * timeInterval * frameStep;
-        % timeData = (0:(nFrames-1)) * obj.settings.timeInterval * obj.indexStep;
         timeAxis = kymorod.core.PlotAxis(timeData, ...
             'Name', 'Time', ...
             'Unit', obj.settings.timeIntervalUnit);
@@ -810,17 +812,17 @@ methods
             'Unit', 'mm');
 
         % compute images
-        radiusImage = kymographFromValues(Sa, obj.radiusList, nx);
+        radiusImage = kymographFromValues(Sa, radiusValues, nx);
         obj.radiusKymograph = kymorod.core.Kymograph(radiusImage, ....
             'Name', 'Radius', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
 
-        verticalAngleImage = kymographFromValues(Sa, obj.verticalAngleList, nx);
+        verticalAngleImage = kymographFromValues(Sa, verticalAngleValues, nx);
         obj.verticalAngleKymograph = kymorod.core.Kymograph(verticalAngleImage, ...
             'Name', 'Vertical Angle', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
 
-        curvatureImage = kymographFromValues(Sa, obj.curvatureList, nx);
+        curvatureImage = kymographFromValues(Sa, curvatureValues, nx);
         obj.curvatureKymograph = kymorod.core.Kymograph(curvatureImage, ...
             'Name', 'Curvature', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
@@ -842,11 +844,12 @@ methods
 
         nFrames = frameNumber(obj);
         step    = obj.settings.displacementStep;
+        disp(step);
 
         % allocate memory for result
         displList = cell(nFrames-step, 1);
 
-        parfor i = 1:nFrames - step
+        parfor i = 1:(nFrames - step)
             % index of next skeleton
             i2 = i + step;
 
@@ -861,7 +864,7 @@ methods
         obj.displacementList = displList;
     end
 
-    function displ = computeFrameDisplacement(obj, i, i2)
+    function displ = computeFrameDisplacement(obj, i1, i2)
         % Compute displacement between two frames.
         %
         % Usage:
@@ -870,23 +873,29 @@ methods
         % Assumes the class field 'displacementList' is already
         % initialized to the required size.
 
+        % retrieve midlines
+        midline1 = obj.analysis.Midlines{i1};
+        midline2 = obj.analysis.Midlines{i2};
+        SK1 = midline1.Coords;
+        SK2 = midline2.Coords;
+        calib = obj.analysis.InputImages.Calibration;
+        S1 = obj.analysis.AlignedAbscissas{i1};
+        S2 = obj.analysis.AlignedAbscissas{i2};
+
         % local data
-        SK1 = obj.skeletonList{i};
-        SK2 = obj.skeletonList{i2};
-        S1  = obj.abscissaList{i};
-        S2  = obj.abscissaList{i2};
-        img1 = getImageForDisplacement(obj, i);
+        img1 = getImageForDisplacement(obj, i1);
         img2 = getImageForDisplacement(obj, i2);
 
         % settings
         ws = obj.settings.windowSize1;
         % TODO: find appropriate name for 'L' and include into Data
-        L = 4 * ws * obj.analysis.InputImages.Calibration.PixelSize / 1000;
+        % maxSDiff ?
+        L = 4 * ws * calib.PixelSize / 1000;
 
         % check if the two skeletons are large enough
         if length(SK1) <= 2*80 || length(SK2) <= 2*80
             % case of too small skeletons
-            msg = sprintf('Skeletons %d or %d has not enough vertices', i, i2);
+            msg = sprintf('Skeletons %d or %d has not enough vertices', i1, i2);
             obj.logger.warn('KymoRodData.computeFrameDisplacement', msg);
             warning(msg); %#ok<SPWRN>
             displ = [1 0; 1 1];
@@ -897,7 +906,7 @@ methods
 
         % check result is large enough
         if size(displ, 1) == 1
-            msg = sprintf('Displacement from frame %d to frame %d resulted in small array', i, i2);
+            msg = sprintf('Displacement from frame %d to frame %d resulted in small array', i1, i2);
             obj.logger.warn('KymoRodData.computeFrameDisplacement', msg);
             warning(msg); %#ok<SPWRN>
             displ = [1 0;1 1];
@@ -933,7 +942,7 @@ methods
         %  Space-time mapping
         obj.logger.info('KymoRodData.computeElongations', ...
             'Reconstruct elongation kymograph');
-        nx = obj.settings.finalResultLength;
+        nx = obj.analysis.Parameters.KymographAbscissaSize;
 
         % prepare data for computing kymograph
         nFrames = length(Elg);
@@ -1020,10 +1029,10 @@ methods
     end
 
     function computeIntensityKymograph(obj)
-        % Comptue kymograph based on values within a list of images.
+        % Compute kymograph based on values within a list of images.
 
         % get number of frames
-        n = length(obj.skeletonList);
+        n = frameNumber(obj);
 
         % allocate memory for result
         S2List = cell(n, 1);
@@ -1032,8 +1041,8 @@ methods
         % iterate over pairs image+skeleton
         for i = 1:n
             % get skeleton and its curvilinear abscissa
-            S = obj.abscissaList{i};
-            skel = obj.skeletonList{i};
+            S = obj.analysis.AlignedAbscissas{i};
+            skel = obj.analysis.Midlines{i}.Coords;
 
             % reduce skeleton to snap on image pixels
             [S2, skel2] = snapCurveToPixels(S, skel);
@@ -1045,7 +1054,7 @@ methods
         end
 
         % Compute kymograph using specified kymograph size
-        nx = obj.settings.finalResultLength;
+        nx = obj.analysis.Parameters.KymographAbscissaSize;
         intensityImage = kymographFromValues(S2List, values, nx);
 
         % retrieve axes from previous kymograph
@@ -1146,8 +1155,10 @@ methods
         timeInterval = calib.TimeInterval;
         frameStep = obj.analysis.InputImages.ImageList.IndexStep;
         xdata = (0:(size(img, 2)-1)) * timeInterval * frameStep;
-        Sa = obj.abscissaList{end};
-        ydata = linspace(Sa(1), Sa(end), obj.settings.finalResultLength);
+        Sa = obj.analysis.AlignedAbscissas{end};
+        % Sa = obj.abscissaList{end};
+        nx = obj.analysis.Parameters.KymographAbscissaSize;
+        ydata = linspace(Sa(1), Sa(end), nx);
 
         % display current kymograph
         hImg = imagesc(xdata, ydata, img);

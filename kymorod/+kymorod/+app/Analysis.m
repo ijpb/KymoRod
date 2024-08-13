@@ -33,7 +33,14 @@ properties
     InitialThresholdValues = [];
 
     % The list of contours, one polygon by cell, in pixel units.
-    ContourList = {};
+    Contours = {};
+
+    % The longest path in skeleton for each image, as a cell array of
+    % kymorod.data.Midline instances, in pixel coordinates.
+    Midlines = {};
+
+    % The curvilinear abscissa after alignment procedure, as a cell array.
+    AlignedAbscissas = {};
 
 end % end properties
 

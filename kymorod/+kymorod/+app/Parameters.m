@@ -41,6 +41,16 @@ properties
     % The length of window for smoothing coutours. Default value is 20.
     ContourSmoothingSize = 20;
 
+    SkeletonOrigin = 'Bottom';
+
+    % The radius of the window for computing curvature, in vertex number.
+    % Default is 10.
+    CurvatureWindowSize = 10;
+
+    % The number of points used on space axis to compute kymograph.
+    % Default is 500.
+    KymographAbscissaSize = 500;
+
 end % end properties
 
 

@@ -83,10 +83,10 @@ set(handles.currentFrameSlider, 'SliderStep', sliderStep);
 
 % compute current segmented image
 segmentedImage = app.getSegmentedImage(frameIndex);
-contour = app.contourList{frameIndex};
+contour = app.analysis.Contours{frameIndex};
 
 % apply smoothing on current contour
-smooth  = app.settings.contourSmoothingSize;
+smooth  = app.analysis.Parameters.ContourSmoothingSize;
 contour = smoothContour(contour, smooth);
 
 % display current frame (image and contour)
@@ -309,8 +309,8 @@ frameIndex = app.currentFrameIndex;
 segmentedImage = getSegmentedImage(app, frameIndex);
 
 % apply smoothing on current contour
-contour = app.contourList{frameIndex};
-smooth  = app.settings.contourSmoothingSize;
+contour = app.analysis.Contours{frameIndex};
+smooth  = app.analysis.Parameters.ContourSmoothingSize;
 contour = smoothContour(contour, smooth);
 
 % display current frame image and contour
@@ -318,8 +318,8 @@ set(handles.imageHandle, 'CData', segmentedImage);
 set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 
 % display current skeleton if already computed
-if ~isempty(app.skeletonList)
-    skeleton = app.skeletonList{frameIndex};
+if ~isempty(app.analysis.Midlines)
+    skeleton = app.analysis.Midlines{frameIndex}.Coords;
     set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
     set(handles.markerHandle, 'XData', skeleton(1,1), 'YData', skeleton(2,2));
     set([handles.skeletonHandle handles.markerHandle], 'Visible', 'On');
@@ -356,11 +356,12 @@ function showSkeleton3dButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % handles    structure with handles and user data (see GUIDATA)
 
 app = getappdata(0, 'app');
+midlines = app.analysis.Midlines;
 
 figure;
 hold on;
-for i = 1:length(app.skeletonList)
-    skel = getSkeleton(app, i);
+for i = 1:length(midlines)
+    skel = midlines{i}.Coords;
     skel(:,3) = i * 10;
     drawPolyline3d(skel, 'b');
 end
@@ -397,6 +398,7 @@ if folderName ~= 0
         
         % save current skeleton
         skel = app.skeletonList{iSkel};
+        skel = skel.Coords;
         save(fullfile(folderName, fileName), 'skel', '-ascii');
     end
 end
@@ -436,7 +438,7 @@ if folderName ~= 0
         % save current skeleton
         skel = app.skeletonList{iSkel};
         filePath = fullfile(folderName, fileName);
-        savePolylineAsIJRoi(skel, filePath);
+        savePolylineAsIJRoi(skel.Coords, filePath);
     end
 end
 
@@ -486,7 +488,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 function pointNumberEdit_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to pointNumberEdit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -507,6 +508,7 @@ if isnan(val) || val < 0
 end
 
 app.settings.finalResultLength = val;
+app.analysis.Parameters.KymographAbscissaSize = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.finalResultLength = val;

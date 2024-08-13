@@ -19,7 +19,7 @@ function res = calibrate(obj, calib, varargin)
 coords2 = obj.Coords .* calib.PixelSize + calib.PixelOrigin;
 abscissa2 = obj.Abscissas * calib.PixelSize(1);
 
-res = kymorod.data.MidLine(coords2, abscissa2);
+res = kymorod.data.Midline(coords2, abscissa2);
 
 if ~isempty(obj.Radiusses)
     res.Radiusses = obj.Radiusses * calib.PixelSize(1);
