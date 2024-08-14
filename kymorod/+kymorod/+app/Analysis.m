@@ -42,6 +42,18 @@ properties
     % The curvilinear abscissa after alignment procedure, as a cell array.
     AlignedAbscissas = {};
 
+    % The displacement of each point to the next similar point.
+    % Given as a cell array, each cell containing a N-by-2 numeric array,
+    % the first column coresponding to the curvilinear abscissa.
+    Displacements;
+
+    % The displacement after smoothing and resampling
+    % Given as a cell array, each cell containing a N-by-2 numeric array.
+    FilteredDisplacements = {};
+    
+    % Elongation, computed by derivation of filtered displacement.
+    Elongations;
+
 end % end properties
 
 

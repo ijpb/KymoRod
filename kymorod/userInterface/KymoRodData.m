@@ -55,15 +55,10 @@ properties
     intensityImagesFilePattern = '*.*';
 
 
-    % the displacement of a point to the next similar point
-    displacementList;
-
-    % the displacement after smoothing and resampling
-    smoothedDisplacementList;
-
-    % elongation, computed by derivation of smoothed displacement
-    elongationList;
-
+    % the angle with the vertical of each point of each skeleton, in a
+    % cell array
+    % (need to keep it until computation of vertical angle is totally useless) 
+    verticalAngleList;
 
     % reconstructed Kymograph of skeleton radius in absissa and time
     radiusKymograph;
@@ -159,14 +154,18 @@ properties
     % (deprecated)
     alignedAbscissaList;
 
-    % the angle with the vertical of each point of each skeleton, in a
-    % cell array
-    % (need to keep it until computation of vertical angle is totally useless) 
-    verticalAngleList;
-
     % the curvature of each point of each skeleton, in a cell array
     % (deprecated)
     curvatureList;
+
+    % the displacement of a point to the next similar point
+    displacementList;
+
+    % the displacement after smoothing and resampling
+    smoothedDisplacementList;
+
+    % elongation, computed by derivation of smoothed displacement
+    elongationList;
 end
 
 
@@ -844,7 +843,6 @@ methods
 
         nFrames = frameNumber(obj);
         step    = obj.settings.displacementStep;
-        disp(step);
 
         % allocate memory for result
         displList = cell(nFrames-step, 1);
@@ -862,6 +860,7 @@ methods
         fprintf('\n');
 
         obj.displacementList = displList;
+        obj.analysis.Displacements = displList;
     end
 
     function displ = computeFrameDisplacement(obj, i1, i2)
@@ -926,23 +925,25 @@ methods
             'Compute elongations');
 
         % initialize results
-        n = length(obj.displacementList);
-        E2 = cell(n, 1);
-        Elg = cell(n, 1);
+        nFrames = length(obj.displacementList);
+        E2 = cell(nFrames, 1);
+        Elg = cell(nFrames, 1);
 
         % iterate over displacement curves
-        parfor i = 1:n
+        parfor i = 1:nFrames
             [Elg{i}, E2{i}] = computeFrameElongation(obj, i);
         end
 
         % store results
-        obj.smoothedDisplacementList = E2;
-        obj.elongationList = Elg;
+        obj.analysis.FilteredDisplacements = E2;
+        obj.analysis.Elongations = Elg;
+        % obj.smoothedDisplacementList = E2;
+        % obj.elongationList = Elg;
 
         %  Space-time mapping
         obj.logger.info('KymoRodData.computeElongations', ...
             'Reconstruct elongation kymograph');
-        nx = obj.analysis.Parameters.KymographAbscissaSize;
+        nPos = obj.analysis.Parameters.KymographAbscissaSize;
 
         % prepare data for computing kymograph
         nFrames = length(Elg);
@@ -955,7 +956,7 @@ methods
                 A{k} = signal(:, 2);
             end
         end
-        elongationImage = kymographFromValues(S, A, nx);
+        elongationImage = kymographFromValues(S, A, nPos);
 
         % retrieve axes from previous kymograph
         timeAxis = obj.radiusKymograph.TimeAxis;
@@ -1001,7 +1002,8 @@ methods
         %
 
         % get current array of displacement
-        E = obj.displacementList{index};
+        % E = obj.displacementList{index};
+        E = obj.analysis.Displacements{index};
 
         % check validity of size
         if length(E) <= 20
@@ -1032,14 +1034,14 @@ methods
         % Compute kymograph based on values within a list of images.
 
         % get number of frames
-        n = frameNumber(obj);
+        nFrames = frameNumber(obj);
 
         % allocate memory for result
-        S2List = cell(n, 1);
-        values = cell(n, 1);
+        S2List = cell(nFrames, 1);
+        values = cell(nFrames, 1);
 
         % iterate over pairs image+skeleton
-        for i = 1:n
+        for i = 1:nFrames
             % get skeleton and its curvilinear abscissa
             S = obj.analysis.AlignedAbscissas{i};
             skel = obj.analysis.Midlines{i}.Coords;

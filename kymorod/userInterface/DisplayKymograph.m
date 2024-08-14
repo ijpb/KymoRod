@@ -89,8 +89,7 @@ set(handles.currentFrameSlider, 'SliderStep', sliderStep);
 
 % get geometric data for annotations
 contour = getSmoothedContour(app, frameIndex);
-skeleton = getSkeleton(app, frameIndex);
-skeleton = skeleton.Coords;
+skeleton = getSkeleton(app, frameIndex).Coords;
 
 % create handles for geometric annotations
 handles.contourHandle   = drawContour(contour, 'r');
@@ -130,12 +129,11 @@ set(handles.slider1, 'Min', minCaxis);
 set(handles.slider1, 'Max', maxCaxis);
 set(handles.slider1, 'Value', minCaxis);
 
-
 % display current kymograph
-xdata = (0:(size(img, 2)-1)) * app.settings.timeInterval;
+calib = app.analysis.InputImages.Calibration;
+xdata = (0:(size(img, 2)-1)) * calib.TimeInterval;
 ydata = 1:size(img, 1);
 handles.kymographImage = imagesc(handles.kymographAxes, 'XData', xdata, 'YData', ydata, 'CData', img);
-% handles.kymographImage = imagesc(handles.kymographAxes, xdata, ydata, img);
 % add the function handle to capture mouse clicks
 set(handles.kymographImage, 'buttondownfcn', {@kymographAxes_ButtonDownFcn, handles});
 
@@ -177,7 +175,7 @@ end
 
 % extract geometric annotations
 contour = getSmoothedContour(app, frameIndex);
-skeleton = getSkeleton(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex).Coords;
 
 % update display
 axes(handles.imageAxes);
@@ -359,7 +357,7 @@ app = getappdata(0, 'app');
 
 % coordinates of current skeleton
 frameIndex = app.currentFrameIndex;
-skeleton = getSkeleton(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex).Coords;
 xdata = skeleton(:, 1);
 ydata = skeleton(:, 2);
 
@@ -368,23 +366,26 @@ typeList = get(handles.kymographTypePopup, 'String');
 type = strtrim(typeList(get(handles.kymographTypePopup, 'Value'), :));
 disp(type)
 
-% Choose the kymograph to display
+% Choose the information to display
 switch lower(type)
-    case 'radius', values = app.radiusList{frameIndex};
-    case lower('verticalAngle'), values = app.verticalAngleList{frameIndex};
-    case 'curvature', values = app.curvatureList{frameIndex};
+    case 'radius'
+        values = skeleton.Radiusses;
+    case lower('verticalAngle')
+        values = app.analysis.VerticalAngles{frameIndex};
+    case 'curvature'
+        values = skeleton.Curvatures;
     case 'elongation'
         % make sure frame index is valid for elongation data
         frameIndex = min(frameIndex, length(app.elongationList));
         skeleton = getSkeleton(app, frameIndex);
         
         % extract the values of elongation
-        elg = app.elongationList{frameIndex};
+        elg = app.analysis.Elongations{frameIndex};
         values = elg(:, 2);
         
         % need to re-compute x and y data, as they are computed on a pixel
         % approximation of the skeleton
-        abscissa = app.abscissaList{frameIndex};
+        abscissa = app.analysis.AlignedAbscissas{frameIndex};
         inds = zeros(size(elg, 1), 1);
         for i = 1:length(inds)
             inds(i) = find(abscissa > elg(i,1), 1, 'first');
@@ -425,8 +426,8 @@ function kymographAxes_ButtonDownFcn(hObject, eventdata, handles)%#ok<INUSL>
 
 handles = guidata(hObject);
 
-app     = getappdata(0, 'app');
-nx      = app.settings.finalResultLength;
+app = getappdata(0, 'app');
+nPos = app.analysis.Parameters.KymographAbscissaSize;
 
 % extract last clicked position, x = index of frame
 pos = get(handles.kymographAxes, 'CurrentPoint');
@@ -445,7 +446,8 @@ else
 end
 
 % determine index of frame corresponding to clicked point
-timeStep = app.settings.timeInterval * app.indexStep;
+calib = app.analysis.InputImages.Calibration;
+timeStep = calib.TimeInterval * app.indexStep;
 frameIndex = round(posX / timeStep) + 1;
 app.currentFrameIndex = frameIndex;
 
@@ -455,7 +457,7 @@ if ndims(img) == 2 %#ok<ISMAT>
     img = repmat(img, [1 1 3]);
 end
 contour = getSmoothedContour(app, frameIndex);
-skeleton = getSkeleton(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex).Coords;
 
 % update display
 axes(handles.imageAxes);
@@ -464,18 +466,17 @@ set(handles.contourHandle, 'XData', contour(:,1), 'YData', contour(:,2));
 set(handles.skeletonHandle, 'XData', skeleton(:,1), 'YData', skeleton(:,2));
 
 % convert y-coordinate to curvilinear abscissa
-Smax = app.abscissaList{end}(end);
+Smax = app.analysis.AlignedAbscissas{end}(end);
 Smin = 0;
-Smarker = (posY - Smin) * (Smax - Smin) / nx;
+Smarker = (posY - Smin) * (Smax - Smin) / nPos;
 
 % convert absolute abscissa to relative abscissa
-S = app.abscissaList{frameIndex};
+S = app.analysis.AlignedAbscissas{frameIndex};
 relPos = (Smarker - min(S) ) / (max(S) - min(S));
 relPos = min(max(relPos, 0), 1);
 app.cursorRelativeAbscissa = relPos;
 
 % identify skeleton point corresponding to marker
-S = app.abscissaList{frameIndex};
 ind = find(Smarker <= S, 1, 'first');
 ind = max(ind, 1);
 if isempty(ind)
@@ -509,10 +510,10 @@ relPos = app.cursorRelativeAbscissa;
 
 % coordinates of current skeleton
 frameIndex = app.currentFrameIndex;
-skeleton = getSkeleton(app, frameIndex);
+skeleton = getSkeleton(app, frameIndex).Coords;
 
 % curvilinear abscissa along current skeleton
-S = app.abscissaList{frameIndex};
+S = app.analysis.AlignedAbscissas{frameIndex};
 
 % compute absolute curvilinear absissa of marker
 markerAbscissa = relPos * (max(S) - min(S)) + min(S);
@@ -533,14 +534,15 @@ end
 % update position of marker on kymograph display
 if isfield(handles, 'kymographMarker')
     % convert frame index to time position
-    posX = (frameIndex - 1) * app.settings.timeInterval;
+    calib = app.analysis.InputImages.Calibration;
+    posX = (frameIndex - 1) * calib.TimeInterval;
     
     % convert marker abscissa to position on kyomgraph Y axis
-    nx   = app.settings.finalResultLength;
-    Smaxi = app.abscissaList{end}(end);
-    Smini = app.abscissaList{end}(1);
-    posY = (markerAbscissa - Smini) / (Smaxi - Smini) * nx;
-    posY = max(min(posY, nx), 0);
+    nPos   = app.analysis.Parameters.KymographAbscissaSize;
+    Smaxi = app.analysis.AlignedAbscissas{end}(end);
+    Smini = app.analysis.AlignedAbscissas{end}(1);
+    posY = (markerAbscissa - Smini) / (Smaxi - Smini) * nPos;
+    posY = max(min(posY, nPos), 0);
     
     set(handles.kymographMarker, 'XData', posX, 'YData', posY);
     
@@ -596,7 +598,7 @@ minCaxis = kymo.DisplayRange(1);
 maxCaxis = kymo.DisplayRange(2);
 
 % display current kymograph
-timeStep = app.settings.timeInterval;
+timeStep = app.analysis.InputImages.Calibration.TimeInterval;
 xdata = (0:(size(img, 2)-1)) * timeStep;
 ydata = 1:size(img, 1);
 if isfield(handles, 'kymographImage')
@@ -620,7 +622,6 @@ end
 colorbar(handles.kymographAxes);
 cmapNames = get(handles.colormapPopup, 'String');
 index = get(handles.colormapPopup, 'Value');
-% colormap jet;
 colorMapName = strtrim(cmapNames{index});
 colormap(handles.kymographAxes, colorMapName);
 
