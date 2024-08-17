@@ -76,7 +76,7 @@ buildFigureMenu(gui, hObject, app);
 
 % retrieve app data
 nFrames = frameNumber(app);
-index   = app.currentFrameIndex;
+index   = app.analysis.CurrentFrameIndex;
 
 % compute the max value for smoothing 
 smoothMaxValue = 500;
@@ -255,7 +255,7 @@ index = round(get(hObject, 'Value'));
 label = sprintf('Frame index: %d / %d', index, frameNumber(app));
 set(handles.currentFrameIndexLabel, 'String', label);
 
-app.currentFrameIndex = index;
+app.analysis.CurrentFrameIndex = index;
 setappdata(0, 'app', app);
 
 updateContourDisplay(handles);
@@ -276,7 +276,7 @@ function updateContourDisplay(handles)
 
 % get global data
 app     = getappdata(0, 'app');
-index   = app.currentFrameIndex;
+index   = app.analysis.CurrentFrameIndex;
 
 % compute current segmented image
 segmentedImage = app.getSegmentedImage(index);
@@ -284,7 +284,6 @@ segmentedImage = app.getSegmentedImage(index);
 % retrieve current contour and smooth it
 contour = app.getContour(index);
 smooth  = app.analysis.Parameters.ContourSmoothingSize;
-% smooth  = app.settings.contourSmoothingSize;
 contour = smoothContour(contour, smooth); 
 
 % display current frame image and contour

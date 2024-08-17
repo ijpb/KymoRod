@@ -630,7 +630,7 @@ nFiles = getFileNumber(app);
 val = parseValue(string);
 val = min(val, nFiles);
 
-imageList.LastFirst = val;
+imageList.IndexLast = val;
 setProcessingStep(app, ProcessingStep.Selection);
 
 updateFrameSliderBounds(handles);
@@ -719,7 +719,7 @@ indices = selectedFileIndices(imageList);
 frameCount = length(indices);
 
 % extract index of first frame to display
-frameIndex = min(app.currentFrameIndex, length(indices));
+frameIndex = min(app.analysis.CurrentFrameIndex, length(indices));
 
 % determine index of file to read
 if frameIndex > 0
@@ -786,7 +786,7 @@ function framePreviewSlider_Callback(hObject, eventdata, handles)
 
 app = getappdata(0, 'app');
 frameIndex = round(get(handles.framePreviewSlider, 'Value'));
-app.currentFrameIndex = frameIndex;
+app.analysis.CurrentFrameIndex = frameIndex;
 
 updateFramePreview(handles);
 
@@ -811,7 +811,7 @@ app = getappdata(0, 'app');
 indices = selectedFileIndices(app.analysis.InputImages.ImageList);
 frameCount = length(indices);
 
-frameIndex = min(app.currentFrameIndex, frameCount);
+frameIndex = min(app.analysis.CurrentFrameIndex, frameCount);
 
 set(handles.framePreviewSlider, 'Visible', 'Off');
 set(handles.framePreviewSlider, 'Value', frameIndex);
@@ -860,7 +860,7 @@ app = getappdata(0, 'app');
 loadImageData(app);
 
 nFrames = frameNumber(app);
-app.currentFrameIndex = min(app.currentFrameIndex, nFrames);
+app.analysis.CurrentFrameIndex = min(app.currentFrameIndex, nFrames);
 delete(gcf);
 
 ChooseThresholdDialog(app);

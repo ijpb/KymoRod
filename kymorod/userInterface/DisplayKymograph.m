@@ -70,7 +70,7 @@ buildFigureMenu(gui, hObject, app);
 nFrames = frameNumber(app);
 
 % get index of current frame, eventually corrected by max frame number
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 frameIndex = min(frameIndex, nFrames);
 
 % Display current image
@@ -102,16 +102,16 @@ handles.imageMarker     = drawMarker(skeleton(1, :), ...
 % depending on which data have been processed, only some kymographs may be
 % displayed.
 typeList = {'radius', 'verticalAngle', 'curvature'};
-if ~isempty(app.elongationKymograph)
+if ~isempty(app.analysis.ElongationKymograph)
     typeList = [typeList, {'elongation'}];
 end
-if ~isempty(app.intensityKymograph)
+if ~isempty(app.analysis.IntensityKymograph)
     typeList = [typeList, {'intensity'}];
 end
 set(handles.kymographTypePopup, 'String', char(typeList));
 
 % update the widget for choosing the type of kymograph
-index = find(strcmpi(app.kymographDisplayType, typeList));
+index = find(strcmpi(app.analysis.KymographDisplayType, typeList));
 if isempty(index)
     index = 1;
 end
@@ -165,7 +165,7 @@ function updateCurrentFrameDisplay(handles)
 
 % extract data for current frame
 app = getappdata(0, 'app');
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 
 % create RGB image from app data
 img = app.getImage(frameIndex);
@@ -190,7 +190,7 @@ function displayCurrentFrameIndex(handles)
 
 % get current frame index and number
 app = getappdata(0, 'app');
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 nFrames = frameNumber(app);
 
 % update label display
@@ -222,7 +222,7 @@ function currentFrameSlider_Callback(hObject, eventdata, handles) %#ok<INUSL>
 app = getappdata(0, 'app');
 frameIndex = round(get(handles.currentFrameSlider, 'Value'));
 
-app.currentFrameIndex = frameIndex;
+app.analysis.CurrentFrameIndex = frameIndex;
 setappdata(0, 'app', app);
 
 displayCurrentFrameIndex(handles);
@@ -283,15 +283,15 @@ end
 % Choose the kymograph to display
 switch lower(type)
     case 'radius'
-        app.kymographDisplayType = 'radius';
+        app.analysis.KymographDisplayType = 'radius';
     case lower('verticalAngle')
-        app.kymographDisplayType = 'verticalAngle';
+        app.analysis.KymographDisplayType = 'verticalAngle';
     case 'curvature'
-        app.kymographDisplayType = 'curvature';
+        app.analysis.KymographDisplayType = 'curvature';
     case 'elongation'
-        app.kymographDisplayType = 'elongation';
+        app.analysis.KymographDisplayType = 'elongation';
     case 'intensity'
-        app.kymographDisplayType = 'intensity';
+        app.analysis.KymographDisplayType = 'intensity';
 end
 
 % setup Widget for control of display range
@@ -356,10 +356,10 @@ function updateColoredSkeleton(handles)
 app = getappdata(0, 'app');
 
 % coordinates of current skeleton
-frameIndex = app.currentFrameIndex;
-skeleton = getSkeleton(app, frameIndex).Coords;
-xdata = skeleton(:, 1);
-ydata = skeleton(:, 2);
+frameIndex = app.analysis.CurrentFrameIndex;
+midline = app.analysis.Midlines{frameIndex};
+xdata = midline.Coords(:, 1);
+ydata = midline.Coords(:, 2);
 
 % get the type of kymograph currently displayed
 typeList = get(handles.kymographTypePopup, 'String');
@@ -369,15 +369,15 @@ disp(type)
 % Choose the information to display
 switch lower(type)
     case 'radius'
-        values = skeleton.Radiusses;
+        values = midline.Radiusses;
     case lower('verticalAngle')
         values = app.analysis.VerticalAngles{frameIndex};
     case 'curvature'
-        values = skeleton.Curvatures;
+        values = midline.Curvatures;
     case 'elongation'
         % make sure frame index is valid for elongation data
-        frameIndex = min(frameIndex, length(app.elongationList));
-        skeleton = getSkeleton(app, frameIndex);
+        frameIndex = min(frameIndex, length(app.analysis.ElongationList));
+        midline = app.analysis.Midlines{frameIndex};
         
         % extract the values of elongation
         elg = app.analysis.Elongations{frameIndex};
@@ -390,8 +390,9 @@ switch lower(type)
         for i = 1:length(inds)
             inds(i) = find(abscissa > elg(i,1), 1, 'first');
         end
-        xdata = skeleton(inds, 1);
-        ydata = skeleton(inds, 2);
+        xdata = midline.Coords(inds, 1);
+        ydata = midline.Coords(inds, 2);
+
     case 'intensity'
         % TODO...
         return;
@@ -449,7 +450,7 @@ end
 calib = app.analysis.InputImages.Calibration;
 timeStep = calib.TimeInterval * app.indexStep;
 frameIndex = round(posX / timeStep) + 1;
-app.currentFrameIndex = frameIndex;
+app.analysis.CurrentFrameIndex = frameIndex;
 
 % extract data for current frame
 img = app.getImage(frameIndex);
@@ -474,7 +475,7 @@ Smarker = (posY - Smin) * (Smax - Smin) / nPos;
 S = app.analysis.AlignedAbscissas{frameIndex};
 relPos = (Smarker - min(S) ) / (max(S) - min(S));
 relPos = min(max(relPos, 0), 1);
-app.cursorRelativeAbscissa = relPos;
+app.analysis.CursorRelativeAbscissa = relPos;
 
 % identify skeleton point corresponding to marker
 ind = find(Smarker <= S, 1, 'first');
@@ -506,10 +507,10 @@ function updateCurvilinearMarker(handles)
 app = getappdata(0, 'app');
 
 % relative abscissa of cursor
-relPos = app.cursorRelativeAbscissa;
+relPos = app.analysis.CursorRelativeAbscissa;
 
 % coordinates of current skeleton
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 skeleton = getSkeleton(app, frameIndex).Coords;
 
 % curvilinear abscissa along current skeleton
@@ -538,10 +539,10 @@ if isfield(handles, 'kymographMarker')
     posX = (frameIndex - 1) * calib.TimeInterval;
     
     % convert marker abscissa to position on kyomgraph Y axis
-    nPos   = app.analysis.Parameters.KymographAbscissaSize;
-    Smaxi = app.analysis.AlignedAbscissas{end}(end);
-    Smini = app.analysis.AlignedAbscissas{end}(1);
-    posY = (markerAbscissa - Smini) / (Smaxi - Smini) * nPos;
+    nPos = app.analysis.Parameters.KymographAbscissaSize;
+    Smax = app.analysis.AlignedAbscissas{end}(end);
+    Smin = app.analysis.AlignedAbscissas{end}(1);
+    posY = (markerAbscissa - Smin) / (Smax - Smin) * nPos;
     posY = max(min(posY, nPos), 0);
     
     set(handles.kymographMarker, 'XData', posX, 'YData', posY);
@@ -626,7 +627,8 @@ colorMapName = strtrim(cmapNames{index});
 colormap(handles.kymographAxes, colorMapName);
 
 % annotate
-xlabel(sprintf('Time (%s)', app.settings.timeIntervalUnit));
+calib = app.analysis.InputImages.Calibration;
+xlabel(sprintf('Time (%s)', calib.TimeIntervalUnit));
 
 
 % --- Executes on button press in saveAsPngButton.

@@ -143,14 +143,14 @@ switch dirInitial
 end
 
 % disable some widgets in case skeletons are not computed
-if isempty(app.skeletonList)
+if isempty(app.analysis.Midlines)
     set(handles.validateSkeletonButton, 'Enable', 'Off');
     set(handles.saveSkeletonDataButton, 'Enable', 'Off');
 end
 
-settings = app.settings;
-set(handles.curvatureSmoothingSizeEdit, 'String', num2str(settings.curvatureSmoothingSize));
-set(handles.pointNumberEdit,            'String', num2str(settings.finalResultLength));
+params = app.analysis.Parameters;
+set(handles.curvatureSmoothingSizeEdit, 'String', num2str(params.CurvatureWindowSize));
+set(handles.pointNumberEdit,            'String', num2str(params.KymographAbscissaSize));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -193,7 +193,7 @@ app = getappdata(0, 'app');
 frameIndex = get(handles.currentFrameSlider, 'Value');
 frameIndex = max(ceil(frameIndex), 1);
 
-app.currentFrameIndex = frameIndex;
+app.analysis.CurrentFrameIndex = frameIndex;
 
 % update display
 updateCurrentDisplay(handles);
@@ -260,7 +260,7 @@ app.logger.info('ValidateSkeleton.m', ...
     ['Change skeleton origin to ' skeletonOrigin]);
 
 % store in app settings
-app.settings.skeletonOrigin = skeletonOrigin;
+app.analysis.Parameters.SkeletonOrigin = skeletonOrigin;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.skeletonOrigin = skeletonOrigin;
@@ -303,7 +303,7 @@ function updateCurrentDisplay(handles)
 % refresh the content of graphical elements: image, contour, skeleton...
 
 app = getappdata(0, 'app');
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 
 % compute current segmented image
 segmentedImage = getSegmentedImage(app, frameIndex);
@@ -397,8 +397,7 @@ if folderName ~= 0
         fileName = [fileName '_skel.txt']; %#ok<AGROW>
         
         % save current skeleton
-        skel = app.skeletonList{iSkel};
-        skel = skel.Coords;
+        skel = app.skeletonList{iSkel}.Coords;
         save(fullfile(folderName, fileName), 'skel', '-ascii');
     end
 end
@@ -429,16 +428,16 @@ folderName = uigetdir(app.inputImagesDir, 'Save Skeleton ROIs');
 
 if folderName ~= 0
     % iterate on skeletons to save text files
-    nSkels = length(app.skeletonList);
+    nSkels = length(app.analysis.Midlines);
     for iSkel = 1:nSkels
         % create file name
-        [tmp, fileName] = fileparts(app.imageNameList{iSkel}); %#ok<ASGLU>
+        [tmp, fileName] = fileparts(app.analysis.InputImages.ImageList.FileNameList{iSkel}); %#ok<ASGLU>
         fileName = [fileName '_skel.roi']; %#ok<AGROW>
         
         % save current skeleton
-        skel = app.skeletonList{iSkel};
+        skel = app.analysis.Midlines{iSkel}.Coords;
         filePath = fullfile(folderName, fileName);
-        savePolylineAsIJRoi(skel.Coords, filePath);
+        savePolylineAsIJRoi(skel, filePath);
     end
 end
 
@@ -467,7 +466,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.curvatureSmoothingSize = val;
+app.analysis.Parameters.CurvatureWindowSize = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.curvatureSmoothingSize = val;
@@ -507,7 +506,6 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.finalResultLength = val;
 app.analysis.Parameters.KymographAbscissaSize = val;
 
 gui = KymoRodGui.getInstance();
@@ -557,5 +555,3 @@ app.logger.info('ValidateSkeletonDialog.m', ...
 
 delete(gcf);
 ChooseElongationSettingsDialog(app);
-
-

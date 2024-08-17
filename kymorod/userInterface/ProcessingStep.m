@@ -28,7 +28,7 @@ enumeration
     % skeleton was computed and rescaled
     Skeleton(40)
 %     Curvature(50)
-%     Displacement(60)
+    Displacement(60)
     
     % elongation was computed and result images created
     Elongation(70)
@@ -55,6 +55,7 @@ methods (Static)
             case 'threshold',   step = ProcessingStep.Threshold;
             case 'contour',     step = ProcessingStep.Contour;
             case 'skeleton',    step = ProcessingStep.Skeleton;
+            case 'displacement',step = ProcessingStep.Displacement;
             case 'elongation',  step = ProcessingStep.Elongation;
             case 'kymograph',   step = ProcessingStep.Kymograph;
             case 'intensity',   step = ProcessingStep.Kymograph;

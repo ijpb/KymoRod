@@ -99,7 +99,7 @@ varargout{1} = handles.output;
 function updateWidgets(app, handles)
 % setup handles with application settings
 
-settings = app.settings;
+params = app.analysis.Parameters;
 
 % if image for displacement is grayscale or intensity, disable the widgets
 % for choosing channel
@@ -111,19 +111,19 @@ else
     values = get(handles.displacementChannelPopupMenu, 'String');
     index = find(strcmp(cellstr(values), app.settings.displacementChannel));
     set(handles.displacementChannelPopupMenu, 'Value', index);
-    set(handles.displacementChannelLabel,   'Enable', 'on');
+    set(handles.displacementChannelLabel,     'Enable', 'on');
     set(handles.displacementChannelPopupMenu, 'Enable', 'on');
 end
- 
-set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
-set(handles.displacementStepEdit,       'String', num2str(settings.displacementStep));
-set(handles.correlationWindowSize1Edit, 'String', num2str(settings.windowSize1));
+
+set(handles.displacementStepEdit,       'String', num2str(params.DisplacementStep));
+set(handles.displacementStepEdit,       'String', num2str(params.DisplacementStep));
+set(handles.correlationWindowSize1Edit, 'String', num2str(params.MatchingWindowRadius));
 
 % computation of elongation
-set(handles.displacementSpatialSmoothingEdit,   'String', num2str(settings.displacementSpatialSmoothing));
-set(handles.displacementValueSmoothingEdit,     'String', num2str(settings.displacementValueSmoothing));
-set(handles.displacementResamplingDistanceEdit, 'String', num2str(settings.displacementResamplingDistance));
-set(handles.correlationWindowSize2Edit, 'String', num2str(settings.windowSize2));
+set(handles.displacementSpatialSmoothingEdit,   'String', num2str(params.DisplacementSpatialSmoothing));
+set(handles.displacementValueSmoothingEdit,     'String', num2str(params.DisplacementValueSmoothing));
+set(handles.displacementResamplingDistanceEdit, 'String', num2str(params.DisplacementResampling));
+set(handles.correlationWindowSize2Edit,         'String', num2str(params.ElongationDerivationRadius));
 
 
 % --------------------------------------------------------------------
@@ -151,12 +151,12 @@ app = getappdata(0, 'app');
 app.logger.info('ChooseElongationSettingsDialog.m', ...
     ['Change value of smoothingLength to ' str]);
 
-val  = str2double(str);
+val = str2double(str);
 if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.curvatureSmoothingSize = val;
+app.analysis.Parameters.CurvatureWindowSize = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.curvatureSmoothingSize = val;
@@ -196,7 +196,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.finalResultLength = val;
+app.analysis.Parameters.KymographAbscissaSize = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.finalResultLength = val;
@@ -234,7 +234,7 @@ channelString = lower(char(strtrim(stringArray(value,:))));
 app.logger.info(mfilename, ...
     ['Change image channel for displacement to: ' channelString]);
 
-app.settings.displacementChannel = channelString;
+app.analysis.Parameters.DisplacementChannel = channelString;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.displacementChannel = channelString;
@@ -272,7 +272,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.displacementStep = val;
+app.analysis.Parameters.DisplacementStep = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.displacementStep = val;
@@ -291,7 +291,6 @@ function displacementStepEdit_CreateFcn(hObject, eventdata, handles) %#ok<INUSL>
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject, 'BackgroundColor', 'white');
 end
-
 
 
 function correlationWindowSize1Edit_Callback(hObject, eventdata, handles) %#ok<INUSL>
@@ -313,7 +312,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.windowSize1 = val;
+app.analysis.Parameters.MatchingWindowRadius = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.windowSize1 = val;
@@ -355,7 +354,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.displacementSpatialSmoothing = val;
+app.analysis.Parameters.DisplacementSpatialSmoothing = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.displacementSpatialSmoothing = val;
@@ -396,7 +395,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.displacementValueSmoothing = val;
+app.analysis.Parameters.DisplacementValueSmoothing = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.displacementValueSmoothing = val;
@@ -436,7 +435,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.displacementResamplingDistance = val;
+app.analysis.Parameters.DisplacementResampling = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.displacementResamplingDistance = val;
@@ -476,10 +475,10 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.settings.windowSize2 = val;
+app.analysis.Parameters.windowSize2 = val;
 
 gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.windowSize2 = val;
+gui.userPrefs.settings.ElongationDerivationRadius = val;
 
 setProcessingStep(app, ProcessingStep.Skeleton);
 
@@ -497,7 +496,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
 % --- Executes on button press in defaultSettingsButton.
 function defaultSettingsButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 % hObject    handle to defaultSettingsButton (see GCBO)
@@ -510,12 +508,12 @@ app.logger.info('ChooseElongationSettingsDialog.m', ...
     'Choose default settings');
 
 % Reset to default parameters
-settings = app.settings;
-settings.curvatureSmoothingSize = 10;
-settings.finalResultLength = 500;
-settings.windowSize1 = 5;
-settings.windowSize2 = 30;
-settings.displacementStep = 2;
+params = app.analysis.Parameters;
+params.CurvatureWindowSize = 10;
+params.KymographAbscissaSize = 500;
+params.MatchingWindowRadius = 20;
+params.ElongationDerivationRadius = 20;
+params.DisplacementStep = 2;
 
 % update processing step
 setProcessingStep(app, ProcessingStep.Skeleton);

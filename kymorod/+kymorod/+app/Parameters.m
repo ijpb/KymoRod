@@ -41,6 +41,8 @@ properties
     % The length of window for smoothing coutours. Default value is 20.
     ContourSmoothingSize = 20;
 
+    % location of the first point of the skeleton.
+    % Can be one of 'bottom' (default), 'top', 'left', 'right'.
     SkeletonOrigin = 'Bottom';
 
     % The size of the window for computing curvature, in vertex number.
@@ -50,6 +52,9 @@ properties
     % The number of points used on space axis to compute kymograph.
     % Default is 500.
     KymographAbscissaSize = 500;
+
+    % The channel used for computing displacements (for color images).
+    DisplacementImageChannel = 'red';
 
     % Frame offset for computing displacements. Default value is 2.
     DisplacementStep = 2;

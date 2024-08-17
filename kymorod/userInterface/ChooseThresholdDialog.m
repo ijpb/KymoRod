@@ -73,7 +73,7 @@ gui = KymoRodGui.getInstance();
 buildFigureMenu(gui, hObject, app);
 
 % retrieve app data
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 nFrames = frameNumber(app);
 
 switch lower(app.analysis.Parameters.ImageSmoothingMethodName)
@@ -161,7 +161,7 @@ function displayCurrentFrameThreshold(handles)
 % get app data
 app = getappdata(0, 'app');
 
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 
 currentThreshold = int16(app.analysis.ThresholdValues(frameIndex));
 baseThreshold = int16(app.analysis.InitialThresholdValues(frameIndex));
@@ -185,7 +185,7 @@ function updateSegmentationDisplay(handles)
 app = getappdata(0, 'app');
 
 % compute/get current segmentation
-frameIndex = app.currentFrameIndex;
+frameIndex = app.analysis.CurrentFrameIndex;
 seg = getSegmentedImage(app, frameIndex);
 
 % update display
@@ -218,7 +218,7 @@ function frameIndexSlider_Callback(hObject, eventdata, handles)%#ok
 app = getappdata(0, 'app');
 
 frameIndex = round(get(handles.frameIndexSlider, 'Value'));
-app.currentFrameIndex = frameIndex;
+app.analysis.CurrentFrameIndex = frameIndex;
 setappdata(0, 'app', app);
 
 % compute and display segmented image

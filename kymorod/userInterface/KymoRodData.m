@@ -263,11 +263,13 @@ methods
             case ProcessingStep.Skeleton
                 % skeletons are updated. Need to recompute displacement
                 % and elongation data
+                clearDisplacementData();
+
+            case ProcessingStep.Displacement
                 clearElongationData();
 
             case ProcessingStep.Elongation
-                % ??? should add displacement step ?
-
+                
             case ProcessingStep.Kymograph
                 % final processing step: nothing to clear!
 
