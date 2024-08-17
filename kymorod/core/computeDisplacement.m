@@ -1,4 +1,4 @@
-function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
+function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, radius, maxDeltaS)
 % Compute displacement between two skeletons in pixel coordinates.
 % 
 %   E = computeDisplacement(SK1, SK2, S1, S2, IMG1, IMG2, WS, L)
@@ -16,8 +16,8 @@ function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
 %   S2: 	curvilinear abscissa of second frame skeleton (in user unit)
 %   IMG1: 	image of the first frame
 %   IMG2: 	image of the second frame
-%   WS: 	size of the correlation window (in pixels)
-%   L:      max difference in curvilinear abscissa (in user unit)
+%   RADIUS:	radius of the correlation window (in pixels)
+%   maxDeltaS: max difference in curvilinear abscissa (in user unit)
 %
 %   Output arguments:
 %   E:      a N-by-2 array, containing for each vertex the curvilinear
@@ -43,13 +43,13 @@ function E = computeDisplacement(skel1, skel2, S1, S2, img1, img2, ws, L)
 
 % process only skeleton points that are not too close from border
 dim = size(img1);
-inds = (x1 > ws) & (y1 > ws) & (x1 < dim(2)-ws) & (y1 < dim(1)-ws);
+inds = (x1 > radius) & (y1 > radius) & (x1 < dim(2)-radius) & (y1 < dim(1)-radius);
 x1 = x1(inds);
 y1 = y1(inds);
 S1px = S1px(inds);
 
 % process only skeleton points that are not too close from border
-inds = (x2 > ws) & (x2 < dim(2)-ws) & (y2 > ws) & (y2 < dim(1)-ws);
+inds = (x2 > radius) & (x2 < dim(2)-radius) & (y2 > radius) & (y2 < dim(1)-radius);
 x2 = x2(inds);
 y2 = y2(inds);
 S2px = S2px(inds);
@@ -70,7 +70,7 @@ for k = 1:length(x1)
     j = x1(k);
    
     % get small image around current point of first skeleton
-    w1 = double(img1(i-ws:i+ws, j-ws:j+ws));
+    w1 = double(img1(i-radius:i+radius, j-radius:j+radius));
     
     % compute PIV only if variability in window is sufficient
     V = std2(w1);
@@ -84,7 +84,7 @@ for k = 1:length(x1)
     w1 = w1(:) - mean(w1(:));
     
     % identify positions in second image with similar curvilinear abscissa
-    inds = find( abs(S2px - S1px(k)) < L );
+    inds = find( abs(S2px - S1px(k)) < maxDeltaS );
 
     % check degenerate cases
     if isempty(inds)
@@ -103,7 +103,7 @@ for k = 1:length(x1)
         v = x2(inds(l));
         
         % get small image around current point in second skeleton
-        w2 = double(img2(u-ws:u+ws, v-ws:v+ws));
+        w2 = double(img2(u-radius:u+radius, v-radius:v+radius));
         
         % transform to vector, and remove mean
         w2 = w2(:) - mean(w2(:));

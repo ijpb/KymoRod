@@ -24,15 +24,14 @@ function Elg = computeElongation(dep, t0, step, ws)
 %   2014-04-16 : Add comments about the file
 
 % allocate memory for elongation result
-Elg = zeros(size(dep));
+Elg = zeros(size(dep,1), 1);
 
 % convert into seconds
 dt = t0 * step * 60;
 
 % compute elongation as the derivative of displacement
-for i = (1+ws):(size(dep,1)-ws)
-    Elg(i,2) = (dep(i+ws,2) - dep(i-ws,2)) / (dep(i+ws,1) - dep(i-ws,1)) / dt;
-end
+inds = (1+ws):(size(dep,1)-ws);
+Elg(inds,2) = (dep(inds+ws,2) - dep(inds-ws,2)) ./ (dep(inds+ws,1) - dep(inds-ws,1)) / dt;
 
-% copy curvilinear abscissa
-Elg(:, 1) = dep(:, 1);
+% concatenate with curvilinear abscissa
+Elg = [dep(:,1) Elg];

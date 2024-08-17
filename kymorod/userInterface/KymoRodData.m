@@ -54,37 +54,6 @@ properties
     intensityImagesDir = '';
     intensityImagesFilePattern = '*.*';
 
-
-    % the angle with the vertical of each point of each skeleton, in a
-    % cell array
-    % (need to keep it until computation of vertical angle is totally useless) 
-    verticalAngleList;
-
-    % reconstructed Kymograph of skeleton radius in absissa and time
-    radiusKymograph;
-
-    % reconstructed Kymograph of angle with vertical in absissa and time
-    verticalAngleKymograph;
-
-    % reconstructed Kymograph of curvature in absissa and time
-    curvatureKymograph;
-
-    % final result: elongation as a function of position and time
-    elongationKymograph;
-
-    % intensity kymograph, computed by evaluating the intensity of
-    % another image on the positions of the skeletons
-    intensityKymograph;
-
-
-    % the type of kymograph used for display
-    % should be one of 'radius' (default), 'verticalAngle',
-    % 'curvature', 'elongation', 'intensity'
-    kymographDisplayType = 'radius';
-
-    % the relative abscissa of the graphical cursor, between 0 and 1.
-    % Default value is .5, corresponding to the middle of the skeleton.
-    cursorRelativeAbscissa = 0.5;
 end
 
 
@@ -154,6 +123,11 @@ properties
     % (deprecated)
     alignedAbscissaList;
 
+    % the angle with the vertical of each point of each skeleton, in a
+    % cell array
+    % (need to keep it until computation of vertical angle is totally useless) 
+    verticalAngleList;
+
     % the curvature of each point of each skeleton, in a cell array
     % (deprecated)
     curvatureList;
@@ -166,6 +140,32 @@ properties
 
     % elongation, computed by derivation of smoothed displacement
     elongationList;
+
+    % reconstructed Kymograph of skeleton radius in absissa and time
+    radiusKymograph;
+
+    % reconstructed Kymograph of angle with vertical in absissa and time
+    verticalAngleKymograph;
+
+    % reconstructed Kymograph of curvature in absissa and time
+    curvatureKymograph;
+
+    % final result: elongation as a function of position and time
+    elongationKymograph;
+
+    % intensity kymograph, computed by evaluating the intensity of
+    % another image on the positions of the skeletons
+    intensityKymograph;
+
+
+    % the type of kymograph used for display
+    % should be one of 'radius' (default), 'verticalAngle',
+    % 'curvature', 'elongation', 'intensity'
+    kymographDisplayType = 'radius';
+
+    % the relative abscissa of the graphical cursor, between 0 and 1.
+    % Default value is .5, corresponding to the middle of the skeleton.
+    cursorRelativeAbscissa = 0.5;
 end
 
 
@@ -309,15 +309,20 @@ methods
             obj.radiusList = {};
             obj.originPosition = {};
 
-            clearElongationData();
+            clearDisplacementData();
         end
 
-        function clearElongationData()
+        function clearDisplacementData()
             obj.abscissaList = {};
             obj.verticalAngleList = {};
             obj.curvatureList = {};
             obj.displacementList = {};
             obj.smoothedDisplacementList = {};
+
+            clearElongationData();
+        end
+
+        function clearElongationData()
             obj.elongationList = {};
 
             clearResultKymographs();
@@ -543,7 +548,6 @@ methods
             error('need to have contours computed');
         end
         contour = obj.analysis.Contours{index};
-        % contour = obj.contourList{index};
     end
 
     function contour = getSmoothedContour(obj, index)
@@ -606,7 +610,6 @@ methods
             error('need to have skeletons computed');
         end
         skel = obj.analysis.Midlines{index};
-        % skel = obj.skeletonList{index};
     end
 
     function skel = getScaledkeleton(obj, index)
@@ -628,15 +631,13 @@ methods
             error('need to have contours computed');
         end
 
-        % number of images
-        nFrames = frameNumber(obj);
-
+        % retrieve processing options
         smooth = obj.analysis.Parameters.ContourSmoothingSize;
-
         organShape = 'boucle';
         originDirection = lower(obj.analysis.Parameters.SkeletonOrigin);
 
         % allocate memory for results
+        nFrames = frameNumber(obj);
         midlines = cell(nFrames, 1);
 
         disp('Skeletonization');
@@ -693,6 +694,8 @@ methods
             error('need to have skeletons computed');
         end
 
+        % TODO: split method into two processes
+
         % Compute curvilinear abscissa and align them
         computeSkeletonAlignedAbscissa(obj);
 
@@ -709,7 +712,7 @@ methods
     function computeSkeletonAlignedAbscissa(obj)
         % Compute curvlinear abscissa on skeleton and align them.
 
-        disp('Compute angles and curvature');
+        disp('Alignment of Midline abscissas');
         obj.logger.info('KymoRodData.computeSkeletonAlignedAbscissa', ...
             'Compute curvilinear abscissa of skeletons');
 
@@ -725,13 +728,14 @@ methods
         for i = 1:nFrames
             fprintf('.');
             skel = obj.analysis.Midlines{i};
+            % calibrate abscissa
             S{i} = skel.Abscissas * calib.PixelSize / 1000;
+            % we could also calibrate radius, but this is not necessary
             R{i} = skel.Radiusses;
         end
         fprintf('\n');
 
         % Alignment of all the results
-        disp('Alignment of curves');
         Sa = alignAbscissa(S, R);
         obj.analysis.AlignedAbscissas = Sa;
     end
@@ -752,23 +756,18 @@ methods
         % allocate memory for results
         n = length(midlines);
         A = cell(n, 1);
-        C = cell(n, 1);
 
         % iterate over midlines in the list
         for i = 1:n
             midline = midlines{i};
             if size(midline.Coords, 1) > 2 * ws
                 computeVertexCurvature(midline, ws);
-                C{i} = midline.Curvatures;
                 A{i} = vertexVerticalAngle(midline, ws);
             end
         end
 
-        % store within class
-        % Caution: original method stores calibrated curvatures; here we
-        % store curvatures in pixel units.
-        obj.verticalAngleList   = A;
-        obj.curvatureList       = C;
+        % keep within class
+        obj.analysis.VerticalAngles = A;
 
         computeCurvaturesAndAbscissaImages(obj);
     end
@@ -778,19 +777,18 @@ methods
         % retrieve parameters
         nFrames = frameCount(obj.analysis.InputImages);
         calib = obj.analysis.InputImages.Calibration;
-        nx = obj.analysis.Parameters.KymographAbscissaSize;
+        nPos = obj.analysis.Parameters.KymographAbscissaSize;
 
         % retrieve data
         Sa = obj.analysis.AlignedAbscissas;
         radiusValues = cell(1, nFrames);
         curvatureValues = cell(1, nFrames);
-        verticalAngleValues = cell(1, nFrames);
         for i = 1:nFrames
             midline = calibrate(obj.analysis.Midlines{i}, calib);
             radiusValues{i} = midline.Radiusses;
             curvatureValues{i} = midline.Curvatures;
-            verticalAngleValues{i} = obj.verticalAngleList{i};
         end
+        verticalAngleValues = obj.analysis.VerticalAngles;
 
         inputImages = obj.analysis.InputImages;
         timeInterval = calib.TimeInterval;
@@ -805,24 +803,24 @@ methods
         % compute axis for curvilinear abscissa
         Smax = max(cellfun(@max, Sa));
         Smin = min(cellfun(@min, Sa));
-        positions = linspace(Smin, Smax, nx);
+        positions = linspace(Smin, Smax, nPos);
         posAxis = kymorod.core.PlotAxis(positions, ...
             'Name', 'Curvilinear Abscissa', ...
             'Unit', 'mm');
 
         % compute images
-        radiusImage = kymographFromValues(Sa, radiusValues, nx);
-        obj.radiusKymograph = kymorod.core.Kymograph(radiusImage, ....
+        radiusImage = kymographFromValues(Sa, radiusValues, nPos);
+        obj.analysis.RadiusKymograph = kymorod.core.Kymograph(radiusImage, ....
             'Name', 'Radius', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
 
-        verticalAngleImage = kymographFromValues(Sa, verticalAngleValues, nx);
-        obj.verticalAngleKymograph = kymorod.core.Kymograph(verticalAngleImage, ...
+        verticalAngleImage = kymographFromValues(Sa, verticalAngleValues, nPos);
+        obj.analysis.VerticalAngleKymograph = kymorod.core.Kymograph(verticalAngleImage, ...
             'Name', 'Vertical Angle', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
 
-        curvatureImage = kymographFromValues(Sa, curvatureValues, nx);
-        obj.curvatureKymograph = kymorod.core.Kymograph(curvatureImage, ...
+        curvatureImage = kymographFromValues(Sa, curvatureValues, nPos);
+        obj.analysis.CurvatureKymograph = kymorod.core.Kymograph(curvatureImage, ...
             'Name', 'Curvature', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
     end
@@ -834,17 +832,11 @@ methods
         obj.logger.info('KymoRodData.computeDisplacements', ...
             'Compute displacements');
 
-        % settings
-        ws = obj.settings.windowSize1;
-        % TODO: find appropriate name for 'L' and include into Data
-        L = 4 * ws * obj.analysis.InputImages.Calibration.PixelSize / 1000;
-        obj.logger.debug('KymoRodData.computeDisplacements', ...
-            sprintf('Value of L=%f', L));
-
-        nFrames = frameNumber(obj);
-        step    = obj.settings.displacementStep;
+        % retrieve settings
+        step = obj.analysis.Parameters.DisplacementStep;
 
         % allocate memory for result
+        nFrames = frameNumber(obj);
         displList = cell(nFrames-step, 1);
 
         parfor i = 1:(nFrames - step)
@@ -859,7 +851,6 @@ methods
         end
         fprintf('\n');
 
-        obj.displacementList = displList;
         obj.analysis.Displacements = displList;
     end
 
@@ -877,7 +868,6 @@ methods
         midline2 = obj.analysis.Midlines{i2};
         SK1 = midline1.Coords;
         SK2 = midline2.Coords;
-        calib = obj.analysis.InputImages.Calibration;
         S1 = obj.analysis.AlignedAbscissas{i1};
         S2 = obj.analysis.AlignedAbscissas{i2};
 
@@ -885,11 +875,10 @@ methods
         img1 = getImageForDisplacement(obj, i1);
         img2 = getImageForDisplacement(obj, i2);
 
-        % settings
-        ws = obj.settings.windowSize1;
-        % TODO: find appropriate name for 'L' and include into Data
-        % maxSDiff ?
-        L = 4 * ws * calib.PixelSize / 1000;
+        % retrieve parameters
+        ws = obj.analysis.Parameters.MatchingWindowRadius;
+        calib = obj.analysis.InputImages.Calibration;
+        maxDeltaS = 4 * ws * calib.PixelSize / 1000;
 
         % check if the two skeletons are large enough
         if length(SK1) <= 2*80 || length(SK2) <= 2*80
@@ -901,7 +890,7 @@ methods
             return;
         end
 
-        displ = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, L);
+        displ = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, maxDeltaS);
 
         % check result is large enough
         if size(displ, 1) == 1
@@ -925,7 +914,7 @@ methods
             'Compute elongations');
 
         % initialize results
-        nFrames = length(obj.displacementList);
+        nFrames = length(obj.analysis.Displacements);
         E2 = cell(nFrames, 1);
         Elg = cell(nFrames, 1);
 
@@ -937,8 +926,6 @@ methods
         % store results
         obj.analysis.FilteredDisplacements = E2;
         obj.analysis.Elongations = Elg;
-        % obj.smoothedDisplacementList = E2;
-        % obj.elongationList = Elg;
 
         %  Space-time mapping
         obj.logger.info('KymoRodData.computeElongations', ...
@@ -959,10 +946,10 @@ methods
         elongationImage = kymographFromValues(S, A, nPos);
 
         % retrieve axes from previous kymograph
-        timeAxis = obj.radiusKymograph.TimeAxis;
-        posAxis = obj.radiusKymograph.PositionAxis;
+        timeAxis = obj.analysis.RadiusKymograph.TimeAxis;
+        posAxis = obj.analysis.RadiusKymograph.PositionAxis;
 
-        obj.elongationKymograph = kymorod.core.Kymograph(elongationImage, ....
+        obj.analysis.ElongationKymograph = kymorod.core.Kymograph(elongationImage, ....
             'Name', 'Elongation', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
         
@@ -988,8 +975,8 @@ methods
 
         % get some settings
         t0      = obj.analysis.InputImages.Calibration.TimeInterval;
-        step    = obj.settings.displacementStep;
-        ws2     = obj.settings.windowSize2;
+        step    = obj.analysis.Parameters.DisplacementStep;
+        ws2     = obj.analysis.Parameters.ElongationDerivationRadius;
 
         % Compute elongation by spatial derivation of the displacement
         Elg = computeElongation(E2, t0, step, ws2);
@@ -1002,7 +989,6 @@ methods
         %
 
         % get current array of displacement
-        % E = obj.displacementList{index};
         E = obj.analysis.Displacements{index};
 
         % check validity of size
@@ -1012,9 +998,9 @@ methods
         end
 
         % extract computation options
-        LX      = obj.settings.displacementSpatialSmoothing;
-        LY      = obj.settings.displacementValueSmoothing;
-        dx      = obj.settings.displacementResamplingDistance;
+        LX = obj.analysis.Parameters.DisplacementSpatialSmoothing;
+        LY = obj.analysis.Parameters.DisplacementValueSmoothing;
+        dx = obj.analysis.Parameters.DisplacementResampling;
 
         % shifts curvilinear abscissa to start at zero
         Smin = E(1,1);
@@ -1056,17 +1042,16 @@ methods
         end
 
         % Compute kymograph using specified kymograph size
-        nx = obj.analysis.Parameters.KymographAbscissaSize;
-        intensityImage = kymographFromValues(S2List, values, nx);
+        nPos = obj.analysis.Parameters.KymographAbscissaSize;
+        intensityImage = kymographFromValues(S2List, values, nPos);
 
         % retrieve axes from previous kymograph
-        timeAxis = obj.radiusKymograph.TimeAxis;
-        posAxis = obj.radiusKymograph.PositionAxis;
+        timeAxis = obj.analysis.RadiusKymograph.TimeAxis;
+        posAxis = obj.analysis.RadiusKymograph.PositionAxis;
 
-        obj.intensityKymograph = kymorod.core.Kymograph(intensityImage, ....
+        obj.analysis.IntensityKymograph = kymorod.core.Kymograph(intensityImage, ....
             'Name', 'Intensity', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
-        
     end
 
     function image = getIntensityImage(obj, index)
@@ -1094,17 +1079,17 @@ methods
         % Return the current kymograph.
         % (defined by this.kymographDisplayType)
 
-        switch obj.kymographDisplayType
+        switch obj.analysis.KymographDisplayType
             case 'radius'
-                kymo = obj.radiusKymograph;
+                kymo = obj.analysis.RadiusKymograph;
             case 'verticalAngle'
-                kymo = obj.verticalAngleKymograph;
+                kymo = obj.analysis.VerticalAngleKymograph;
             case 'curvature'
-                kymo = obj.curvatureKymograph;
+                kymo = obj.analysis.CurvatureKymograph;
             case 'elongation'
-                kymo = obj.elongationKymograph;
+                kymo = obj.analysis.ElongationKymograph;
             case 'intensity'
-                kymo = obj.intensityKymograph;
+                kymo = obj.analysis.IntensityKymograph;
         end
     end
 end
@@ -1141,12 +1126,13 @@ methods
             type = 'elongation';
         end
 
-        switch type
-            case 'elongation', img = obj.elongationKymograph.Data;
-            case 'radius', img = obj.radiusKymograph.Data;
-            case 'curvature', img = obj.curvatureKymograph.Data;
-            case 'verticalAngle', img = obj.verticalAngleKymograph.Data;
-        end
+        img = getKymographMatrix(obj);
+        % switch type
+        %     case 'elongation', img = obj.elongationKymograph.Data;
+        %     case 'radius', img = obj.radiusKymograph.Data;
+        %     case 'curvature', img = obj.curvatureKymograph.Data;
+        %     case 'verticalAngle', img = obj.verticalAngleKymograph.Data;
+        % end
 
         % compute display extent for elongation kymograph
         minCaxis = min(img(:));
@@ -1158,9 +1144,8 @@ methods
         frameStep = obj.analysis.InputImages.ImageList.IndexStep;
         xdata = (0:(size(img, 2)-1)) * timeInterval * frameStep;
         Sa = obj.analysis.AlignedAbscissas{end};
-        % Sa = obj.abscissaList{end};
-        nx = obj.analysis.Parameters.KymographAbscissaSize;
-        ydata = linspace(Sa(1), Sa(end), nx);
+        nPos = obj.analysis.Parameters.KymographAbscissaSize;
+        ydata = linspace(Sa(1), Sa(end), nPos);
 
         % display current kymograph
         hImg = imagesc(xdata, ydata, img);

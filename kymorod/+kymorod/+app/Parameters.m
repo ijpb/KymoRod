@@ -43,13 +43,33 @@ properties
 
     SkeletonOrigin = 'Bottom';
 
-    % The radius of the window for computing curvature, in vertex number.
+    % The size of the window for computing curvature, in vertex number.
     % Default is 10.
     CurvatureWindowSize = 10;
 
     % The number of points used on space axis to compute kymograph.
     % Default is 500.
     KymographAbscissaSize = 500;
+
+    % Frame offset for computing displacements. Default value is 2.
+    DisplacementStep = 2;
+
+    % Size of first correlation window (in pixels). Default value is 20.
+    MatchingWindowRadius = 20;
+
+    % Smooth displacement curve giving more weight to spatially closer values.
+    % Default value is 0.1.
+    DisplacementSpatialSmoothing = .1;
+
+    % Smooth displacement curve giving more weight to similar values.
+    % Default value is 1e-2.
+    DisplacementValueSmoothing = 1e-2;
+
+    % Discretisation step for computing filtered displacements.
+    % Default value is 5e-3.
+    DisplacementResampling = 5e-3;
+
+    ElongationDerivationRadius = 20;
 
 end % end properties
 

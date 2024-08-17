@@ -40,7 +40,10 @@ properties
     Midlines = {};
 
     % The curvilinear abscissa after alignment procedure, as a cell array.
+    % Aligned abscissas are in calibrated units (mm).
     AlignedAbscissas = {};
+
+    VerticalAngles = {};
 
     % The displacement of each point to the next similar point.
     % Given as a cell array, each cell containing a N-by-2 numeric array,
@@ -53,6 +56,35 @@ properties
     
     % Elongation, computed by derivation of filtered displacement.
     Elongations;
+
+    % reconstructed Kymograph of skeleton radius in absissa and time
+    RadiusKymograph;
+
+    % reconstructed Kymograph of angle with vertical in absissa and time
+    VerticalAngleKymograph;
+
+    % reconstructed Kymograph of curvature in absissa and time
+    CurvatureKymograph;
+
+    % final result: elongation as a function of position and time
+    ElongationKymograph;
+
+    % intensity kymograph, computed by evaluating the intensity of
+    % another image on the positions of the skeletons
+    IntensityKymograph;
+
+
+    % index of current frame for display.
+    CurrentFrameIndex = 1;
+
+    % the type of kymograph used for display
+    % should be one of 'radius' (default), 'verticalAngle',
+    % 'curvature', 'elongation', 'intensity'
+    KymographDisplayType = 'radius';
+
+    % the relative abscissa of the graphical cursor, between 0 and 1.
+    % Default value is .5, corresponding to the middle of the skeleton.
+    CursorRelativeAbscissa = 0.5;
 
 end % end properties
 
