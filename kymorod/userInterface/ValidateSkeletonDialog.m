@@ -71,7 +71,7 @@ gui = KymoRodGui.getInstance();
 buildFigureMenu(gui, hObject, app);
 
 % get info on frames
-frameIndex  = app.currentFrameIndex;
+frameIndex  = app.analysis.CurrentFrameIndex;
 nFrames     = frameNumber(app);
 
 % setup widgets

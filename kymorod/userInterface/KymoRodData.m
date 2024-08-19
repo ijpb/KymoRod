@@ -639,8 +639,7 @@ methods
 
         % retrieve processing options
         smooth = obj.analysis.Parameters.ContourSmoothingSize;
-        % organShape = 'boucle';
-        originDirection = lower(obj.analysis.Parameters.SkeletonOrigin);
+        origin = lower(obj.analysis.Parameters.SkeletonOrigin);
 
         % allocate memory for results
         nFrames = frameNumber(obj);
@@ -653,19 +652,11 @@ methods
             % extract current contour
             contour = getContour(obj, i);
             if smooth ~= 0
-                contour = smoothContour(contour, smooth);
+                contour = kymorod.core.geom.smoothContour(contour, smooth);
             end
 
-            % % apply filtering depending on contour type
-            % contour2 = filterContour(contour, 200, organShape);
-            contour2 = contour;
-
-            % extract skeleton of current contour
-            [skel, rad] = contourSkeleton(contour2, originDirection);
-
-            % create midline
-            midlines{i} = kymorod.data.Midline(skel);
-            midlines{i}.Radiusses = rad;
+            % compute the midline of current contour
+            midlines{i} = kymorod.core.geom.contourMidline(contour, origin)
 
             fprintf('.');
         end
