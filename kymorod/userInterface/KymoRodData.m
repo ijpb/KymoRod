@@ -576,9 +576,8 @@ methods
             {'Performing Contour extraction,', 'please wait...'}, ...
             'Contour Extraction');
 
-        nFrames = frameNumber(obj);
-
         % allocate memory for contour array
+        nFrames = frameNumber(obj);
         contours = cell(nFrames, 1);
         
         % iterate over images
@@ -587,7 +586,7 @@ methods
             img = getSegmentableImage(obj, i);
             img = imAddBlackBorder(img);
             threshold = obj.analysis.ThresholdValues(i);
-            contours{i} = segmentContour(img, threshold);
+            contours{i} = kymorod.core.image.largestIsocontour(img, threshold);
 
             fprintf('.');
         end
