@@ -388,7 +388,7 @@ methods
 
         % eventually converts to uint8
         if isa(image, 'uint16') && ndims(image) == 2 %#ok<ISMAT>
-            image = imAdjustDynamic(image, 0.1);
+            image = kymorod.core.image.adjustDynamic(image, 0.1);
         end
     end
 
@@ -516,7 +516,7 @@ methods
             case lower('MaxEntropy')
                 parfor i = 1 : nImages
                     img = getSegmentableImage(obj, i);
-                    baseValues(i) = maxEntropyThreshold(img);
+                    baseValues(i) = kymorod.core.image.maxEntropyThreshold(img);
                 end
 
             case lower('Otsu')
@@ -583,8 +583,13 @@ methods
         % iterate over images
         parfor i = 1:nFrames
             % add black border around each image, to ensure continuous contours
-            img = getSegmentableImage(obj, i);
-            img = imAddBlackBorder(img);
+            img0 = getSegmentableImage(obj, i);
+
+            % add one black pixel in each direction
+            img = zeros(size(img0) + 2, class(img0));
+            img(2:end-1, 2:end-1) = img0;
+
+            % compute contour
             threshold = obj.analysis.ThresholdValues(i);
             contours{i} = kymorod.core.image.largestIsocontour(img, threshold);
 

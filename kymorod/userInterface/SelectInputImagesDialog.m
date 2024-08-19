@@ -860,7 +860,7 @@ app = getappdata(0, 'app');
 loadImageData(app);
 
 nFrames = frameNumber(app);
-app.analysis.CurrentFrameIndex = min(app.currentFrameIndex, nFrames);
+app.analysis.CurrentFrameIndex = min(app.analysis.currentFrameIndex, nFrames);
 delete(gcf);
 
 ChooseThresholdDialog(app);
