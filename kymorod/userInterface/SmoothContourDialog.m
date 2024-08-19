@@ -102,13 +102,13 @@ set(handles.currentFrameIndexLabel, 'String', label);
 % compute data to display for current frame
 segmentedImage = app.getSegmentedImage(index);
 contour = app.getContour(index);
-contour = smoothContour(contour, smooth); 
+contour = kymorod.core.geom.smoothContour(contour, smooth); 
 
 % display current frame (image and contour)
 axes(handles.imageAxes);
-handles.imageHandle     = imshow(segmentedImage);
+handles.imageHandle = imshow(segmentedImage);
 hold on;
-handles.contourHandle   = drawContour(contour, 'color', 'r', 'linewidth', 1.5);
+handles.contourHandle = drawContour(contour, 'color', 'r', 'linewidth', 1.5);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -284,7 +284,7 @@ segmentedImage = app.getSegmentedImage(index);
 % retrieve current contour and smooth it
 contour = app.getContour(index);
 smooth  = app.analysis.Parameters.ContourSmoothingSize;
-contour = smoothContour(contour, smooth); 
+contour = kymorod.core.geom.smoothContour(contour, smooth); 
 
 % display current frame image and contour
 set(handles.imageHandle, 'CData', segmentedImage);

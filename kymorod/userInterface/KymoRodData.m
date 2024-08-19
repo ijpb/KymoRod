@@ -558,7 +558,7 @@ methods
         end
         contour = obj.analysis.Contours{index};
         smooth = obj.analysis.Parameters.ContourSmoothingSize;
-        contour = smoothContour(contour, smooth);
+        contour = kymorod.core.geom.smoothContour(contour, smooth);
     end
 
     function computeContours(obj)
@@ -639,7 +639,7 @@ methods
 
         % retrieve processing options
         smooth = obj.analysis.Parameters.ContourSmoothingSize;
-        organShape = 'boucle';
+        % organShape = 'boucle';
         originDirection = lower(obj.analysis.Parameters.SkeletonOrigin);
 
         % allocate memory for results
@@ -656,8 +656,9 @@ methods
                 contour = smoothContour(contour, smooth);
             end
 
-            % apply filtering depending on contour type
-            contour2 = filterContour(contour, 200, organShape);
+            % % apply filtering depending on contour type
+            % contour2 = filterContour(contour, 200, organShape);
+            contour2 = contour;
 
             % extract skeleton of current contour
             [skel, rad] = contourSkeleton(contour2, originDirection);

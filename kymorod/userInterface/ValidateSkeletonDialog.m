@@ -91,13 +91,13 @@ contour = smoothContour(contour, smooth);
 
 % display current frame (image and contour)
 axes(handles.currentFrameAxes);
-handles.imageHandle     = imshow(segmentedImage);
+handles.imageHandle = imshow(segmentedImage);
 hold on;
-handles.contourHandle   = drawContour(contour, 'color', 'r', 'linewidth', 2);
+handles.contourHandle = drawContour(contour, 'color', 'r', 'linewidth', 2);
 
 % eventually display skeleton
-if ~isempty(app.skeletonList)
-    skeleton = app.skeletonList{frameIndex};
+if ~isempty(app.analysis.Midlines)
+    skeleton = app.analysis.Midlines{frameIndex};
 else
     skeleton = zeros(1, 2);
 end
@@ -110,25 +110,6 @@ end
 % display some info on current frame
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
-
-%TODO: check if used ?
-direction = 'boucle';
-switch direction
-    case 'boucle'
-        set(handles.filterDirectionPopup, 'Value', 1);
-    case 'droit'
-        set(handles.filterDirectionPopup, 'Value', 2);
-    case 'droit2'
-        set(handles.filterDirectionPopup, 'Value', 3);
-    case 'penche'
-        set(handles.filterDirectionPopup, 'Value', 4);
-    case 'penche2'
-        set(handles.filterDirectionPopup, 'Value', 5);
-    case 'dep'
-        set(handles.filterDirectionPopup, 'Value', 6);
-    case 'rien'
-        set(handles.filterDirectionPopup, 'Value', 7);
-end
 
 dirInitial  = app.settings.skeletonOrigin;
 switch dirInitial
@@ -311,7 +292,7 @@ segmentedImage = getSegmentedImage(app, frameIndex);
 % apply smoothing on current contour
 contour = app.analysis.Contours{frameIndex};
 smooth  = app.analysis.Parameters.ContourSmoothingSize;
-contour = smoothContour(contour, smooth);
+contour = kymorod.core.geom.smoothContour(contour, smooth);
 
 % display current frame image and contour
 set(handles.imageHandle, 'CData', segmentedImage);
@@ -346,7 +327,6 @@ end
 
 set(handles.validateSkeletonButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
-
 
 
 % --- Executes on button press in showSkeleton3dButton.
@@ -386,7 +366,7 @@ app.logger.info('ValidateSkeleton.m', ...
     'Save Skeleton data');
 
 % To open the directory who the user want to save the data
-folderName = uigetdir(app.inputImagesDir, 'Save Skeleton Data');
+folderName = uigetdir(app.InputImages.ImageList.Directory, 'Save Skeleton Data');
 
 if folderName ~= 0
     % iterate on skeletons to save text files
@@ -397,7 +377,7 @@ if folderName ~= 0
         fileName = [fileName '_skel.txt']; %#ok<AGROW>
         
         % save current skeleton
-        skel = app.skeletonList{iSkel}.Coords;
+        skel = app.analysis.Midlines{iSkel}.Coords;
         save(fullfile(folderName, fileName), 'skel', '-ascii');
     end
 end
@@ -437,7 +417,7 @@ if folderName ~= 0
         % save current skeleton
         skel = app.analysis.Midlines{iSkel}.Coords;
         filePath = fullfile(folderName, fileName);
-        savePolylineAsIJRoi(skel, filePath);
+        kymorod.core.geom.savePolylineAsIJRoi(skel, filePath);
     end
 end
 
