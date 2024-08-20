@@ -843,12 +843,14 @@ methods
         % initialized to the required size.
 
         % retrieve midlines
-        midline1 = obj.analysis.Midlines{i1};
-        midline2 = obj.analysis.Midlines{i2};
-        SK1 = midline1.Coords;
-        SK2 = midline2.Coords;
+        mid1 = obj.analysis.Midlines{i1};
+        mid2 = obj.analysis.Midlines{i2};
+        SK1 = mid1.Coords;
+        SK2 = mid2.Coords;
         S1 = obj.analysis.AlignedAbscissas{i1};
         S2 = obj.analysis.AlignedAbscissas{i2};
+        mid1 = kymorod.data.Midline(SK1, S1);
+        mid2 = kymorod.data.Midline(SK2, S2);
 
         % local data
         img1 = getImageForDisplacement(obj, i1);
@@ -869,7 +871,9 @@ methods
             return;
         end
 
-        displ = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, maxDeltaS);
+        % fprintf('frames: (%d,%d)\n', i1, i2);
+        displ = kymorod.core.computeDisplacements(mid1, mid2, img1, img2, ws, maxDeltaS);
+        % displ = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, maxDeltaS);
 
         % check result is large enough
         if size(displ, 1) == 1

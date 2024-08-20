@@ -475,7 +475,7 @@ if isnan(val) || val < 0
     error('input ''%s'' must be a positive numeric value', str);
 end
 
-app.analysis.Parameters.windowSize2 = val;
+app.analysis.Parameters.ElongationDerivationRadius = val;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.ElongationDerivationRadius = val;

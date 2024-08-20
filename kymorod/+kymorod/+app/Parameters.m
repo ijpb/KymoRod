@@ -18,6 +18,9 @@ classdef Parameters < handle
 
 %% Properties
 properties
+    % The channel used for computing midlines (for color images).
+    MidlineImageChannel = 'green';
+
     % The name of the smoothing method to apply on images before applying
     % segmentation.
     ImageSmoothingMethodName = 'BoxFilter';
@@ -35,7 +38,7 @@ properties
     % Can be one of {'MaxEntropy'}, 'Otsu'.
     AutoThresholdMethod = 'MaxEntropy';
 
-    % The threshold value for manual threshold
+    % The threshold value for manual threshold.
     ManualThresholdValue = 50;
 
     % The length of window for smoothing coutours. Default value is 20.

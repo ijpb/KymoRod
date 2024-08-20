@@ -1,11 +1,13 @@
-function res = snapToPixels(obj, calib)
+function res = snapToPixels(obj, varargin)
 % Snap coordinates of a parameterized midline.
 %
+%   MIDLINE2 = snapToPixels(MIDLINE)
 %   MIDLINE2 = snapToPixels(MIDLINE, CALIB)
 %   Compute an equivalent curve whose vertex coordinates are rounded to
 %   nearest integer, keeping average curvilinear abscissa for each vertex.
 %   Curvilinear abscissa are recomputed.
-%
+%   CALIB is an instance of Calibration. If not specified, a default
+%   calibration is used.
 %
 %
  
@@ -15,6 +17,12 @@ function res = snapToPixels(obj, calib)
 % INRAE - BIA Research Unit - BIBS Platform (Nantes)
 % Created: 2020-08-12,    using Matlab 9.8.0.1323502 (R2020a)
 % Copyright 2020 INRAE.
+
+if ~isempty(varargin)
+    calib = varargin{1};
+else
+    calib = kymorod.data.Calibration;
+end
 
 S = obj.Abscissas;
 
