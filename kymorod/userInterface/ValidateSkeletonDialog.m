@@ -97,13 +97,13 @@ handles.contourHandle = drawContour(contour, 'color', 'r', 'linewidth', 2);
 
 % eventually display skeleton
 if ~isempty(app.analysis.Midlines)
-    skeleton = app.analysis.Midlines{frameIndex};
+    skeleton = app.analysis.Midlines{frameIndex}.Coords;
 else
     skeleton = zeros(1, 2);
 end
 handles.skeletonHandle  = drawSkeleton(skeleton, 'b');
 handles.markerHandle    = drawMarker(skeleton(1,:), 'bo');
-if isempty(app.skeletonList)
+if isempty(app.analysis.Midlines)
     set([handles.skeletonHandle, handles.markerHandle], 'Visible', 'Off');  
 end
 

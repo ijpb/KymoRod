@@ -714,27 +714,8 @@ methods
         obj.logger.info('KymoRodData.computeSkeletonAlignedAbscissa', ...
             'Compute curvilinear abscissa of skeletons');
 
-        % number of images
-        nFrames = frameNumber(obj);
-
-        % allocate memory for result
-        S = cell(nFrames, 1);
-        R = cell(nFrames, 1);
-
-        % iterate over skeletons
-        calib = obj.analysis.InputImages.Calibration;
-        for i = 1:nFrames
-            fprintf('.');
-            skel = obj.analysis.Midlines{i};
-            % calibrate abscissa
-            S{i} = skel.Abscissas * calib.PixelSize / 1000;
-            % we could also calibrate radius, but this is not necessary
-            R{i} = skel.Radiusses;
-        end
-        fprintf('\n');
-
-        % Alignment of all the results
-        Sa = alignAbscissa(S, R);
+        % Alignment of all the curvilinear abscissas
+        Sa = kymorod.core.alignMidlineAbscissas(obj.analysis);
         obj.analysis.AlignedAbscissas = Sa;
     end
 

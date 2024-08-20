@@ -99,12 +99,22 @@ methods
 
 end % end constructors
 
+%% General methods for analysis
+methods
+    function nf = frameCount(obj)
+        % Return the number of frames within this analysis.
+        nf = 0;
+        if ~isempty(obj.InputImages)
+            nf = frameCount(obj.InputImages);
+        end
+    end
+end
 
 
 %% Serialization methods
 methods
     function write(obj, fileName, varargin)
-        % Writes object instance into a JSON file.
+        % WRITE Write object instance into a JSON file.
         % Requires implementation of the "toStruct" method.
         if exist('savejson', 'file') == 0
             error('Requires the jsonlab library');
