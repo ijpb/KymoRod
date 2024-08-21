@@ -370,22 +370,7 @@ methods
         % Return the image that can be used for computing segmentation.
         % (without smoothing)
 
-        % get the image
-        image = getImage(obj, index);
-
-        % extract the channel used for segmentation
-        if ndims(image) > 2 %#ok<ISMAT>
-            switch lower(obj.settings.imageSegmentationChannel)
-                case 'red',     image = image(:,:,1);
-                case 'green',   image = image(:,:,2);
-                case 'blue',    image = image(:,:,3);
-            end
-        end
-
-        % eventually converts to uint8
-        if isa(image, 'uint16') && ndims(image) == 2 %#ok<ISMAT>
-            image = kymorod.core.image.adjustDynamic(image, 0.1);
-        end
+        image = getSegmentableImage(obj.analysis, index);
     end
 
     function loadImageData(obj)
@@ -425,38 +410,13 @@ methods
     function seg = getSegmentedImage(obj, index)
         % Return the specified frame after smoothing and binarization.
 
-        img = getSmoothedImage(obj, index);
-        thresh = obj.analysis.ThresholdValues(index);
-        seg = img > thresh;
+        seg = getSegmentedImage(obj.analysis, index);
     end
 
     function imgf = getSmoothedImage(obj, index)
         % Get the image after smoothing for use by threshold method.
 
-        img = getSegmentableImage(obj, index);
-
-        switch lower(obj.analysis.Parameters.ImageSmoothingMethodName)
-            case lower('None')
-                % no smoothing -> simply copy image
-                imgf = img;
-
-            case lower('BoxFilter')
-                % smooth with flat box filter
-                radius = obj.analysis.Parameters.ImageSmoothingRadius;
-                diam = 2 * radius + 1;
-                imgf = imfilter(img, ones(diam, diam) / diam^2, 'replicate');
-
-            case lower('Gaussian')
-                % smooth with gaussian filter
-                radius = obj.analysis.Parameters.ImageSmoothingRadius;
-                diam = 2 * radius + 1;
-                h = fspecial('gaussian', [diam diam], radius);
-                imgf = imfilter(img, h, 'replicate');
-
-            otherwise
-                error(['Can not handle smoothing method: ' ...
-                    obj.analysis.Parameters.ImageSmoothingMethodName]);
-        end
+        imgf = getSmoothedImage(obj.analysis, index);
     end
 
     function setThresholdValues(obj, values)
@@ -468,73 +428,13 @@ methods
         % setThresholdValues(KYMO, VAL)
         %   VAL should be a scalar value.
 
-        % check dimension of input array
-        if isscalar(values)
-            values = repmat(values, 1, frameNumber(obj));
-        end
-        if length(values) ~= frameNumber(obj)
-            error('The number of values should match number of frames');
-        end
-
-        % update local variables
-        values = values(:)';
-        obj.analysis.InitialThresholdValues = values;
-        obj.analysis.ThresholdValues = values;
-
-        % update processing step
-        setProcessingStep(obj, ProcessingStep.Threshold);
+        setThresholdValues(obj.analysis, values);
     end
 
     function computeThresholdValues(obj)
         % compute threshold values for all images.
 
-        obj.logger.info('KymoRodData.computeThresholdValues', ...
-            'Compute Image Thresholds');
-
-        if obj.processingStep == ProcessingStep.None
-            error('need to have images selected');
-        end
-
-        nImages = frameNumber(obj);
-        obj.analysis.InitialThresholdValues = zeros(nImages, 1);
-
-        % Compute the threshold values
-        disp('Segmentation');
-        hDialog = msgbox(...
-            {'Computing image thresholds,', 'please wait...'}, ...
-            'Segmentation');
-
-        % temporay array for storing result
-        baseValues = zeros(1, nImages);
-
-        % compute threshold values
-        switch lower(obj.analysis.Parameters.AutoThresholdMethod)
-            case lower('MaxEntropy')
-                parfor i = 1 : nImages
-                    img = getSegmentableImage(obj, i);
-                    baseValues(i) = kymorod.core.image.maxEntropyThreshold(img);
-                end
-
-            case lower('Otsu')
-                parfor i = 1 : nImages
-                    img = getSegmentableImage(obj, i);
-                    baseValues(i) = round(graythresh(img) * 255);
-                end
-
-            otherwise
-                error(['Could not recognize threshold method: ' ...
-                    obj.analysis.Parameters.AutoThresholdMethod]);
-        end
-
-        % setup threshold values
-        obj.analysis.InitialThresholdValues = baseValues;
-        obj.analysis.ThresholdValues = obj.analysis.InitialThresholdValues;
-
-        if ishandle(hDialog)
-            close(hDialog);
-        end
-
-        setProcessingStep(obj, ProcessingStep.Threshold);
+        computeThresholdValues(obj.analysis);
     end
 end
 
@@ -552,54 +452,13 @@ methods
         if obj.processingStep < ProcessingStep.Contour
             error('need to have contours computed');
         end
-        contour = obj.analysis.Contours{index};
-        smooth = obj.analysis.Parameters.ContourSmoothingSize;
-        contour = kymorod.core.geom.smoothContour(contour, smooth);
+        contour = getSmoothedContour(obj.analysis, index);
     end
 
     function computeContours(obj)
         % Compute the contour for each image.
 
-        obj.logger.info('KymoRodData.computeContours', ...
-            'Compute binary images contours');
-
-        if obj.processingStep < ProcessingStep.Threshold
-            error('need to have threshold computed');
-        end
-
-        disp('Contour extraction...');
-        hDialog = msgbox(...
-            {'Performing Contour extraction,', 'please wait...'}, ...
-            'Contour Extraction');
-
-        % allocate memory for contour array
-        nFrames = frameNumber(obj);
-        contours = cell(nFrames, 1);
-        
-        % iterate over images
-        parfor i = 1:nFrames
-            % add black border around each image, to ensure continuous contours
-            img0 = getSegmentableImage(obj, i);
-
-            % add one black pixel in each direction
-            img = zeros(size(img0) + 2, class(img0));
-            img(2:end-1, 2:end-1) = img0;
-
-            % compute contour
-            threshold = obj.analysis.ThresholdValues(i);
-            contours{i} = kymorod.core.image.largestIsocontour(img, threshold);
-
-            fprintf('.');
-        end
-        fprintf('\n');
-
-        % obj.contourList = contours;
-        obj.analysis.Contours = contours;
-
-        if ishandle(hDialog)
-            close(hDialog);
-        end
-
+        computeContours(obj.analysis);
         setProcessingStep(obj, ProcessingStep.Contour);
     end
 end
@@ -633,37 +492,7 @@ methods
             error('need to have contours computed');
         end
 
-        % retrieve processing options
-        smooth = obj.analysis.Parameters.ContourSmoothingSize;
-        origin = lower(obj.analysis.Parameters.SkeletonOrigin);
-
-        % allocate memory for results
-        nFrames = frameNumber(obj);
-        midlines = cell(nFrames, 1);
-
-        disp('Skeletonization');
-
-        t0 = tic;
-        parfor i = 1:nFrames
-            % extract current contour
-            contour = getContour(obj, i);
-            if smooth ~= 0
-                contour = kymorod.core.geom.smoothContour(contour, smooth);
-            end
-
-            % compute the midline of current contour
-            midlines{i} = kymorod.core.geom.contourMidline(contour, origin)
-
-            fprintf('.');
-        end
-        fprintf('\n');
-        
-        % copy array of midlines within analysis instance 
-        obj.analysis.Midlines = midlines;
-
-        t1 = toc(t0);
-        disp(sprintf('elapsed time: %6.2f mn', t1 / 60)); %#ok<DSPS>
-
+        computeMidlines(obj.analysis);
         setProcessingStep(obj, ProcessingStep.Skeleton);
     end
 end
@@ -674,34 +503,29 @@ end
 methods
     function img = getImageForDisplacement(obj, index)
         % Return the image for computing displacement.
-        % In case of color image, returns the green channel by default.
-        img = getImage(obj, index);
-        if ndims(img) > 2 %#ok<ISMAT>
-            % TODO: use channel
-            img = img(:,:,2);
-        end
+
+        img = getDisplacementImage(obj.analysis, index);
     end
 
     function computeCurvaturesDisplacementAndElongation(obj)
 
         if obj.processingStep < ProcessingStep.Skeleton
-            error('need to have skeletons computed');
+            error('need to have midlines computed');
         end
 
         % TODO: split method into several processes
 
-        % Compute curvilinear abscissa and align them
-        computeSkeletonAlignedAbscissa(obj);
+        % align abscissas and compute geometric kymographs
+        alignedMidlineAbscissas(obj.analysis);
+        computeAnglesAndCurvatures(obj.analysis);
+        computeGeometricKymographs(obj.analysis);
 
-        % Compute vertical angle and curvatures
-        computeAnglesAndCurvatures(obj);
+        % Computation of frame to frame displacements (may require some time...)
+        computeDisplacements(obj.analysis);
+        computeFilteredDisplacements(obj.analysis);
 
-        % Displacement (may require some time...)
-        computeDisplacements(obj);
-        computeFilteredDisplacements(obj);
-
-        % Elongation
-        computeElongations(obj);
+        % elongation
+        computeElongations(obj.analysis);
     end
 
     function computeSkeletonAlignedAbscissa(obj)
@@ -711,175 +535,32 @@ methods
         obj.logger.info('KymoRodData.computeSkeletonAlignedAbscissa', ...
             'Compute curvilinear abscissa of skeletons');
 
-        % Alignment of all the curvilinear abscissas
-        Sa = kymorod.core.alignMidlineAbscissas(obj.analysis);
-        obj.analysis.AlignedAbscissas = Sa;
+        alignedMidlineAbscissas(obj.analysis);
     end
 
     function computeAnglesAndCurvatures(obj)
         % Compute angle and curvature of all skeletons.
 
-        disp('Compute angles and curvature');
+        % disp('Compute angles and curvature');
         obj.logger.info('KymoRodData.computeAnglesAndCurvatures', ...
             'Compute vertical angles and curvatures');
 
-        % get input data
-        midlines = obj.analysis.Midlines;
-
-        % size option for computing curvature
-        ws = obj.analysis.Parameters.CurvatureWindowSize;
-
-        % allocate memory for results
-        n = length(midlines);
-        A = cell(n, 1);
-
-        % iterate over midlines in the list
-        for i = 1:n
-            midline = midlines{i};
-            if size(midline.Coords, 1) > 2 * ws
-                computeVertexCurvature(midline, ws);
-                A{i} = vertexVerticalAngle(midline, ws);
-            end
-        end
-
-        % keep within class
-        obj.analysis.VerticalAngles = A;
-
-        computeCurvaturesAndAbscissaImages(obj);
+        computeAnglesAndCurvatures(obj.analysis);
+        computeGeometricKymographs(obj.analysis);
     end
 
     function computeCurvaturesAndAbscissaImages(obj)
-
-        % retrieve parameters
-        nFrames = frameCount(obj.analysis.InputImages);
-        calib = obj.analysis.InputImages.Calibration;
-        nPos = obj.analysis.Parameters.KymographAbscissaSize;
-
-        % retrieve data
-        Sa = obj.analysis.AlignedAbscissas;
-        radiusValues = cell(1, nFrames);
-        curvatureValues = cell(1, nFrames);
-        for i = 1:nFrames
-            midline = calibrate(obj.analysis.Midlines{i}, calib);
-            radiusValues{i} = midline.Radiusses;
-            curvatureValues{i} = midline.Curvatures;
-        end
-        verticalAngleValues = obj.analysis.VerticalAngles;
-
-        inputImages = obj.analysis.InputImages;
-        timeInterval = calib.TimeInterval;
-        frameStep = inputImages.ImageList.IndexStep;
-
-        % compute axis for time
-        timeData = (0:(nFrames-1)) * timeInterval * frameStep;
-        timeAxis = kymorod.core.PlotAxis(timeData, ...
-            'Name', 'Time', ...
-            'Unit', obj.settings.timeIntervalUnit);
-
-        % compute axis for curvilinear abscissa
-        Smax = max(cellfun(@max, Sa));
-        Smin = min(cellfun(@min, Sa));
-        positions = linspace(Smin, Smax, nPos);
-        posAxis = kymorod.core.PlotAxis(positions, ...
-            'Name', 'Curvilinear Abscissa', ...
-            'Unit', 'mm');
-
-        % compute images
-        radiusImage = kymographFromValues(Sa, radiusValues, nPos);
-        obj.analysis.RadiusKymograph = kymorod.core.Kymograph(radiusImage, ....
-            'Name', 'Radius', ...
-            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
-
-        verticalAngleImage = kymographFromValues(Sa, verticalAngleValues, nPos);
-        obj.analysis.VerticalAngleKymograph = kymorod.core.Kymograph(verticalAngleImage, ...
-            'Name', 'Vertical Angle', ...
-            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
-
-        curvatureImage = kymographFromValues(Sa, curvatureValues, nPos);
-        obj.analysis.CurvatureKymograph = kymorod.core.Kymograph(curvatureImage, ...
-            'Name', 'Curvature', ...
-            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+        computeGeometricKymographs(obj.analysis);
     end
 
     function computeDisplacements(obj)
         % Compute displacements between all couples of frames.
 
-        disp('Displacement');
+        % disp('Displacement');
         obj.logger.info('KymoRodData.computeDisplacements', ...
             'Compute displacements');
 
-        % retrieve settings
-        step = obj.analysis.Parameters.DisplacementStep;
-
-        % allocate memory for result
-        nFrames = frameNumber(obj);
-        displList = cell(nFrames-step, 1);
-
-        parfor i = 1:(nFrames - step)
-            % index of next skeleton
-            i2 = i + step;
-
-            % compute displacement between current couple of frames
-            displ = computeFrameDisplacement(obj, i, i2);
-            displList{i} = displ;
-
-            fprintf('.');
-        end
-        fprintf('\n');
-
-        obj.analysis.Displacements = displList;
-    end
-
-    function displ = computeFrameDisplacement(obj, i1, i2)
-        % Compute displacement between two frames.
-        %
-        % Usage:
-        % DISPL = computeFrameDisplacement(KYMO, IND1, IND2);
-        %
-        % Assumes the class field 'displacementList' is already
-        % initialized to the required size.
-
-        % retrieve midlines
-        mid1 = obj.analysis.Midlines{i1};
-        mid2 = obj.analysis.Midlines{i2};
-        SK1 = mid1.Coords;
-        SK2 = mid2.Coords;
-        S1 = obj.analysis.AlignedAbscissas{i1};
-        S2 = obj.analysis.AlignedAbscissas{i2};
-        mid1 = kymorod.data.Midline(SK1, S1);
-        mid2 = kymorod.data.Midline(SK2, S2);
-
-        % local data
-        img1 = getImageForDisplacement(obj, i1);
-        img2 = getImageForDisplacement(obj, i2);
-
-        % retrieve parameters
-        ws = obj.analysis.Parameters.MatchingWindowRadius;
-        calib = obj.analysis.InputImages.Calibration;
-        maxDeltaS = 4 * ws * calib.PixelSize / 1000;
-
-        % check if the two skeletons are large enough
-        if length(SK1) <= 2*80 || length(SK2) <= 2*80
-            % case of too small skeletons
-            msg = sprintf('Skeletons %d or %d has not enough vertices', i1, i2);
-            obj.logger.warn('KymoRodData.computeFrameDisplacement', msg);
-            warning(msg); %#ok<SPWRN>
-            displ = [1 0; 1 1];
-            return;
-        end
-
-        % fprintf('frames: (%d,%d)\n', i1, i2);
-        displ = kymorod.core.computeDisplacements(mid1, mid2, img1, img2, ws, maxDeltaS);
-        % displ = computeDisplacement(SK1, SK2, S1, S2, img1, img2, ws, maxDeltaS);
-
-        % check result is large enough
-        if size(displ, 1) == 1
-            msg = sprintf('Displacement from frame %d to frame %d resulted in small array', i1, i2);
-            obj.logger.warn('KymoRodData.computeFrameDisplacement', msg);
-            warning(msg); %#ok<SPWRN>
-            displ = [1 0;1 1];
-            return;
-        end
+        computeDisplacements(obj.analysis);
     end
 
     function computeFilteredDisplacements(obj)
@@ -889,59 +570,9 @@ methods
         obj.logger.info('KymoRodData.computeElongations', ...
             'Compute filtered displacements');
 
-        % initialize results
-        nFrames = length(obj.analysis.Displacements);
-        displf = cell(nFrames, 1);
-
-        % iterate over displacement curves
-        parfor i = 1:nFrames
-            displf{i} = computeFilteredDisplacement(obj, i);
-        end
-
-        % store results
-        obj.analysis.FilteredDisplacements = displf;
+        computeFilteredDisplacements(obj.analysis);
     end
 
-    function filtDispl = getFilteredDisplacement(obj, index)
-        % Smooth the curve and remove errors using kernel smoothers.
-        %
-        % filtDispl = getFilteredDisplacement(KYMO, INDEX);
-        %
-
-        if isempty(obj.analysis.FilteredDisplacements)
-            computeFilteredDisplacements(obj);
-        end
-
-        % get current array of displacement
-        filtDispl = obj.analysis.FilteredDisplacements{index};
-    end
-
-    function filtDispl = computeFilteredDisplacement(obj, index)
-        % Smooth the curve and remove errors using kernel smoothers.
-        %
-        % DISPLF = computeFilteredDisplacement(KYMO, INDEX);
-        %
-
-        % get current array of displacement
-        displ = obj.analysis.Displacements{index};
-
-        % check validity of size
-        if length(displ) <= 20
-            filtDispl = [0 0;1 0];
-            return;
-        end
-
-        % extract computation options
-        LX = obj.analysis.Parameters.DisplacementSpatialSmoothing;
-        LY = obj.analysis.Parameters.DisplacementValueSmoothing;
-        dx = obj.analysis.Parameters.DisplacementResampling;
-
-        % apply curve smoothing
-        [X, Y] = kymorod.core.filterDisplacements(displ, LX, LY, dx);
-
-        % concatenate results
-        filtDispl = [X Y];
-    end
 
     function computeElongations(obj)
         % Compute elongation curves for all skeleton curves.
@@ -949,85 +580,8 @@ methods
         %   computeElongations(KYMO)
         %
 
-        % Elongation
-        disp('Elongation');
-        obj.logger.info('KymoRodData.computeElongations', ...
-            'Compute elongations');
-
-        % check filtered displacements have been computed
-        if isempty(obj.analysis.FilteredDisplacements)
-            computeFilteredDisplacements(obj);
-        end
-
-        % initialize results
-        nFrames = length(obj.analysis.Displacements);
-        Elg = cell(nFrames, 1);
-
-        % iterate over displacement curves
-        parfor i = 1:nFrames
-            Elg{i} = computeFrameElongation(obj, i);
-        end
-
-        % store results
-        obj.analysis.Elongations = Elg;
-
-        %  Space-time mapping
-        obj.logger.info('KymoRodData.computeElongations', ...
-            'Reconstruct elongation kymograph');
-        nPos = obj.analysis.Parameters.KymographAbscissaSize;
-
-        % prepare data for computing kymograph
-        nFrames = length(Elg);
-        S = cell(nFrames, 1);
-        A = cell(nFrames, 1);
-        for k = 1:nFrames
-            signal = Elg{k};
-            if ~isempty(signal)
-                S{k} = signal(:, 1);
-                A{k} = signal(:, 2);
-            end
-        end
-        elongationImage = kymographFromValues(S, A, nPos);
-
-        % retrieve axes from previous kymograph
-        timeAxis = obj.analysis.RadiusKymograph.TimeAxis;
-        posAxis = obj.analysis.RadiusKymograph.PositionAxis;
-
-        obj.analysis.ElongationKymograph = kymorod.core.Kymograph(elongationImage, ....
-            'Name', 'Elongation', ...
-            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
-        
+        computeElongations(obj.analysis);
         setProcessingStep(obj, ProcessingStep.Elongation);
-    end
-
-    function [Elg, E2] = computeFrameElongation(obj, index)
-        % Compute elongation curve for a specific frame.
-        %
-        % [ELG, E2] = computeFrameElongation(KYMO, INDEX)
-        %   ELG: array of elongation
-        %   E2:  smoothed displacement for the frame
-
-        % get current array of displacement
-        E2 = getFilteredDisplacement(obj, index);
-
-        % check validity of size
-        if length(E2) <= 20
-            E2 = [0 0;1 0];
-            Elg = [0 0;1 0];
-            return;
-        end
-
-        % get some settings
-        ws2     = obj.analysis.Parameters.ElongationDerivationRadius;
-        t0      = obj.analysis.InputImages.Calibration.TimeInterval;
-        step    = obj.analysis.Parameters.DisplacementStep;
-
-        % time interval between frames
-        deltaT = t0 * step / 60;
-
-        % Compute elongation by spatial derivation of the displacement
-        Elg = kymorod.core.computeElongations(E2, ws2, deltaT);
-        % Elg = computeElongation(E2, t0, step, ws2);
     end
 
     function computeIntensityKymograph(obj)

@@ -1,8 +1,8 @@
-function [X, Y] = filterDisplacements(displ, LX, LY, dx)
+function displf = filterDisplacements(displ, LX, LY, dx)
 % Apply kernel smoothing filters to displacement data.
 %
 % Usage:
-% [X, Y] = filterDisplacements(DISPL, LX, LY, DX)
+% DISPLF = filterDisplacements(DISPL, LX, LY, DX)
 %
 % Inputs:
 %   DISPL: displacement data, as N-by-2 numeric array containing curvilinear
@@ -13,9 +13,9 @@ function [X, Y] = filterDisplacements(displ, LX, LY, dx)
 %       result
 %
 % Outputs:
-%   X:  value of curvilinear abscissa after resampling
-%   Y:  displacement values after resampling and filtering
-%   X and Y are expected to be column vectors with same size.
+%   DISPLF: a N-by-2 numeric array containing in first column the values of
+%   curvilinear abscissa after resampling, and in second column the values
+%   of displacement after resampling and filtering.
 %
 
 % extract curvilinear abscissa and displacement arrays
@@ -25,21 +25,23 @@ nDispl = size(displ, 1);
 
 % compute H
 H = zeros(nDispl, 1);
-for k = 1:nDispl
-    kernel = exp(-((S-S(k)).^2) / (2*LX^2));
-    H(k) = sum(kernel .* exp(-((D-D(k)).^2)/(2*LY^2))) / sum(kernel);
+for i = 1:nDispl
+    kernel = exp(-((S-S(i)).^2) / (2*LX^2));
+    H(i) = sum(kernel .* exp(-((D-D(i)).^2)/(2*LY^2))) / sum(kernel);
 end
 
 % keep only "valid" values
-E2 = displ(H > 0.6, :);
+D2 = displ(H > 0.6, :);
 
-% define new x axis, linearly spaced between min and max abscissas
+% resample the axis of curvilinear abscissas
 X = (S(1):dx:S(end))';
 
 % Compute new displacement values using spatial smoothing in new basis
 Y = zeros(length(X), 1);
-for k = 1:length(X)
-    kernel = exp(-(( E2(:,1) - X(k) ).^2) / (2*LX^2));
-    Y(k) = sum(E2(:,2) .* kernel) / sum(kernel);
+for i = 1:length(X)
+    kernel = exp(-(( D2(:,1) - X(i) ).^2) / (2*LX^2));
+    Y(i) = sum(D2(:,2) .* kernel) / sum(kernel);
 end
 
+% concatenate results
+displf = [X Y];
