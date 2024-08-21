@@ -225,24 +225,11 @@ methods
         % to comply with previous version
         if ischar(newStep)
             warning('Specifying processing step as a string is obsolete');
-
-            switch lower(newStep)
-                case 'none',        newStep = ProcessingStep.None;
-                case 'selection',   newStep = ProcessingStep.Selection;
-                case 'threshold',   newStep = ProcessingStep.Threshold;
-                case 'contour',     newStep = ProcessingStep.Contour;
-                case 'skeleton',    newStep = ProcessingStep.Skeleton;
-                case 'elongation',  newStep = ProcessingStep.Elongation;
-                case 'kymograph',   newStep = ProcessingStep.Kymograph;
-                case 'intensity',   newStep = ProcessingStep.Intensity;
-                otherwise
-                    error(['Unrecognised processing step: ' newStep]);
-            end
+            newStep = ProcessingStep.parse(newstep);
         end
 
         obj.logger.debug('KymoRodData.setProcessingStep', ...
             ['Set processing step to ' char(newStep)]);
-
 
         % update inner data depending on processing step
         switch newStep
@@ -266,6 +253,9 @@ methods
                 clearDisplacementData();
 
             case ProcessingStep.Displacement
+                clearFilteredDisplacementData();
+
+            case ProcessingStep.FilteredDisplacement
                 clearElongationData();
 
             case ProcessingStep.Elongation
@@ -319,6 +309,11 @@ methods
             obj.verticalAngleList = {};
             obj.curvatureList = {};
             obj.displacementList = {};
+
+            clearFilteredDisplacementData();
+        end
+
+        function clearFilteredDisplacementData()
             obj.smoothedDisplacementList = {};
 
             clearElongationData();
@@ -351,6 +346,7 @@ methods
         computeSkeletonAlignedAbscissa(obj);
         computeAnglesAndCurvatures(obj);
         computeDisplacements(obj);
+        computeFilteredDisplacements(obj);
         computeCurvaturesAndAbscissa(obj);
         computeDisplacements(obj);
         computeElongations(obj);
@@ -692,7 +688,7 @@ methods
             error('need to have skeletons computed');
         end
 
-        % TODO: split method into two processes
+        % TODO: split method into several processes
 
         % Compute curvilinear abscissa and align them
         computeSkeletonAlignedAbscissa(obj);
@@ -702,6 +698,7 @@ methods
 
         % Displacement (may require some time...)
         computeDisplacements(obj);
+        computeFilteredDisplacements(obj);
 
         % Elongation
         computeElongations(obj);
@@ -885,6 +882,67 @@ methods
         end
     end
 
+    function computeFilteredDisplacements(obj)
+        % Apply filtering to all displacement signals.
+        
+        disp('Filter Displacements');
+        obj.logger.info('KymoRodData.computeElongations', ...
+            'Compute filtered displacements');
+
+        % initialize results
+        nFrames = length(obj.analysis.Displacements);
+        displf = cell(nFrames, 1);
+
+        % iterate over displacement curves
+        parfor i = 1:nFrames
+            displf{i} = computeFilteredDisplacement(obj, i);
+        end
+
+        % store results
+        obj.analysis.FilteredDisplacements = displf;
+    end
+
+    function filtDispl = getFilteredDisplacement(obj, index)
+        % Smooth the curve and remove errors using kernel smoothers.
+        %
+        % filtDispl = getFilteredDisplacement(KYMO, INDEX);
+        %
+
+        if isempty(obj.analysis.FilteredDisplacements)
+            computeFilteredDisplacements(obj);
+        end
+
+        % get current array of displacement
+        filtDispl = obj.analysis.FilteredDisplacements{index};
+    end
+
+    function filtDispl = computeFilteredDisplacement(obj, index)
+        % Smooth the curve and remove errors using kernel smoothers.
+        %
+        % DISPLF = computeFilteredDisplacement(KYMO, INDEX);
+        %
+
+        % get current array of displacement
+        displ = obj.analysis.Displacements{index};
+
+        % check validity of size
+        if length(displ) <= 20
+            filtDispl = [0 0;1 0];
+            return;
+        end
+
+        % extract computation options
+        LX = obj.analysis.Parameters.DisplacementSpatialSmoothing;
+        LY = obj.analysis.Parameters.DisplacementValueSmoothing;
+        dx = obj.analysis.Parameters.DisplacementResampling;
+
+        % apply curve smoothing
+        [X, Y] = kymorod.core.filterDisplacements(displ, LX, LY, dx);
+
+        % concatenate results
+        filtDispl = [X Y];
+    end
+
     function computeElongations(obj)
         % Compute elongation curves for all skeleton curves.
         %
@@ -896,18 +954,21 @@ methods
         obj.logger.info('KymoRodData.computeElongations', ...
             'Compute elongations');
 
+        % check filtered displacements have been computed
+        if isempty(obj.analysis.FilteredDisplacements)
+            computeFilteredDisplacements(obj);
+        end
+
         % initialize results
         nFrames = length(obj.analysis.Displacements);
-        E2 = cell(nFrames, 1);
         Elg = cell(nFrames, 1);
 
         % iterate over displacement curves
         parfor i = 1:nFrames
-            [Elg{i}, E2{i}] = computeFrameElongation(obj, i);
+            Elg{i} = computeFrameElongation(obj, i);
         end
 
         % store results
-        obj.analysis.FilteredDisplacements = E2;
         obj.analysis.Elongations = Elg;
 
         %  Space-time mapping
@@ -963,40 +1024,6 @@ methods
 
         % Compute elongation by spatial derivation of the displacement
         Elg = computeElongation(E2, t0, step, ws2);
-    end
-
-    function E2 = getFilteredDisplacement(obj, index)
-        % Smooth the curve and remove errors using kernel smoothers.
-        %
-        % E2 = getFilteredDisplacement(KYMO, INDEX);
-        %
-
-        % get current array of displacement
-        E = obj.analysis.Displacements{index};
-
-        % check validity of size
-        if length(E) <= 20
-            E2 = [0 0;1 0];
-            return;
-        end
-
-        % extract computation options
-        LX = obj.analysis.Parameters.DisplacementSpatialSmoothing;
-        LY = obj.analysis.Parameters.DisplacementValueSmoothing;
-        dx = obj.analysis.Parameters.DisplacementResampling;
-
-        % shifts curvilinear abscissa to start at zero
-        Smin = E(1,1);
-        E(:,1) = E(:,1) - Smin;
-
-        % apply curve smoothing
-        [X, Y] = smoothAndFilterDisplacement(E, LX, LY, dx);
-        if any(size(X) ~= size(Y))
-            warning('arrays X and Y do not have same size...');
-        end
-
-        % add initial curvilinear abscissa
-        E2 = [X + Smin, Y];
     end
 
     function computeIntensityKymograph(obj)
