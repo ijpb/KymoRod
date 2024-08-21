@@ -26,7 +26,7 @@ nDispl = size(displ, 1);
 % compute H
 H = zeros(nDispl, 1);
 for k = 1:nDispl
-    kernel = exp(-((S-S(k)).^2)/(2*LX^2));
+    kernel = exp(-((S-S(k)).^2) / (2*LX^2));
     H(k) = sum(kernel .* exp(-((D-D(k)).^2)/(2*LY^2))) / sum(kernel);
 end
 
@@ -34,12 +34,9 @@ end
 E2 = displ(H > 0.6, :);
 
 % define new x axis, linearly spaced between min and max abscissas
-% number of expected points ?
-% nx = (max(S) - min(S)) / dx;
-% X = (0:S(end)/nx:S(end))';
 X = (S(1):dx:S(end))';
 
-% Compute new displacement values
+% Compute new displacement values using spatial smoothing in new basis
 Y = zeros(length(X), 1);
 for k = 1:length(X)
     kernel = exp(-(( E2(:,1) - X(k) ).^2) / (2*LX^2));

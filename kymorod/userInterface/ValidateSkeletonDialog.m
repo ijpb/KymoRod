@@ -127,6 +127,7 @@ end
 if isempty(app.analysis.Midlines)
     set(handles.validateSkeletonButton, 'Enable', 'Off');
     set(handles.saveSkeletonDataButton, 'Enable', 'Off');
+    set(handles.saveSkeletonRoisButton, 'Enable', 'Off');
 end
 
 params = app.analysis.Parameters;
@@ -327,6 +328,7 @@ end
 
 set(handles.validateSkeletonButton, 'Enable', 'On');
 set(handles.saveSkeletonDataButton, 'Enable', 'On');
+set(handles.saveSkeletonRoisButton, 'Enable', 'On');
 
 
 % --- Executes on button press in showSkeleton3dButton.

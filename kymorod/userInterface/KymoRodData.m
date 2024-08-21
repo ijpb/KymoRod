@@ -1018,12 +1018,16 @@ methods
         end
 
         % get some settings
+        ws2     = obj.analysis.Parameters.ElongationDerivationRadius;
         t0      = obj.analysis.InputImages.Calibration.TimeInterval;
         step    = obj.analysis.Parameters.DisplacementStep;
-        ws2     = obj.analysis.Parameters.ElongationDerivationRadius;
+
+        % time interval between frames
+        deltaT = t0 * step / 60;
 
         % Compute elongation by spatial derivation of the displacement
-        Elg = computeElongation(E2, t0, step, ws2);
+        Elg = kymorod.core.computeElongations(E2, ws2, deltaT);
+        % Elg = computeElongation(E2, t0, step, ws2);
     end
 
     function computeIntensityKymograph(obj)
@@ -1036,9 +1040,9 @@ methods
         S2List = cell(nFrames, 1);
         values = cell(nFrames, 1);
 
-        % iterate over pairs image+skeleton
+        % iterate over pairs image+midlines
         for i = 1:nFrames
-            % get skeleton and its curvilinear abscissa
+            % get midline and its curvilinear abscissa
             S = obj.analysis.AlignedAbscissas{i};
             skel = obj.analysis.Midlines{i}.Coords;
 
