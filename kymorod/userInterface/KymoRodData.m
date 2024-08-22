@@ -45,15 +45,6 @@ properties
     % See the class ProcessingStep for details.
     processingStep = ProcessingStep.None;
 
-    % index of current frame for display
-    currentFrameIndex = 1;
-
-    % informations to retrieve intensity images
-    % (for computing the intensity kymograph)
-    intensityImagesNameList = {};
-    intensityImagesDir = '';
-    intensityImagesFilePattern = '*.*';
-
 end
 
 
@@ -166,6 +157,15 @@ properties
     % the relative abscissa of the graphical cursor, between 0 and 1.
     % Default value is .5, corresponding to the middle of the skeleton.
     cursorRelativeAbscissa = 0.5;
+
+    % index of current frame for display
+    currentFrameIndex = 1;
+
+    % informations to retrieve intensity images
+    % (for computing the intensity kymograph)
+    intensityImagesNameList = {};
+    intensityImagesDir = '';
+    intensityImagesFilePattern = '*.*';
 end
 
 
@@ -598,15 +598,15 @@ methods
         for i = 1:nFrames
             % get midline and its curvilinear abscissa
             S = obj.analysis.AlignedAbscissas{i};
-            skel = obj.analysis.Midlines{i}.Coords;
+            mid = kymorod.data.Midline(obj.analysis.Midlines{i}.Coords, S);
 
-            % reduce skeleton to snap on image pixels
-            [S2, skel2] = snapCurveToPixels(S, skel);
-            S2List{i} = S2;
+            % reduce midline to snap on image pixels
+            mid = snapToPixels(mid);
+            S2List{i} = mid.Abscissas;
 
             % compute values within image
             img = obj.getIntensityImage(i);
-            values{i} = imEvaluate(img, skel2);
+            values{i} = kymorod.core.image.imEvaluate(img, mid.Coords);
         end
 
         % Compute kymograph using specified kymograph size
