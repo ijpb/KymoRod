@@ -67,6 +67,12 @@ app.logger.info('SelectIntensityImagesDialog.m', ...
 gui = KymoRodGui.getInstance();
 buildFigureMenu(gui, hObject, app);
 
+% populate widgets
+imageList = app.analysis.IntensityImages.ImageList;
+set(handles.inputImageFolderEdit, 'String', imageList.Directory);
+set(handles.filePatternEdit, 'String', imageList.FileNamePattern);
+set(handles.imageChannelPopup, 'String', app.analysis.Parameters.IntensityImageChannel);
+
 % some gui listener adjustments
 set(handles.inputImagesPanel, 'SelectionChangeFcn', ...
     @channelSelectionPanel_SelectionChangeFcn);
@@ -114,7 +120,7 @@ function chooseImagesDirectoryButton_Callback(hObject, eventdata, handles)  %#ok
 app = getappdata(0, 'app');
 
 % open a dialog to select input image folder, restricting type to images
-folderName = app.inputImagesDir;
+folderName = app.analysis.IntensityImages.ImageList.Directory;
 [fileName, folderName] = uigetfile(...
     {'*.tif;*.jpg;*.png;*.gif', 'All Image Files';...
     '*.tif;*.tiff;*.gif', 'Tagged Image Files (*.tif)';...
@@ -133,9 +139,10 @@ app.logger.info('SelectIntensityImagesDialog.m', ...
 
 % update inner variables and GUI
 set(handles.inputImageFolderEdit, 'String', folderName);
-app.intensityImagesDir = folderName;
+app.analysis.IntensityImages.ImageList.Directory = folderName;
 
 updateImageNameList(handles);
+
 
 % --- Executes on button change in channelSelectionPanel
 function channelSelectionPanel_SelectionChangeFcn(hObject, eventdata)%#ok<INUSL>
@@ -156,7 +163,7 @@ string = get(handles.filePatternEdit, 'String');
 app.logger.info('SelectIntensityImagesDialog.m', ...
     ['Change intensity images file pattern to ' string]);
 
-app.intensityImagesFilePattern = string;
+app.analysis.IntensityImages.ImageList.FileNamePattern = string;
 disp(['update file pattern: ' string]);
 
 updateImageNameList(handles);
@@ -192,7 +199,7 @@ channelString = char(strtrim(stringArray(value,:)));
 app.logger.info('SelectIntensityImagesDialog.m', ...
     ['Change intensity image channel to ' channelString]);
 
-app.settings.intensityImagesChannel = channelString;
+app.analysis.Parameters.IntensityImageChannel = channelString;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.intensityImagesChannel = channelString;
@@ -224,35 +231,26 @@ hDialog = msgbox(...
     'Read Images');
 
 % read new list of image names, used to compute frame number
-folderName  = app.intensityImagesDir;
-filePattern = app.intensityImagesFilePattern;
-imageNames  = readImageNameList(folderName, filePattern);
-
-% apply the same selection strategy as for the input images
-inds = app.firstIndex:app.indexStep:app.lastIndex;
-imageNames = imageNames(inds);
-
-app.intensityImagesNameList = imageNames;
+imageList = app.analysis.IntensityImages.ImageList;
+imageList.computeImageFileNameList();
+imageNames = imageList.ImageFileNameList;
 
 if ishandle(hDialog)
     close(hDialog);
 end
 
-if isempty(app.intensityImagesNameList)
+if isempty(imageNames)
     errordlg({'The chosen directory contains no file.', ...
         'Please choose another one'}, ...
         'Empty Directory Error', 'modal');
     
     % disable preview and other settings
     set(handles.selectImagesButton, 'Visible', 'On');
-
     return;
 end
 
-% setProcessingStep(app, ProcessingStep.Selection);
-
 % choose to display color image selection
-info = imfinfo(fullfile(app.intensityImagesDir, app.intensityImagesNameList{1}));
+info = imfinfo(fullfile(imageList.Directory, imageNames{1}));
 if strcmpi(info(1).ColorType, 'grayscale')
     set(handles.imageChannelLabel, 'Enable', 'Off');
     set(handles.imageChannelPopup, 'Enable', 'Off');
@@ -263,35 +261,9 @@ end
 
 makeAllWidgetsVisible(handles);
 
-% updateFrameSliderBounds(handles);
-% handles = updateFramePreview(handles);
 
 guidata(handles.figure1, handles);
 
-
-function imageNames = readImageNameList(folderName, filePattern)
-    
-fprintf('Read image name list...');
-
-% list files in chosen directory
-fileList = dir(fullfile(folderName, filePattern));
-fileList = fileList(~[fileList.isdir]);
-
-% no file matching pattern
-if isempty(fileList)
-    fprintf(' no file found\n');
-    imageNames = {};
-    return;
-end
-
-% populate the list of image names
-frameNumber = length(fileList);
-imageNames = cell(frameNumber, 1);
-parfor i = 1:frameNumber
-    imageNames{i} = fileList(i).name;
-end
-
-fprintf(' done\n');
 
 function makeAllWidgetsVisible(handles)
 
@@ -300,15 +272,14 @@ app = getappdata(0, 'app');
 
 % show all panels
 set(handles.inputImagesPanel, 'Visible', 'On');
-% set(handles.calibrationPanel, 'Visible', 'On');
-% set(handles.frameSelectionPanel, 'Visible', 'On');
 
 % update input data widgets
-set(handles.inputImageFolderEdit, 'String', app.intensityImagesDir);
-set(handles.filePatternEdit, 'String', app.intensityImagesFilePattern);
+imageList = app.analysis.IntensityImages.ImageList;
+set(handles.inputImageFolderEdit, 'String', imageList.Directory);
+set(handles.filePatternEdit, 'String', imageList.FileNamePattern);
 
 % choose to display color image selection
-info = imfinfo(fullfile(app.intensityImagesDir, app.intensityImagesNameList{1}));
+info = imfinfo(fullfile(imageList.Directory, imageList.ImageFileNameList{1}));
 if strcmpi(info(1).ColorType, 'grayscale')
     set(handles.imageChannelLabel, 'Enable', 'Off');
     set(handles.imageChannelPopup, 'Enable', 'Off');

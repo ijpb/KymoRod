@@ -1,16 +1,10 @@
-function val = imEvaluate(img, varargin)
+function val = imEvaluate(img, point, varargin)
 % Evaluate image value at given position(s).
 %
-%   VAL = imEvaluate(IMG, X, Y)
-%   VAL = imEvaluate(IMG, X, Y, Z)
+%   VAL = imEvaluate(IMG, PTS)
 %   Evaluates the value within the image grayscale or a color IMG at the
-%   position(s) given by X, Y, and eventually Z. 
+%   position(s) given by PTS. 
 %   IMG is an array containing the image
-%
-%   VALS = imEvaluate(IMG, POS)
-%   Specifies the position as a N-by-2 or N-by-3 array of coordinates. The
-%   result VALS is either a N-by-1 numeric array in the case of a grayscale
-%   image or a N-by-3 array in the case of a color image. 
 %
 %   VAL = imEvaluate(..., METHOD)
 %   Specifies the interpolation method to use. The same options as for the
@@ -51,13 +45,6 @@ fillValue = 0;
 
 %% Process input arguments
 
-% parse coordinates
-nd = ndims(img);
-if isColorImage(img)
-    nd = nd - 1;
-end
-[point, dim, varargin] = mergeCoordinates(varargin{:});
-
 % parse interpolation method
 if ~isempty(varargin) && ischar(varargin{1})
     method = varargin{1};
@@ -82,7 +69,7 @@ nv = size(point, 1);
 
 % number of image channels
 nc = 1;
-if isColorImage(img)
+if ndims(img) > 2 %#ok<ISMAT>
     nc = size(img, 3);
     
     if isscalar(fillValue)
@@ -91,105 +78,30 @@ if isColorImage(img)
 end
 
 % allocate memory for result
-val = zeros(nv, nc, class(img));
-
+val = zeros(nv, nc);
 
 
 %% Compute interpolation
 
-if nd == 2
-    % planar case
-    x = 1:size(img, 2);
-    y = 1:size(img, 1);
-    
-    if nc == 1
-        % planar grayscale
-        val(:) = interp2(x, y, single(img), ...
-            point(:, 1), point(:, 2), method, fillValue);
-    else
-        % planar color
-        for i = 1:nc
-            val(:, i) = interp2(x, y, single(img(:, :, i)), ...
-                point(:, 1), point(:, 2), method, fillValue(i));
-        end
+% planar case
+x = 1:size(img, 2);
+y = 1:size(img, 1);
+
+if nc == 1
+    % planar grayscale
+    val(:) = interp2(x, y, double(img), ...
+        point(:, 1), point(:, 2), method, fillValue);
+else
+    % planar color
+    for i = 1:nc
+        val(:, i) = interp2(x, y, double(img(:, :, i)), ...
+            point(:, 1), point(:, 2), method, fillValue(i));
     end
-    
-elseif nd == 3
-    % 3D Case
-    x = 1:size(img, 2);
-    y = 1:size(img, 1);
-    
-    if nc == 1
-        % 3D grayscale
-        z = 1:size(img, 3);
-        val(:) = interp3(x, y, z, single(img), ...
-            point(:, 1), point(:, 2), point(:, 3), method, fillValue);
-    else
-        % 3D color
-        z = 1:size(img, 4);
-        for i = 1:nc
-            val(:, i) = interp2(x, y, z, single(squeeze(img(:,:,i,:))), ...
-                point(:, 1), point(:, 2), point(:, 3), method, fillValue(i));
-        end
-    end
-    
-end  
+end
+
 
 % keep same size for result, but add one dimension for channels
-if dim(end) == 1
-    dim(end) = nc;
-else
-    dim = [dim nc];
-end
+dim = [length(val) nc];
 
 % reshape result to have the same dimension as original point input
 val = reshape(val, dim);
-
-
-function [coords, dim, varargin] = mergeCoordinates(varargin)
-%MERGECOORDINATES Merge all coordinates into a single N-by-ND array
-%
-% [coords dim] = mergeCoordinates(X, Y)
-% [coords dim] = mergeCoordinates(X, Y, Z)
-%
-
-% case of coordinates already grouped: use default results
-coords = varargin{1};
-dim = [size(coords,1) 1];
-nbCoord = 1;
-
-% Count the number of input arguments the same size as point
-coordSize = size(coords);
-for i = 2:length(varargin)
-    % extract next input and compute its size
-    var = varargin{i};
-    varSize = size(var);
-    
-    % continue only if input is numeric has the same size
-    if ~isnumeric(var)
-        break;
-    end
-    if length(varSize) ~= length(coordSize)
-        break;
-    end
-    if sum(varSize ~= coordSize) > 0
-        break;
-    end
-    
-    nbCoord = i;
-end
-
-% if other variables were found, we need to concatenate them
-if nbCoord > 1
-    % create new point array, and store input dimension
-    dim = size(coords);
-    coords = zeros(numel(coords), length(dim));
-    
-    % iterate over dimensions
-    for i = 1:nbCoord
-        var = varargin{i};
-        coords(:, i) = var(:);
-    end
-end
-
-varargin(1:nbCoord) = [];

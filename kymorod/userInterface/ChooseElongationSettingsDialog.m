@@ -478,7 +478,7 @@ end
 app.analysis.Parameters.ElongationDerivationRadius = val;
 
 gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.ElongationDerivationRadius = val;
+gui.userPrefs.settings.windowSize2 = val;
 
 setProcessingStep(app, ProcessingStep.Skeleton);
 

@@ -575,7 +575,7 @@ methods
 
 
     function computeElongations(obj)
-        % Compute elongation curves for all skeleton curves.
+        % Compute elongation curves for all midlines.
         %
         %   computeElongations(KYMO)
         %
@@ -587,47 +587,14 @@ methods
     function computeIntensityKymograph(obj)
         % Compute kymograph based on values within a list of images.
 
-        % get number of frames
-        nFrames = frameNumber(obj);
-
-        % allocate memory for result
-        S2List = cell(nFrames, 1);
-        values = cell(nFrames, 1);
-
-        % iterate over pairs image+midlines
-        for i = 1:nFrames
-            % get midline and its curvilinear abscissa
-            S = obj.analysis.AlignedAbscissas{i};
-            mid = kymorod.data.Midline(obj.analysis.Midlines{i}.Coords, S);
-
-            % reduce midline to snap on image pixels
-            mid = snapToPixels(mid);
-            S2List{i} = mid.Abscissas;
-
-            % compute values within image
-            img = obj.getIntensityImage(i);
-            values{i} = kymorod.core.image.imEvaluate(img, mid.Coords);
-        end
-
-        % Compute kymograph using specified kymograph size
-        nPos = obj.analysis.Parameters.KymographAbscissaSize;
-        intensityImage = kymographFromValues(S2List, values, nPos);
-
-        % retrieve axes from previous kymograph
-        timeAxis = obj.analysis.RadiusKymograph.TimeAxis;
-        posAxis = obj.analysis.RadiusKymograph.PositionAxis;
-
-        obj.analysis.IntensityKymograph = kymorod.core.Kymograph(intensityImage, ....
-            'Name', 'Intensity', ...
-            'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+        obj.analysis.computeIntensityKymograph();
     end
 
     function image = getIntensityImage(obj, index)
-        filePath = fullfile(obj.intensityImagesDir, obj.intensityImagesNameList{index});
-        image = imread(filePath);
+        image = obj.analysis.IntensityImages.getFrameImage(index);
 
         if ndims(image) > 2 %#ok<ISMAT>
-            switch lower(obj.settings.intensityImagesChannel)
+            switch lower(obj.analysis.Parameters.IntensityImageChannel)
                 case 'red',     image = image(:,:,1);
                 case 'green',   image = image(:,:,2);
                 case 'blue',    image = image(:,:,3);

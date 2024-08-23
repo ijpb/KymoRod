@@ -32,6 +32,8 @@ methods (Abstract)
     % Retrieve an image from its index.
     img = getImage(obj, index);
 
+    % Duplicate this object by copying its state.
+    series = clone(obj);
 end % end methods
 
 end % end classdef

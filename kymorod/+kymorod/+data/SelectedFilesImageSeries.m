@@ -34,9 +34,6 @@ properties
     % The increment of files between images. Default is 1.
     IndexStep = 1;
     
-    % For color images, the channel to read data from.
-    Channel = 'red';
-    
     % Boolean flag indicating whether data should be stored in totality, 
     % or loaded only when requested (lazy loading). Default is TRUE.
     LazyLoading = true;
@@ -70,13 +67,7 @@ methods
         
         % copy constructor
         if isa(varargin{1}, 'kymorod.data.SelectedFilesImageSeries')
-            sfis = varargin{1};
-            obj.Directory       = sfis.Directory;
-            obj.FileNamePattern = sfis.FileNamePattern;
-            obj.IndexFirst      = sfis.IndexBegin;
-            obj.IndexLast       = sfis.IndexEnd;
-            obj.IndexStep       = sfis.IndexStep;
-            obj.Channel         = sfis.Channel;
+            obj = clone(varargin{1});
             return;
         end
         
@@ -100,11 +91,6 @@ methods
             obj.IndexStep = varargin{5};
         end
         
-        % optional channel name
-        if nargin > 5
-            obj.Channel = varargin{6};
-        end
-
         computeFileNameList(obj);
     end
 
@@ -131,22 +117,17 @@ methods
         else
             img = this.imageList{index};
         end
-        
-        if ~isempty(obj.Channel)
-            if strcmpi(obj.Channel, 'Red')
-                img = img(:,:,1);
-            elseif strcmpi(obj.Channel, 'Green')
-                img = img(:,:,2);
-            elseif strcmpi(obj.Channel, 'Blue')
-                img = img(:,:,3);
-            elseif strcmpi(obj.Channel, 'Intensity')
-                img = img(:,:,2);
-            else
-                error('Unable to interpret channel name');
-            end
-        end
     end
     
+    function res = clone(obj)
+        res = kymorod.data.SelectedFilesImageSeries();
+        res.Directory       = obj.Directory;
+        res.FileNamePattern = obj.FileNamePattern;
+        res.IndexFirst      = obj.IndexFirst;
+        res.IndexLast       = obj.IndexLast;
+        res.IndexStep       = obj.IndexStep;
+    end
+
 end % end methods
 
 
@@ -159,9 +140,8 @@ methods
             computeFileNameList(obj);
         end
 
-        fileList = getFileList(obj);
-        indices = obj.IndexFirst:obj.IndexStep:obj.IndexLast;
-        obj.ImageFileNameList = fileList(indices);
+        indices = selectedFileIndices(obj);
+        obj.ImageFileNameList = obj.FileNameList(indices);
     end
     
     function updateImageData(obj)
@@ -222,7 +202,6 @@ methods
         % Reset all properties to default state.
         obj.Directory = '';
         obj.FileNamePattern = '*.*';
-        obj.Channel = 'Red';
         obj.IndexFirst = 1;
         obj.IndexLast = 1;
         obj.IndexStep = 1;

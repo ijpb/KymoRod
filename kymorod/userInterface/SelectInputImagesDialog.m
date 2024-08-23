@@ -80,17 +80,17 @@ if getProcessingStep(app) > ProcessingStep.None
 end
 
 % setup some widgets with current settings
-ana = app.analysis;
-imageList = ana.InputImages.ImageList;
-calib = ana.InputImages.Calibration;
+imageList = app.analysis.InputImages.ImageList;
+calib = app.analysis.InputImages.Calibration;
 set(handles.filePatternEdit, 'String', imageList.FileNamePattern);
 set(handles.spatialResolutionEdit, 'String', num2str(calib.PixelSize));
 set(handles.spatialResolutionUnitEdit, 'String', calib.PixelSizeUnit);
 set(handles.timeIntervalEdit, 'String', num2str(calib.TimeInterval));
 set(handles.timeIntervalUnitEdit, 'String', calib.TimeIntervalUnit);
 
+channelName = app.analysis.Parameters.MidlineImageChannel;
 stringArray = get(handles.imageChannelPopup, 'String');
-index = find(strcmpi(strtrim(cellstr(stringArray)), imageList.Channel));
+index = find(strcmpi(strtrim(cellstr(stringArray)), channelName));
 if isempty(index)
     warning('could not find settings channel string in widgets options: %s', imageList.Channel);
     index = 1;
@@ -195,7 +195,6 @@ app.logger.info('SelectInputImagesDialog.m', ...
 disp(['update file pattern: ' string]);
 
 app.analysis.InputImages.ImageList.FileNamePattern = string;
-% app.inputImagesFilePattern = string;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.inputImagesFilePattern = string;
 
@@ -232,7 +231,7 @@ channelString = char(strtrim(stringArray(value,:)));
 app.logger.info('SelectInputImagesDialog.m', ...
     ['Change image segmentation channel to ' channelString]);
 
-app.analysis.InputImages.ImageList.Channel = string;
+app.analysis.Parameters.MidlineImageChannel = string;
 
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.imageSegmentationChannel = channelString;
@@ -343,7 +342,6 @@ else
 end
 
 % update calibration widgets
-% TODO: also update units
 set(handles.spatialResolutionEdit, 'String', num2str(calib.PixelSize));
 set(handles.timeIntervalEdit, 'String', num2str(calib.TimeInterval));
 
@@ -732,13 +730,19 @@ end
 currentImageName = fileList(fileIndex).name;
 img = imread(fullfile(folderName, currentImageName));
 
+if ~ismatrix(img)
+    switch app.analysis.Parameters.MidlineImageChannel
+        case 'red'; img = img(:,:,1);
+        case 'green'; img = img(:,:,2);
+        case 'blue'; img = img(:,:,3);
+    end
+end
 % keep image size
 app.analysis.InputImages.ImageSize = [size(img, 1) size(img, 2)];
 
 % eventually converts to uint8
 if isa(img, 'uint16') && ndims(img) == 2 %#ok<ISMAT>
-    % TODO: adapt to use a method in 'kymorod' package
-    img = imAdjustDynamic(img, .1);
+    img = kymorod.core.image.AdjustDynamic(img, .1);
 end
 
 % display current frame image
@@ -858,6 +862,7 @@ function selectImagesButton_Callback(hObject, eventdata, handles)
 app = getappdata(0, 'app');
 
 loadImageData(app);
+app.analysis.IntensityImages = app.analysis.InputImages.clone();
 
 nFrames = frameNumber(app);
 app.analysis.CurrentFrameIndex = min(app.analysis.CurrentFrameIndex, nFrames);

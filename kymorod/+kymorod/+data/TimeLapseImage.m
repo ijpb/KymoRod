@@ -124,7 +124,15 @@ methods
         else
             img = ones(obj.ImageSize([2 1]));
         end
-    end    
+    end
+
+    function res = clone(obj)
+        % Duplicate this object by copying its state.
+        imgList = clone(obj.ImageList);
+        res = kymorod.data.TimeLapseImage(imgList);
+        res.Calibration = obj.Calibration;
+        res.ImageSize = obj.ImageSize;
+    end
 
 end % end methods
 

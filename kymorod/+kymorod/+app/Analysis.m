@@ -57,6 +57,10 @@ properties
     % Elongation, computed by derivation of filtered displacement.
     Elongations;
 
+    % The input images for Intensity kymograph, 
+    % as an instance of TimeLapseImage with same size as input image.
+    IntensityImages;
+
     % reconstructed Kymograph of skeleton radius in absissa and time
     RadiusKymograph;
 
@@ -590,6 +594,51 @@ methods
         obj.ElongationKymograph.PositionAxis = obj.RadiusKymograph.PositionAxis;
     end
     
+    function image = getIntensityImage(obj, index)
+        image = obj.IntensityImages.getFrameImage(index);
+
+        if ndims(image) > 2 %#ok<ISMAT>
+            switch lower(obj.Parameters.IntensityImageChannel)
+                case 'red',     image = image(:,:,1);
+                case 'green',   image = image(:,:,2);
+                case 'blue',    image = image(:,:,3);
+            end
+        end
+    end
+
+    function computeIntensityKymograph(obj)
+        % Compute kymograph based on values within a list of images.
+
+        % get number of frames
+        nFrames = frameCount(obj);
+
+        % allocate memory for result
+        abscissas = cell(nFrames, 1);
+        values = cell(nFrames, 1);
+
+        % iterate over pairs image+midlines
+        for i = 1:nFrames
+            % get midline and its curvilinear abscissa
+            S = obj.AlignedAbscissas{i};
+            mid = kymorod.data.Midline(obj.Midlines{i}.Coords, S);
+
+            % reduce midline to snap on image pixels
+            mid = snapToPixels(mid);
+            abscissas{i} = mid.Abscissas;
+
+            % compute values within image
+            img = obj.getIntensityImage(i);
+            values{i} = double(kymorod.core.image.imEvaluate(img, mid.Coords));
+        end
+
+        % Compute kymograph using specified kymograph size
+        nPos = obj.Parameters.KymographAbscissaSize;
+        obj.IntensityKymograph = kymorod.core.Kymograph.fromValues(...
+            abscissas, values, nPos, ....
+            'Name', 'Intensity', ...
+            'TimeAxis', obj.RadiusKymograph.TimeAxis, ...
+            'PositionAxis', obj.RadiusKymograph.PositionAxis);
+    end
 end
 
 

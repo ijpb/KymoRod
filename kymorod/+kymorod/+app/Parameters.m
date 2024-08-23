@@ -79,6 +79,9 @@ properties
 
     ElongationDerivationRadius = 20;
 
+    % The channel used for computing intensity kymographs (for color images).
+    IntensityImageChannel = 'green';
+
 end % end properties
 
 
