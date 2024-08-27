@@ -163,8 +163,8 @@ set(handles.inputImageFolderEdit, 'String', folderName);
 app.analysis.InputImages.ImageList.Directory = folderName;
 
 % keep folder name is users preferences
-gui = KymoRodGui.getInstance;
-gui.userPrefs.lastOpenDir = folderName;
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.LastOpenDir = folderName;
 
 if isfield(handles, 'currentFrameImage')
     handles = rmfield(handles, 'currentFrameImage');

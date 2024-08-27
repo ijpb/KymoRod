@@ -121,8 +121,13 @@ function newAnalysisButton_Callback(hObject, eventdata, handles) %#ok<INUSL>
 close(handles.mainFigure);
 
 % create new empty application data structure
-gui = KymoRodGui.getInstance();
-app = createNewAnalysis(gui);
+% create a new analysis using saved user preferences
+gui = kymorod.gui.KymoRodGui.getInstance;
+analysis = createNewAnalysis(gui);
+
+% create new application, and setup analysis
+app = KymoRodData;
+app.analysis = analysis;
 
 % open first dialog of application
 SelectInputImagesDialog(app);

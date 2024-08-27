@@ -90,6 +90,20 @@ methods
     function obj = Parameters(varargin)
         % Constructor for Parameters class.
 
+        if ~isempty(varargin) && isa(varargin{1}, 'kymorod.app.Parameters')
+            % copy constructor
+            var1 = varargin{1};
+            varargin(1) = [];
+            names = fieldnames(var1);
+            for i = 1:length(names)
+                name = names{i};
+                obj.(name) = var1.(name);
+            end
+        end
+
+        if ~isempty(varargin)
+            error('Wrong input arguments when creating Parameters');
+        end
     end
 
 end % end constructors

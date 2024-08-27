@@ -260,17 +260,18 @@ function imageSmoothingMethodPopup_Callback(hObject, eventdata, handles) %#ok<IN
 %        contents{get(hObject,'Value')} returns selected item from imageSmoothingMethodPopup
 
 app = getappdata(0, 'app');
-gui = KymoRodGui.getInstance();
+gui = kymorod.gui.KymoRodGui.getInstance();
+
 switch get(handles.imageSmoothingMethodPopup, 'Value')
     case 1
         app.analysis.Parameters.ImageSmoothingMethodName = 'None';
-        gui.userPrefs.settings.imageSmoothingMethod = 'none';
+        gui.UserPrefs.Parameters.ImageSmoothingMethod = 'None';
     case 2
         app.analysis.Parameters.ImageSmoothingMethodName = 'BoxFilter';
-        gui.userPrefs.settings.imageSmoothingMethod = 'boxFilter';
+        gui.UserPrefs.Parameters.ImageSmoothingMethod = 'BoxFilter';
     case 3
         app.analysis.Parameters.ImageSmoothingMethodName = 'Gaussian';
-        gui.userPrefs.settings.imageSmoothingMethod = 'gaussian';
+        gui.UserPrefs.Parameters.ImageSmoothingMethod = 'Gaussian';
 end
 
 updateSegmentationDisplay(handles);
@@ -307,8 +308,10 @@ radius = round(radius);
 set(hObject, 'String', num2str(radius));
 
 app.analysis.Parameters.ImageSmoothingRadius = radius;
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.imageSmoothingRadius = radius;
+
+% save user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.ImageSmoothingRadius = radius;
 
 updateSegmentationDisplay(handles);
 
@@ -337,12 +340,14 @@ function automaticThresholdRadioButton_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of automaticThresholdRadioButton
 
 app = getappdata(0, 'app');
-app.analysis.Parameters.ThresholdStrategy = 'Auto';
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.thresholdStrategy = 'auto';
-
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose automatic threshold');
+
+app.analysis.Parameters.ThresholdStrategy = 'Auto';
+
+% save user preferences
+gui = kymorod.gui.KymoRodGui.getInstance;
+gui.UserPrefs.Parameters.ThresholdStrategy = 'Auto';
 
 updateWidgetsVisibility(handles);
 
@@ -380,9 +385,12 @@ app.logger.info('ChooseThresholdDialog.m', ...
     ['Set automatic threshold method: ' methodName]);
 
 % update threshold information of application
-app.analysis.Parameters.AutoThresholdMethod = methodList{ind};
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.autoThresholdMethod = methodList{ind};
+app.analysis.Parameters.AutoThresholdMethod = methodName;
+
+% save user preferences
+gui = kymorod.gui.KymoRodGui.getInstance;
+gui.UserPrefs.Parameters.AutoThresholdMethod = methodName;
+
 computeThresholdValues(app);
 
 updateSegmentationDisplay(handles);
@@ -549,8 +557,10 @@ function manualThresholdRadioButton_Callback(hObject, eventdata, handles)%#ok %M
 % extract application data
 app     = getappdata(0, 'app');
 app.analysis.Parameters.ThresholdStrategy = 'Manual';
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.thresholdStrategy = 'manual';
+
+% save user preferences
+gui = kymorod.gui.KymoRodGui.getInstance;
+gui.UserPrefs.Parameters.ThresholdStrategy = 'Manual';
 
 app.logger.info('ChooseThresholdDialog.m', ...
     'Choose manual threshold method');
@@ -620,8 +630,10 @@ function updateManualThresholdValue(handles, value)
 app = getappdata(0, 'app');
 
 app.analysis.Parameters.ManualThresholdValue = value;
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.manualThresholdValue = value;
+% save user preferences
+gui = kymorod.gui.KymoRodGui.getInstance;
+gui.UserPrefs.Parameters.ManualThresholdValue = value;
+
 
 % update array of threshold values for each image
 setThresholdValues(app, value)

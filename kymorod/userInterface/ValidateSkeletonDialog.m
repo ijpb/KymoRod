@@ -111,7 +111,8 @@ end
 string = sprintf('Current Frame: %d / %d', frameIndex, nFrames);
 set(handles.currentFrameLabel, 'String', string);
 
-dirInitial  = app.settings.skeletonOrigin;
+params = app.analysis.Parameters;
+dirInitial  = params.SkeletonOrigin;
 switch dirInitial
     case 'bottom'
         set(handles.firstSkeletonPointPopup, 'Value', 1);
@@ -130,7 +131,6 @@ if isempty(app.analysis.Midlines)
     set(handles.saveSkeletonRoisButton, 'Enable', 'Off');
 end
 
-params = app.analysis.Parameters;
 set(handles.curvatureSmoothingSizeEdit, 'String', num2str(params.CurvatureWindowSize));
 set(handles.pointNumberEdit,            'String', num2str(params.KymographAbscissaSize));
 
@@ -244,8 +244,9 @@ app.logger.info('ValidateSkeleton.m', ...
 % store in app settings
 app.analysis.Parameters.SkeletonOrigin = skeletonOrigin;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.skeletonOrigin = skeletonOrigin;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.SkeletonOrigin = skeletonOrigin;
 
 setProcessingStep(app, ProcessingStep.Contour);
 
@@ -450,8 +451,9 @@ end
 
 app.analysis.Parameters.CurvatureWindowSize = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.curvatureSmoothingSize = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.CurvatureWindowSize = val;
 
 setProcessingStep(app, ProcessingStep.Skeleton);
 
