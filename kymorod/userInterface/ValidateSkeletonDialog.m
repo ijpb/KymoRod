@@ -451,11 +451,11 @@ end
 
 app.analysis.Parameters.CurvatureWindowSize = val;
 
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Skeleton);
+
 % store in user preferences
 gui = kymorod.gui.KymoRodGui.getInstance();
 gui.UserPrefs.Parameters.CurvatureWindowSize = val;
-
-setProcessingStep(app, ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -492,10 +492,11 @@ end
 
 app.analysis.Parameters.KymographAbscissaSize = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.finalResultLength = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.KymographAbscissaSize = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.

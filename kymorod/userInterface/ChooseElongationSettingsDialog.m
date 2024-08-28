@@ -158,10 +158,11 @@ end
 
 app.analysis.Parameters.CurvatureWindowSize = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.curvatureSmoothingSize = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.CurvatureWindowSize = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -198,10 +199,11 @@ end
 
 app.analysis.Parameters.KymographAbscissaSize = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.finalResultLength = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.KymographAbscissaSize = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Skeleton);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -236,10 +238,11 @@ app.logger.info(mfilename, ...
 
 app.analysis.Parameters.DisplacementChannel = channelString;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.displacementChannel = channelString;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.DisplacementChannel = channelString;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Curvature);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -274,10 +277,11 @@ end
 
 app.analysis.Parameters.DisplacementStep = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.displacementStep = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.DisplacementStep = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Curvature);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -314,10 +318,11 @@ end
 
 app.analysis.Parameters.MatchingWindowRadius = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.windowSize1 = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.MatchingWindowRadius = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Curvature);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -356,10 +361,11 @@ end
 
 app.analysis.Parameters.DisplacementSpatialSmoothing = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.displacementSpatialSmoothing = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.DisplacementSpatialSmoothing = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Displacement);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -397,10 +403,11 @@ end
 
 app.analysis.Parameters.DisplacementValueSmoothing = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.displacementValueSmoothing = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.DisplacementValueSmoothing = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Displacement);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -437,10 +444,11 @@ end
 
 app.analysis.Parameters.DisplacementResampling = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.displacementResamplingDistance = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.DisplacementResampling = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Displacement);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -477,10 +485,11 @@ end
 
 app.analysis.Parameters.ElongationDerivationRadius = val;
 
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.windowSize2 = val;
+% store in user preferences
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.ElongationDerivationRadius = val;
 
-setProcessingStep(app, ProcessingStep.Skeleton);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.FilteredDisplacement);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -552,7 +561,7 @@ computeCurvaturesDisplacementAndElongation(app);
 dt = toc;
 disp(sprintf('Computation of elongation took %f mn', dt / 60)); %#ok<DSPS>
 
-setProcessingStep(app, ProcessingStep.Kymograph);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Elongation);
 
 delete(gcf);
 

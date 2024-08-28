@@ -168,9 +168,11 @@ set(handles.smoothValueEdit, 'String', num2str(smoothingSize));
 
 % update app data 
 app.analysis.Parameters.ContourSmoothingSize = smoothingSize;
-gui = KymoRodGui.getInstance();
-gui.userPrefs.settings.contourSmoothingSize = smoothingSize;
-setProcessingStep(app, ProcessingStep.Contour);
+
+gui = kymorod.gui.KymoRodGui.getInstance();
+gui.UserPrefs.Parameters.ContourSmoothingSize = smoothingSize;
+
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Contour);
 
 setappdata(0, 'app', app);
 
@@ -219,7 +221,8 @@ app.analysis.Parametdes.ContourSmoothingSize = smoothingSize;
 gui = KymoRodGui.getInstance();
 gui.userPrefs.settings.contourSmoothingSize = smoothingSize;
 
-setProcessingStep(app, ProcessingStep.Contour);
+% setProcessingStep(app, ProcessingStep.Contour);
+setProcessingStep(app.analysis, kymorod.app.ProcessingStep.Contour);
 
 setappdata(0, 'app', app);
 

@@ -347,8 +347,6 @@ methods
         computeAnglesAndCurvatures(obj);
         computeDisplacements(obj);
         computeFilteredDisplacements(obj);
-        computeCurvaturesAndAbscissa(obj);
-        computeDisplacements(obj);
         computeElongations(obj);
     end
 end

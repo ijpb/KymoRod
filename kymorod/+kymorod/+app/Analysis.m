@@ -22,6 +22,11 @@ properties
     % the Parameters class.
     Parameters;
 
+    % The current processing step, to know which data are initialized, and
+    % which ones need to be computed. Default is "None".
+    % See the class kymorod.app.ProcessingStep for details.
+    ProcessingStep = kymorod.app.ProcessingStep.None;
+
     % The input images for segmentation, as an instance of TimeLapseImage.
     InputImages;
 
@@ -102,6 +107,15 @@ methods
     end
 
 end % end constructors
+
+%% Management of processing step
+methods
+    function setProcessingStep(obj, newStep)
+        obj.ProcessingStep = newStep;
+        % Update inner data depending on new processing step.
+        newStep.resetData(obj);
+    end
+end
 
 %% General methods for analysis
 methods

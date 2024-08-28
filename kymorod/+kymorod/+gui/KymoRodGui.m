@@ -56,9 +56,9 @@ methods
         % Initialisation of user preferences
         obj.UserPrefs = kymorod.app.UserPrefs();
         try
-            obj.UserPrefs = kymorod.app.Prefs.load();
+            obj.UserPrefs = kymorod.app.UserPrefs.load();
         catch
-            warning('Enable to read default properties. If this is the first time KymoRod is run, this is normal.');
+            warning('Unable to read default properties. If this is the first time KymoRod is run, this is normal.');
         end
     end
 

@@ -716,7 +716,7 @@ app.logger.info('ChooseThresholdDialog.m', ...
     'Validate threshold');
 
 % update processing step if necessary
-if getProcessingStep(app) < ProcessingStep.Contour
+if app.analysis.ProcessingStep < kymorod.app.ProcessingStep.Contour
     computeContours(app);
 end
 
