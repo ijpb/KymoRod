@@ -107,8 +107,8 @@ methods
     function extent = physicalExtent(obj)
         % Returns the physical extent [xmin xmax ymin ymax] in user unit.
         calib = obj.Calibration;
-        extX = [0 obj.ImageSize(1) * calib.PixelSize] + calib.Origin(1);
-        extY = [0 obj.ImageSize(2) * calib.PixelSize] + calib.Origin(2);
+        extX = [0 obj.ImageSize(1) * calib.PixelSize] + calib.PixelOrigin(1);
+        extY = [0 obj.ImageSize(2) * calib.PixelSize] + calib.PixelOrigin(2);
         extent = [extX extY];
     end
     

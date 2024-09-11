@@ -30,7 +30,7 @@ methods (Static)
         end
         singleObj = localObj;
     end
-   
+
     function hFigure = findParentFigure(hObject)
         % Return the figure object containing the hObject widget.
         while ~isempty(hObject) && ~strcmp(get(hObject, 'Type'), 'figure')
