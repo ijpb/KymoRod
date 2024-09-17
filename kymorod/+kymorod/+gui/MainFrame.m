@@ -63,6 +63,11 @@ methods
         mag = api.findFitMag();
         api.setMagnification(mag);
 
+
+        % populate the control panel with controls of current processor
+        panel = kymorod.gui.panels.SegmentImagesPanel(obj);
+        populatePanel(panel, obj.Handles.SettingsPanel);
+
         disp('ok');
     
         set(hFig, 'Visible', 'On');
@@ -90,9 +95,9 @@ methods
             % -------------------------------------------
             % Control panel display
             % (as a card panel ?)
-            controlPanel = uix.BoxPanel('Parent', mainPanel, ...
+            obj.Handles.ControlPanel = uix.BoxPanel('Parent', mainPanel, ...
                 'Title', 'Controls');
-            obj.Handles.ControlLayout = uix.VBox('Parent', controlPanel, ...
+            obj.Handles.ControlLayout = uix.VBox('Parent', obj.Handles.ControlPanel, ...
                 'BackgroundColor',[.5 .5 .5]);
             obj.Handles.SettingsPanel = uipanel(...
                 'Parent', obj.Handles.ControlLayout);
