@@ -183,12 +183,10 @@ methods
                 'Enable', 'off', ...
                 'Callback', @obj.onFrameSliderChanged, ...
                 'BackgroundColor', [1 1 1]);
-%             sliceIndexPanel = uipanel('Parent', timeLapsePanel, ...
-%                 'resizeFcn', @obj.onScrollPanelResized);
-                % code for dragging the slider thumb
-                % @see http://undocumentedmatlab.com/blog/continuous-slider-callback
-                % addlistener(obj.Handles.FrameSlider, ...
-                %     'ContinuousValueChange', @obj.onFrameSliderChanged);
+            % code for dragging the slider thumb
+            % @see http://undocumentedmatlab.com/blog/continuous-slider-callback
+            addlistener(obj.Handles.FrameIndexSlider, ...
+                'ContinuousValueChange', @obj.onFrameSliderChanged);
 
             % If timelapse is valid, enable widgets
             if ~isempty(obj.Analysis.InputImages)
@@ -324,14 +322,22 @@ end
 %% GUI Widgets listeners
 methods
     function onFrameSliderChanged(obj, hObject, eventdata) %#ok<*INUSD>
-        % if isempty(obj.TimeLapse)
-        %     return;
-        % end
-        % 
-        % frameIndex = round(get(hObject, 'Value'));
-        % frameIndex = max(get(hObject, 'Min'), min(get(hObject, 'Max'), frameIndex));
-        % 
-        % updateFrameIndex(obj, frameIndex);
+        % Callback to widgets that change index of current frame.
+
+        if isempty(obj.Analysis)
+            return;
+        end
+        nFrames = frameCount(obj.Analysis);
+        if nFrames == 0
+            return;
+        end
+
+        frameIndex = round(get(hObject, 'Value'));
+        % ensure valide value
+        frameIndex = max(1, min(nFrames, frameIndex));
+
+        updateFrameIndex(obj, frameIndex);
+        updateTimeLapseDisplay(obj);
     end
 end
 

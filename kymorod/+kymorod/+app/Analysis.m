@@ -104,6 +104,19 @@ methods
         % Constructor for Analysis class.
         obj.Parameters = kymorod.app.Parameters;
         obj.InputImages = kymorod.data.TimeLapseImage;
+
+        % parse input arguments
+        while ~isempty(varargin)
+            var1 = varargin{1};
+            if isa(var1, 'kymorod.data.TimeLapseImage')
+                obj.InputImages = var1;
+            elseif isa(var1, 'kymorod.app.Parameters')
+                obj.Parameters = var1;
+            else
+                error('Unable to interpret input argument.');
+            end
+            varargin(1) = [];
+        end
     end
 
 end % end constructors
