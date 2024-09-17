@@ -62,14 +62,6 @@ methods
         api = iptgetapi(obj.Handles.ScrollPanel);
         mag = api.findFitMag();
         api.setMagnification(mag);
-
-
-        % % populate the control panel with controls of current processor
-        % % panel = kymorod.gui.panels.SegmentImagesPanel(obj);
-        % panel = kymorod.gui.panels.SmoothContourPanel(obj);
-        % populatePanel(panel, obj.Handles.SettingsPanel);
-
-        disp('ok');
     
         set(hFig, 'Visible', 'On');
         
@@ -104,6 +96,7 @@ methods
                 'Parent', obj.Handles.ControlLayout);
 
             % add one panel per processing step
+            addControlPanel(settingsPanel, kymorod.gui.panels.SelectInputImagesPanel(obj));
             addControlPanel(settingsPanel, kymorod.gui.panels.SegmentImagesPanel(obj));
             addControlPanel(settingsPanel, kymorod.gui.panels.SmoothContourPanel(obj));
             addControlPanel(settingsPanel, kymorod.gui.panels.ComputeMidlinesPanel(obj));
@@ -272,6 +265,22 @@ methods
         set(obj.Handles.FrameIndexEdit, 'String', num2str(newIndex));
     end
 
+    function updateFrameSliderBounds(obj)
+        % To be called when image list is updated, and before display
+        % update.
+
+        indices = selectedFileIndices(obj.Analysis.InputImages.ImageList);
+        frameCount = length(indices);
+
+        frameIndex = min(obj.Analysis.CurrentFrameIndex, frameCount);
+        step1 = 1 / max(frameCount, 1);
+        step2 = max(min(10 / frameCount, .5), step1);
+        set(obj.Handles.FrameIndexSlider, ...
+            'Min', 1, 'Max', frameCount, ...
+            'Value', frameIndex, ...
+            'SliderStep', [step1 step2]);
+    end
+
     function updateTimeLapseDisplay(obj)
         % Refresh image display of the current frame.
 
@@ -338,8 +347,6 @@ methods
         end
     end
 end
-
-
 
 
 %% GUI Widgets listeners
