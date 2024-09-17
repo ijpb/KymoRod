@@ -64,9 +64,10 @@ methods
         api.setMagnification(mag);
 
 
-        % populate the control panel with controls of current processor
-        panel = kymorod.gui.panels.SegmentImagesPanel(obj);
-        populatePanel(panel, obj.Handles.SettingsPanel);
+        % % populate the control panel with controls of current processor
+        % % panel = kymorod.gui.panels.SegmentImagesPanel(obj);
+        % panel = kymorod.gui.panels.SmoothContourPanel(obj);
+        % populatePanel(panel, obj.Handles.SettingsPanel);
 
         disp('ok');
     
@@ -99,24 +100,36 @@ methods
                 'Title', 'Controls');
             obj.Handles.ControlLayout = uix.VBox('Parent', obj.Handles.ControlPanel, ...
                 'BackgroundColor',[.5 .5 .5]);
-            obj.Handles.SettingsPanel = uipanel(...
+            settingsPanel = uix.CardPanel(...
                 'Parent', obj.Handles.ControlLayout);
+
+            % add one panel per processing step
+            addControlPanel(settingsPanel, kymorod.gui.panels.SegmentImagesPanel(obj));
+            addControlPanel(settingsPanel, kymorod.gui.panels.SmoothContourPanel(obj));
+            addControlPanel(settingsPanel, kymorod.gui.panels.ComputeMidlinesPanel(obj));
+            addControlPanel(settingsPanel, kymorod.gui.panels.CurvatureKymographPanel(obj));
+            settingsPanel.Selection = 1;
+
+            obj.Handles.SettingsPanel = settingsPanel;
+
             obj.Handles.ProcessingButtonsPanel = uix.VBox(...
                 'Parent', obj.Handles.ControlLayout);
-            row1 = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
+            buttonRow1 = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
             obj.Handles.UpdateProcessButton = uicontrol(...
-                'Parent', row1, ...
+                'Parent', buttonRow1, ...
                 'Style','pushbutton', ...
                 'String', 'Update');
-            row2 = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
+            buttonRow2 = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
             obj.Handles.PreviousProcessButton = uicontrol(...
-                'Parent', row2, ...
+                'Parent', buttonRow2, ...
                 'Style','pushbutton', ...
-                'String', 'Prev.');
+                'String', 'Prev.', ...
+                'Callback', @obj.onPreviousStepButton);
             obj.Handles.NextProcessButton = uicontrol(...
-                'Parent', row2, ...
+                'Parent', buttonRow2, ...
                 'Style','pushbutton', ...
-                'String', 'Next');
+                'String', 'Next', ...
+                'Callback', @obj.onNextStepButton);
             obj.Handles.ControlLayout.Heights = [-1 80];
 
             % -------------------------------------------
@@ -233,6 +246,11 @@ methods
 
             mainPanel.Widths = [200 -1 -1];
         end
+
+        function addControlPanel(parentPanel, controlPanel)
+            panel = uipanel('Parent', parentPanel);
+            populatePanel(controlPanel, panel);
+        end
     end
 
 end % end constructors
@@ -326,6 +344,22 @@ end
 
 %% GUI Widgets listeners
 methods
+    function onPreviousStepButton(obj, src, ~)
+        stepIndex = obj.Handles.SettingsPanel.Selection;
+        if stepIndex > 1
+            stepIndex = stepIndex - 1;
+            obj.Handles.SettingsPanel.Selection = stepIndex;
+        end
+    end
+
+    function onNextStepButton(obj, src, ~)
+        stepIndex = obj.Handles.SettingsPanel.Selection;
+        if stepIndex < length(obj.Handles.SettingsPanel.Children)
+            stepIndex = stepIndex + 1;
+            obj.Handles.SettingsPanel.Selection = stepIndex;
+        end
+    end
+
     function onFrameSliderChanged(obj, hObject, eventdata) %#ok<*INUSD>
         % Callback to widgets that change index of current frame.
 
@@ -345,6 +379,7 @@ methods
         updateTimeLapseDisplay(obj);
     end
 end
+
 
 %% Figure management
 methods

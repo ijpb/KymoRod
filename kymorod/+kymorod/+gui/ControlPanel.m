@@ -20,6 +20,9 @@ classdef ControlPanel < handle
 properties
     Frame;
     Handles;
+    
+    Padding = 5;
+
 end % end properties
 
 
@@ -35,7 +38,10 @@ end % end constructors
 
 
 %% Methods
-methods
+methods (Abstract)
+    % Build the layout of the specified panel.
+    populatePanel(obj, hPanel);
+
 end % end methods
 
 end % end classdef
