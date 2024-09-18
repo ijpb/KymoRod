@@ -46,8 +46,6 @@ methods
             'Title', 'Compute Midlines');
         midlineLayout = uix.VBox('Parent', midlinePanel);
 
-        origin = obj.Frame.Analysis.Parameters.SkeletonOrigin;
-        originIndex = find(strcmpi(origin, {'Bottom', 'Top', 'Left', 'Right'}));
         midlineOriginLine = uix.HBox(...
             'Parent', midlineLayout, 'Padding', obj.Padding);
         uicontrol('Parent', midlineOriginLine, ...
@@ -58,13 +56,20 @@ methods
             'Parent', midlineOriginLine, ...
             'Style', 'popupmenu', ...
             'String', obj.MidlineOriginNames, ...
-            'Value', originIndex, ...
+            'Value', 1, ...
             'Callback', @obj.onMidlineOriginChanged);
         midlineOriginLine.Widths = [-1 -1];
 
         uix.Empty('Parent', layout);
         layout.Heights = [85 -1];
 
+        set(hPanel, 'UserData', obj);
+    end
+    
+    function select(obj)
+        origin = obj.Frame.Analysis.Parameters.SkeletonOrigin;
+        originIndex = find(strcmpi(origin, obj.MidlineOriginNames));
+        set(obj.Handles.MidlineOriginChoice, 'Value', originIndex);
     end
 end % end methods
 

@@ -22,6 +22,10 @@ classdef MainFrame < kymorod.gui.KymoRodFrame
 %% Properties
 properties
     ZoomMode = 'adjust';
+
+    % A dictionary of control panels, to retrieve them based on a key.
+    ControlPanels = dictionary;
+
 end % end properties
 
 
@@ -52,8 +56,9 @@ methods
         
         % creates the layout
         setupLayout(hFig);
+        selectControlPanel(obj, 1);
 
-        updateFrameIndex(obj, 15);
+        % updateFrameIndex(obj, 15);
         updateTimeLapseDisplay(obj);
 
         updateTitle(obj);
@@ -96,11 +101,11 @@ methods
                 'Parent', obj.Handles.ControlLayout);
 
             % add one panel per processing step
-            addControlPanel(settingsPanel, kymorod.gui.panels.SelectInputImagesPanel(obj));
-            addControlPanel(settingsPanel, kymorod.gui.panels.SegmentImagesPanel(obj));
-            addControlPanel(settingsPanel, kymorod.gui.panels.SmoothContourPanel(obj));
-            addControlPanel(settingsPanel, kymorod.gui.panels.ComputeMidlinesPanel(obj));
-            addControlPanel(settingsPanel, kymorod.gui.panels.CurvatureKymographPanel(obj));
+            addControlPanel(settingsPanel, 'SelectInputImages', kymorod.gui.panels.SelectInputImagesPanel(obj));
+            addControlPanel(settingsPanel, 'SegmentImages', kymorod.gui.panels.SegmentImagesPanel(obj));
+            addControlPanel(settingsPanel, 'SmoothContours', kymorod.gui.panels.SmoothContourPanel(obj));
+            addControlPanel(settingsPanel, 'ComputeMidlines', kymorod.gui.panels.ComputeMidlinesPanel(obj));
+            addControlPanel(settingsPanel, 'CurvatureKymograph', kymorod.gui.panels.CurvatureKymographPanel(obj));
             settingsPanel.Selection = 1;
 
             obj.Handles.SettingsPanel = settingsPanel;
@@ -240,9 +245,11 @@ methods
             mainPanel.Widths = [200 -1 -1];
         end
 
-        function addControlPanel(parentPanel, controlPanel)
+        function addControlPanel(parentPanel, panelKey, controlPanel)
             panel = uipanel('Parent', parentPanel);
             populatePanel(controlPanel, panel);
+            set(panel, 'UserData', controlPanel);
+            obj.ControlPanels(panelKey) = panel;
         end
     end
 
@@ -354,17 +361,34 @@ methods
     function onPreviousStepButton(obj, src, ~)
         stepIndex = obj.Handles.SettingsPanel.Selection;
         if stepIndex > 1
-            stepIndex = stepIndex - 1;
-            obj.Handles.SettingsPanel.Selection = stepIndex;
+            selectControlPanel(obj, stepIndex - 1);
         end
     end
 
     function onNextStepButton(obj, src, ~)
         stepIndex = obj.Handles.SettingsPanel.Selection;
         if stepIndex < length(obj.Handles.SettingsPanel.Children)
-            stepIndex = stepIndex + 1;
-            obj.Handles.SettingsPanel.Selection = stepIndex;
+            selectControlPanel(obj, stepIndex + 1);
         end
+    end
+
+    function selectControlPanel(obj, index)
+        % Select the panel given by its index, and call associated controler.
+
+        % retrieve panel index in "SettingsPanel" CardPanel
+        obj.Handles.SettingsPanel.Selection = index;
+
+        % identify the panel corresponding to current step
+        switch (index)
+            case 1, panel = obj.ControlPanels("SelectInputImages");
+            case 2, panel = obj.ControlPanels("SegmentImages");
+            case 3, panel = obj.ControlPanels("SmoothContours");
+            case 4, panel = obj.ControlPanels("ComputeMidlines");
+            case 5, panel = obj.ControlPanels("CurvatureKymograph");
+        end
+        
+        % retrieve controler instance and call the update method
+        select(get(panel, 'UserData'));
     end
 
     function onFrameSliderChanged(obj, hObject, eventdata) %#ok<*INUSD>

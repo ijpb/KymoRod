@@ -37,12 +37,16 @@ methods
 end % end constructors
 
 
-%% Methods
+%% Abstract methods
 methods (Abstract)
     % Build the layout of the specified panel.
     populatePanel(obj, hPanel);
 
+    % To be called when the corresponding panel is selected.
+    select(obj);
+
 end % end methods
+
 
 end % end classdef
 
