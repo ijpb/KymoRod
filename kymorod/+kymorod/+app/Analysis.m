@@ -82,6 +82,11 @@ properties
     % another image on the positions of the skeletons
     IntensityKymograph;
 
+    % A dictionary of kymographs.
+    % Valid expected keys are: "Radius", "VerticalAngle", "Curvature",
+    % "Elongation", "Intensity".
+    Kymographs = dictionary;
+
 
     % index of current frame for display.
     CurrentFrameIndex = 1;
@@ -130,7 +135,8 @@ methods
     end
 end
 
-%% General methods for analysis
+
+%% Access data within analysis
 methods
     function nf = frameCount(obj)
         % Return the number of frames within this analysis.
@@ -191,6 +197,18 @@ methods
         end
     end
 
+    function kymo = getKymograph(obj, type)
+        % Returns the Kymograph or required type, or an empty array if it
+        % is not defined. 
+        kymo = [];
+        if iskey(obj.Kymographs, type)
+            kymo = obj.Kymographs(type);
+        end
+    end
+end
+
+%% Computation methods
+methods
     function computeThresholdValues(obj)
         % Compute threshold values for all images.
 
@@ -412,6 +430,10 @@ methods
             Sa, curvatureValues, nPos, ...
             'Name', 'Curvature', ...
             'TimeAxis', timeAxis, 'PositionAxis', posAxis);
+
+        obj.Kymographs("Radius") = obj.RadiusKymograph;
+        obj.Kymographs("VerticalAngle") = obj.VerticalAngleKymograph;
+        obj.Kymographs("Curvature") = obj.CurvatureKymograph;
     end
 
     function img = getDisplacementImage(obj, index)
@@ -619,6 +641,8 @@ methods
         % retrieve axes from previous kymograph
         obj.ElongationKymograph.TimeAxis = obj.RadiusKymograph.TimeAxis;
         obj.ElongationKymograph.PositionAxis = obj.RadiusKymograph.PositionAxis;
+
+        obj.Kymographs("Elongation") = obj.ElongationKymograph;
     end
     
     function image = getIntensityImage(obj, index)
@@ -665,6 +689,7 @@ methods
             'Name', 'Intensity', ...
             'TimeAxis', obj.RadiusKymograph.TimeAxis, ...
             'PositionAxis', obj.RadiusKymograph.PositionAxis);
+        obj.Kymographs("Intensity") = obj.IntensityKymograph;
     end
 end
 

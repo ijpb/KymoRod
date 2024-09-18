@@ -70,10 +70,9 @@ methods
     function res = createNewAnalysis(obj)
         % Create a new analysis using current settings.
         
-        % create new app dat awith current prefs
-        params = kymorod.app.Parameters(obj.UserPrefs.Parameters);
+        % create new app data with current user preferences
         res = kymorod.app.Analysis();
-        res.Parameters = params;
+        res.Parameters = kymorod.app.Parameters(obj.UserPrefs.Parameters);
         
         % initialize with default directory
         imgList = res.InputImages.ImageList;
