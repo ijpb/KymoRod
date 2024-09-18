@@ -70,6 +70,10 @@ methods
         origin = obj.Frame.Analysis.Parameters.SkeletonOrigin;
         originIndex = find(strcmpi(origin, obj.MidlineOriginNames));
         set(obj.Handles.MidlineOriginChoice, 'Value', originIndex);
+
+        % update time-lapse display
+        obj.Frame.ImageToDisplay = 'Segmented';
+        updateTimeLapseDisplay(obj.Frame);
     end
 end % end methods
 

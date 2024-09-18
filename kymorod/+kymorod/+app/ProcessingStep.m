@@ -1,10 +1,15 @@
 classdef ProcessingStep < uint32
 %  Enumeration of the different steps of the workflow.
 %
-%   Class ProcessingStep
+%   The enumeration inherits an integer data type, making it possible to
+%   compare processing steps together.
 %
 %   Example
-%   ProcessingStep
+%     step1 = kymorod.data.ProcessingStep.Segmentation;
+%     step2 = kymorod.data.ProcessingStep.Midline;
+%     b = step1 < step 2
+%     ans = 
+%         true
 %
 %   See also
 %
@@ -45,6 +50,8 @@ end
 methods
     function obj = ProcessingStep(value, varargin)
         % Constructor for ProcessingStep class.
+
+        % need to call explicitely the uint32 constructor.
         obj = obj@uint32(value);
     end
 
@@ -90,7 +97,6 @@ methods
 
         function clearContours(analysis)
             analysis.Contours = {};
-            disp('clear midlines');
             clearMidlines(analysis);
         end
 

@@ -57,7 +57,6 @@ methods
         %
         % IS = SelectedFilesImageSeries(DIR, PATTERN);
         % IS = SelectedFilesImageSeries(DIR, PATTERN, FIRST, LAST, STEP);
-        % IS = SelectedFilesImageSeries(DIR, PATTERN, FIRST, LAST, STEP, CHANNEL);
         %
         
         % empty constructor
@@ -101,7 +100,20 @@ end % end constructors
 methods
     function n = imageCount(obj)
         % Returns the number of images in the list.
+        if isempty(obj.FileNameList)
+            computeFileNameList(obj);
+        end
         n = length(selectedFileIndices(obj));
+    end
+    
+    function n = fileCount(obj)
+        % Returns the total number of image files in the list.
+        % The number of selected images may be less, depending on the
+        % choice of first and last indices.
+        if isempty(obj.FileNameList)
+            computeFileNameList(obj);
+        end
+        n = length(obj.FileNameList);
     end
     
     function img = getImage(obj, index)
@@ -169,7 +181,6 @@ methods
 
     function computeFileNameList(obj)
         % Computes the list of file names from dir+pattern.
-        %
         
         fileList = getFileList(obj);
         

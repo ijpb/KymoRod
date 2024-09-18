@@ -209,11 +209,27 @@ end
 
 %% Computation methods
 methods
+    function updateThresholdValues(obj)
+        % Recompute threshold values based on current parameters and images.
+
+        if strcmp(obj.Parameters.ThresholdStrategy, 'Auto')
+            computeAutoThresholdValues(obj);
+        else
+            value = obj.Parameters.ManualThresholdValue;
+            setThresholdValues(obj, value);
+        end
+    end
+
     function computeThresholdValues(obj)
+        warning('deprecated, use "computeAutoThresholdValues" instead');
+        computeAutoThresholdValues(obj);
+    end
+
+    function computeAutoThresholdValues(obj)
         % Compute threshold values for all images.
 
         % Compute the threshold values
-        disp('Segmentation');
+        disp('Compute Threshold values');
 
         % allocate memory for result
         nImages = frameCount(obj);
@@ -240,7 +256,7 @@ methods
 
         % setup threshold values
         obj.InitialThresholdValues = values;
-        obj.ThresholdValues = obj.InitialThresholdValues;
+        obj.ThresholdValues = values;
     end
 
     function setThresholdValues(obj, values)

@@ -66,6 +66,20 @@ methods
 end % end constructors
 
 
+%% Getter and setters
+methods
+    function setImageList(obj, imageList)
+        % Setup the ImageList of this TimeLapseImage, and update image size.
+        obj.ImageList = imageList;
+        if imageCount(obj.ImageList) > 0
+            % get an arbitrary image to initialize image size
+            img = getImage(obj.ImageList, 1);
+            obj.ImageSize = [size(img, 2) size(img, 1)];
+        end
+    end
+end
+
+
 %% Methods
 methods
     function n = frameCount(obj)

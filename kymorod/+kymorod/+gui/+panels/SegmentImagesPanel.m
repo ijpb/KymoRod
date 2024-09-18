@@ -127,10 +127,21 @@ methods
             'Callback', @obj.onManualThresholdValueChanged);
         manualThresholdLine.Widths = [-1 -1];
         
-        segmentLayout.Heights = [30 30 30];
+        manualThresholdSliderLine = uix.HBox(...
+            'Parent', segmentLayout, 'Padding', obj.Padding);
+        obj.Handles.ManualThresholdSlider = uicontrol(...
+            'Parent', manualThresholdSliderLine, ...
+            'Style', 'slider', ...
+            'Min', 1, 'Max', 255, ...
+            'Value', 150, ...
+            'SliderStep', [1 10] ./ 254, ...
+            'Callback', @obj.onManualThresholdValueChanged);
+        manualThresholdSliderLine.Widths = -1;
+
+        segmentLayout.Heights = [30 30 30 30];
 
         uix.Empty('Parent', layout);
-        layout.Heights = [85 110 -1];
+        layout.Heights = [85 145 -1];
 
         set(hPanel, 'UserData', obj);
     end
@@ -156,18 +167,33 @@ methods
 
         manualThresholdValue = params.ManualThresholdValue;
         set(obj.Handles.ManualThresholdValueEdit, 'String', num2str(manualThresholdValue));
+        set(obj.Handles.ManualThresholdSlider, 'Value', manualThresholdValue);
 
         updateWidgetSelection(obj);
+
+        % ensure validity of segmentation
+        if isempty(obj.Frame.Analysis.ThresholdValues)
+            setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
+            updateThresholdValues(obj.Frame.Analysis);
+        end
+
+        % update time-lapse display
+        obj.Frame.ImageToDisplay = 'Segmented';
+        updateTimeLapseDisplay(obj.Frame);
     end
 
     function updateWidgetSelection(obj)
         params = obj.Frame.Analysis.Parameters;
         if strcmp(params.ThresholdStrategy, 'Auto')
             set([obj.Handles.AutoThresholdMethodLabel obj.Handles.AutoThresholdMethodChoice], 'Enable', 'on')
-            set([obj.Handles.ManualThresholdValueLabel obj.Handles.ManualThresholdValueEdit], 'Enable', 'off')
+            set([obj.Handles.ManualThresholdValueLabel ...
+                obj.Handles.ManualThresholdValueEdit ...
+                obj.Handles.ManualThresholdSlider], 'Enable', 'off')
         else
             set([obj.Handles.AutoThresholdMethodLabel obj.Handles.AutoThresholdMethodChoice], 'Enable', 'off')
-            set([obj.Handles.ManualThresholdValueLabel obj.Handles.ManualThresholdValueEdit], 'Enable', 'on')
+            set([obj.Handles.ManualThresholdValueLabel ...
+                obj.Handles.ManualThresholdValueEdit ...
+                obj.Handles.ManualThresholdSlider], 'Enable', 'on')
         end
     end
 
@@ -180,7 +206,15 @@ methods
         index = get(src, 'Value');
         methodList =  {'None', 'BoxFilter', 'Gaussian'};
         methodName = methodList{index};
-        obj.Frame.Analysis.Parameters.AutoThresholdMethod = methodName;
+        obj.Frame.Analysis.Parameters.ImageSmoothingMethodName = methodName;
+
+        % update auto threshold values if necessary
+        if strcmpi(obj.Frame.Analysis.Parameters.ThresholdStrategy, 'Auto')
+            computeAutoThresholdValues(obj.Frame.Analysis);
+        end
+
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
+        updateTimeLapseDisplay(obj.Frame);
     end
 
     function onSmoothingRadiusChanged(obj, src, ~)
@@ -193,6 +227,14 @@ methods
         obj.Frame.Analysis.Parameters.ImageSmoothingRadius = radius;
 
         set(src, 'String', num2str(radius));
+
+        % update auto threshold values if necessary
+        if strcmpi(obj.Frame.Analysis.Parameters.ThresholdStrategy, 'Auto')
+            computeAutoThresholdValues(obj.Frame.Analysis);
+        end
+
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
+        updateTimeLapseDisplay(obj.Frame);
     end
 
     function onThresholdStrategyChanged(obj, src, ~)
@@ -202,18 +244,14 @@ methods
         obj.Frame.Analysis.Parameters.ThresholdStrategy = strategyName;
 
         updateWidgetSelection(obj);
-    end
 
-    function onManualThresholdValueChanged(obj, src, ~)
-        value = str2double(get(src, 'String'));
-        if isnan(value)
-            return;
+        % update auto threshold values if necessary
+        if strcmpi(strategylist, 'Auto')
+            computeAutoThresholdValues(obj.Frame.Analysis);
         end
-        value = round(value);
-        
-        obj.Frame.Analysis.Parameters.ManualThresholdValue = value;
 
-        set(src, 'String', num2str(value));
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
+        updateTimeLapseDisplay(obj.Frame);
     end
 
     function onAutoThresholdMethodChanged(obj, src, ~)
@@ -221,24 +259,35 @@ methods
         methodList = {'MaxEntropy', 'Otsu'};
         methodName = methodList{index};
         obj.Frame.Analysis.Parameters.AutoThresholdMethod = methodName;
+
+        % update auto threshold values
+        computeAutoThresholdValues(obj.Frame.Analysis);
+
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
+        updateTimeLapseDisplay(obj.Frame);
     end
-end
 
-
-%% Utility methods
-methods
-    function index = findSegmentationStrategyIndex(obj, string) %#ok<INUSD>
-        % Convert value of option into index within listbox.
-        if strcmpi(string, 'Auto')
-            index = 1;
-        elseif strcmpi(string, 'Manual')
-            index = 2;
-        else
-            warning('Could not parse index of segmentation strategy');
-            index = 1;
+    function onManualThresholdValueChanged(obj, src, ~)
+        if src == obj.Handles.ManualThresholdValueEdit
+            value = str2double(get(src, 'String'));
+            if isnan(value)
+                return;
+            end
+        elseif src == obj.Handles.ManualThresholdSlider
+            value = get(src, 'Value');
         end
+        value = round(value);
+        
+        obj.Frame.Analysis.Parameters.ManualThresholdValue = value;
+
+        set(obj.Handles.ManualThresholdValueEdit, 'String', num2str(value));
+        set(obj.Handles.ManualThresholdSlider, 'Value', value);
+
+        setThresholdValues(obj.Frame.Analysis, value);
+
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
+        updateTimeLapseDisplay(obj.Frame);
     end
 end
 
 end % end classdef
-

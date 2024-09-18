@@ -112,6 +112,10 @@ methods
         nPoints = obj.Frame.Analysis.Parameters.KymographAbscissaSize;
         set(obj.Handles.AbscissaSizeEdit, 'String', num2str(nPoints));
         set(obj.Handles.AbscissaSizeSlider, 'Value', nPoints);
+
+        % update time-lapse display
+        obj.Frame.ImageToDisplay = 'Input';
+        updateTimeLapseDisplay(obj.Frame);
    end
 end % end methods
 

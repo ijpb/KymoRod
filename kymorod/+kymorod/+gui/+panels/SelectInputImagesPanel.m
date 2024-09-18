@@ -184,6 +184,10 @@ methods
         set(obj.Handles.FirstIndexEdit, 'String', num2str(firstIndex));
         lastIndex = inputImages.ImageList.IndexLast;
         set(obj.Handles.LastIndexEdit, 'String', num2str(lastIndex));
+
+        % update time-lapse display
+        obj.Frame.ImageToDisplay = 'Input';
+        updateTimeLapseDisplay(obj.Frame);
     end
 end % end methods
 

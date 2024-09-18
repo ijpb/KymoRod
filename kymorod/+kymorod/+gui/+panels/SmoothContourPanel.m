@@ -79,6 +79,10 @@ methods
         value = obj.Frame.Analysis.Parameters.ContourSmoothingSize;
         set(obj.Handles.SmoothValueEdit, 'String', num2str(value));
         set(obj.Handles.SmoothSlider, 'Value', value);
+
+        % update time-lapse display
+        obj.Frame.ImageToDisplay = 'Segmented';
+        updateTimeLapseDisplay(obj.Frame);
     end
 end % end methods
 

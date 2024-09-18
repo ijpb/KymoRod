@@ -23,6 +23,10 @@ classdef MainFrame < kymorod.gui.KymoRodFrame
 properties
     ZoomMode = 'adjust';
 
+    % The TimeLapse frame to display.
+    % Can be one of {'None', 'Input', 'Smoothed', 'Segmented'}.
+    ImageToDisplay = 'Input';
+
     % A dictionary of control panels, to retrieve them based on a key.
     ControlPanels = dictionary;
 
@@ -300,15 +304,39 @@ methods
         if isempty(obj.Analysis.InputImages)
             return;
         end
-        timeLapse = obj.Analysis.InputImages;
 
-        % compute display data
-        frameImage = getFrameImage(timeLapse, obj.Analysis.CurrentFrameIndex);
-   
+        img = [];
+        index = obj.Analysis.CurrentFrameIndex;
+        switch obj.ImageToDisplay
+            case 'None'
+            case 'Input'
+                if obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Selection
+                    img = getSegmentableImage(obj.Analysis, index);
+                end
+            case 'Smoothed'
+                if obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Selection
+                    img = getSmoothedImage(obj.Analysis, index);
+                end
+            case 'Segmented'
+                if obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Selection
+                    img = getSegmentedImage(obj.Analysis, index);
+                end
+            otherwise
+                warning('Could not interpret type of image to display: %s', obj.ImageToDisplay);
+                return;
+        end
+        if isempty(img)
+            dims = obj.Analysis.InputImages.ImageSize;
+            if all(dims == [0 0])
+                dims = [10 10];
+            end
+            img = ones(dims([2 1]));
+        end
+
         % changes current display data
         api = iptgetapi(obj.Handles.ScrollPanel);
 %         loc = api.getVisibleLocation();
-        api.replaceImage(frameImage, 'PreserveView', true);
+        api.replaceImage(img, 'PreserveView', true);
 %         api.setVisibleLocation(loc);
                
         % remove all axis children that are not image
@@ -386,7 +414,7 @@ methods
             case 4, panel = obj.ControlPanels("ComputeMidlines");
             case 5, panel = obj.ControlPanels("CurvatureKymograph");
         end
-        
+
         % retrieve controler instance and call the update method
         select(get(panel, 'UserData'));
     end
