@@ -80,10 +80,23 @@ methods
         set(obj.Handles.SmoothValueEdit, 'String', num2str(value));
         set(obj.Handles.SmoothSlider, 'Value', value);
 
+        % ensure contours are computed
+        if isempty(obj.Frame.Analysis.Contours)
+            computeContours(obj.Frame.Analysis);
+            setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Contour);
+        end
+
         % update time-lapse display
         obj.Frame.ImageToDisplay = 'Segmented';
+        obj.Frame.DisplayContour = true;
         updateTimeLapseDisplay(obj.Frame);
     end
+
+    % To be called when the corresponding panel is selected.
+    function validateProcess(obj) %#ok<MANU>
+        % (nothing to do here)
+    end
+
 end % end methods
 
 
@@ -105,6 +118,9 @@ methods
 
         set(obj.Handles.SmoothValueEdit, 'String', num2str(value));
         set(obj.Handles.SmoothSlider, 'Value', value);
+
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Contour);
+        updateTimeLapseDisplay(obj.Frame);
     end
 end
 

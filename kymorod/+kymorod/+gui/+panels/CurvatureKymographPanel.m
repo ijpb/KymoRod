@@ -116,7 +116,14 @@ methods
         % update time-lapse display
         obj.Frame.ImageToDisplay = 'Input';
         updateTimeLapseDisplay(obj.Frame);
-   end
+    end
+
+    % To be called when the corresponding panel is selected.
+    function validateProcess(obj) %#ok<MANU>
+        % (nothing to do here)
+    end
+
+
 end % end methods
 
 

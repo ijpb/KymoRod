@@ -1,4 +1,4 @@
-classdef Midline < handle
+classdef (InferiorClasses = {?matlab.graphics.axis.Axes}) Midline < handle
 % The midline of the organ.
 %
 %   Class Midline

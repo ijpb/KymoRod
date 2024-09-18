@@ -185,11 +185,21 @@ methods
         lastIndex = inputImages.ImageList.IndexLast;
         set(obj.Handles.LastIndexEdit, 'String', num2str(lastIndex));
 
+        % as this is the first step, disable the Previous Step button
+        set(obj.Frame.Handles.PreviousStepButton, 'Enable', 'off');
+
         % update time-lapse display
         obj.Frame.ImageToDisplay = 'Input';
         updateTimeLapseDisplay(obj.Frame);
     end
-end % end methods
+
+    % To be called when the corresponding panel is selected.
+    function validateProcess(obj)
+        % make sure 'PreviousStep' button is enables
+        set(obj.Frame.Handles.PreviousStepButton, 'Enable', 'on');
+    end 
+end
+
 
 %% General methods
 methods

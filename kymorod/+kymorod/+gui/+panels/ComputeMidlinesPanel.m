@@ -61,7 +61,14 @@ methods
         midlineOriginLine.Widths = [-1 -1];
 
         uix.Empty('Parent', layout);
-        layout.Heights = [85 -1];
+
+        buttonRow = uix.HButtonBox('Parent', layout);
+        obj.Handles.UpdateButton = uicontrol(...
+            'Parent', buttonRow, ...
+            'Style','pushbutton', ...
+            'String', 'Update', ...
+            'Callback', @obj.onUpdateButton);
+        layout.Heights = [85 -1 40];
 
         set(hPanel, 'UserData', obj);
     end
@@ -71,10 +78,22 @@ methods
         originIndex = find(strcmpi(origin, obj.MidlineOriginNames));
         set(obj.Handles.MidlineOriginChoice, 'Value', originIndex);
 
+        set(obj.Handles.UpdateButton, 'Enable', 'on');
+        if obj.Frame.Analysis.ProcessingStep < kymorod.app.ProcessingStep.Skeleton
+            set(obj.Frame.Handles.NextStepButton, 'Enable', 'off');
+        end
+
         % update time-lapse display
         obj.Frame.ImageToDisplay = 'Segmented';
+        obj.Frame.DisplayMidline = true;
         updateTimeLapseDisplay(obj.Frame);
     end
+
+    % To be called when the corresponding panel is selected.
+    function validateProcess(obj) %#ok<MANU>
+        % (nothing to do here)
+    end
+
 end % end methods
 
 
@@ -86,6 +105,20 @@ methods
         value = obj.MidlineOriginNames{index};
 
         obj.Frame.Analysis.Parameters.SkeletonOrigin = value;
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Contour);
+
+        set(obj.Handles.UpdateButton, 'Enable', 'on');
+        set(obj.Frame.Handles.NextStepButton, 'Enable', 'off');
+    end
+
+    function onUpdateButton(obj, src, ~) %#ok<INUSD>
+
+        set(obj.Handles.UpdateButton, 'Enable', 'off');
+        computeMidlines(obj.Frame.Analysis);
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Midline);
+        set(obj.Frame.Handles.NextStepButton, 'Enable', 'on');
+
+        updateTimeLapseDisplay(obj.Frame);
     end
 end
 

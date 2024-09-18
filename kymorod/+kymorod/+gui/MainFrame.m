@@ -21,14 +21,19 @@ classdef MainFrame < kymorod.gui.KymoRodFrame
 
 %% Properties
 properties
-    ZoomMode = 'adjust';
+    % A dictionary of control panels, to retrieve them based on a key.
+    ControlPanels = dictionary;
 
     % The TimeLapse frame to display.
     % Can be one of {'None', 'Input', 'Smoothed', 'Segmented'}.
     ImageToDisplay = 'Input';
 
-    % A dictionary of control panels, to retrieve them based on a key.
-    ControlPanels = dictionary;
+    DisplayContour = true;
+
+    DisplayMidline = true;
+    
+
+    ZoomMode = 'adjust';
 
 end % end properties
 
@@ -50,8 +55,12 @@ methods
             'CloseRequestFcn', @obj.close);
         obj.Handles.Figure = hFig;
 
+        % initialize empty handles for graphical items
+        obj.Handles.Contour = [];
+        obj.Handles.Midline = [];
+        obj.Handles.TimeLapseCursor = [];
+
         % setup position large enough
-        % pos = get(hFig, 'Position');
         pos = [300 200 1000 600];
         set(hFig, 'Position', pos);
         
@@ -60,7 +69,8 @@ methods
         
         % creates the layout
         setupLayout(hFig);
-        selectControlPanel(obj, 1);
+        currentPanel = obj.ControlPanels("SelectInputImages");
+        select(get(currentPanel, 'UserData'));
 
         % updateFrameIndex(obj, 15);
         updateTimeLapseDisplay(obj);
@@ -96,7 +106,10 @@ methods
 
             % -------------------------------------------
             % Control panel display
-            % (as a card panel ?)
+            % Uses a card panel to initialize all settings panels, and
+            % display only the current one.
+            % The bottom part is composed of two buttons to navigate
+            % between the processing steps.
             obj.Handles.ControlPanel = uix.BoxPanel('Parent', mainPanel, ...
                 'Title', 'Controls');
             obj.Handles.ControlLayout = uix.VBox('Parent', obj.Handles.ControlPanel, ...
@@ -116,23 +129,18 @@ methods
 
             obj.Handles.ProcessingButtonsPanel = uix.VBox(...
                 'Parent', obj.Handles.ControlLayout);
-            buttonRow1 = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
-            obj.Handles.UpdateProcessButton = uicontrol(...
-                'Parent', buttonRow1, ...
-                'Style','pushbutton', ...
-                'String', 'Update');
-            buttonRow2 = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
-            obj.Handles.PreviousProcessButton = uicontrol(...
-                'Parent', buttonRow2, ...
+            buttonRow = uix.HButtonBox('Parent', obj.Handles.ProcessingButtonsPanel);
+            obj.Handles.PreviousStepButton = uicontrol(...
+                'Parent', buttonRow, ...
                 'Style','pushbutton', ...
                 'String', 'Prev.', ...
                 'Callback', @obj.onPreviousStepButton);
-            obj.Handles.NextProcessButton = uicontrol(...
-                'Parent', buttonRow2, ...
+            obj.Handles.NextStepButton = uicontrol(...
+                'Parent', buttonRow, ...
                 'Style','pushbutton', ...
                 'String', 'Next', ...
                 'Callback', @obj.onNextStepButton);
-            obj.Handles.ControlLayout.Heights = [-1 80];
+            obj.Handles.ControlLayout.Heights = [-1 40];
 
             % -------------------------------------------
             % Time-lapse display
@@ -347,6 +355,64 @@ methods
                 delete(child);
             end
         end
+
+        if obj.DisplayContour && obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Contour
+            updateContourDisplay(obj);
+        end
+
+        if obj.DisplayMidline && obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Midline
+            updateMidlineDisplay(obj);
+        end
+
+    end
+
+    function updateContourDisplay(obj)
+
+        if isempty(obj.Analysis.Contours)
+            warning('Can not diplay contours if not computed');
+        end
+
+        % Remove previous display
+        if ~isempty(obj.Handles.Contour) && ishandle(obj.Handles.Contour)
+            delete(obj.Handles.Contour);
+            obj.Handles.Contour = [];
+        end
+
+        % Display contour data if necessary      
+        if obj.DisplayContour && obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Contour
+            % retrieve current smooth contour
+            index = obj.Analysis.CurrentFrameIndex;
+            contour = getSmoothedContour(obj.Analysis, index);
+            
+            % draw contour from new data
+            obj.Handles.Contour = drawPolygon(obj.Handles.TimeLapseAxis, contour, ...
+                'LineWidth', 1, 'Color', 'r');
+            % applyStyle(obj.Experiment.ContourStyle, obj.Handles.Contour);
+        end
+    end
+
+    function updateMidlineDisplay(obj)
+        if isempty(obj.Analysis.Midlines)
+            warning('Can not diplay midlines if not computed');
+        end
+
+        % Remove previous display
+        if ~isempty(obj.Handles.Midline) && ishandle(obj.Handles.Midline)
+            delete(obj.Handles.Midline);
+            obj.Handles.Midline = [];
+        end
+
+        % Display contour data if necessary      
+        if obj.DisplayMidline && obj.Analysis.ProcessingStep >= kymorod.app.ProcessingStep.Midline
+            % retrieve current midline
+            index = obj.Analysis.CurrentFrameIndex;
+            midline = obj.Analysis.Midlines{index};
+            
+            % draw contour from new data
+            obj.Handles.Midline = draw(obj.Handles.TimeLapseAxis, midline, ...
+                'LineWidth', 1, 'Color', 'b');
+            % applyStyle(obj.Experiment.MidlineStyle, obj.Handles.Contour);
+        end
     end
 end
 
@@ -387,26 +453,34 @@ end
 %% GUI Widgets listeners
 methods
     function onPreviousStepButton(obj, src, ~)
-        stepIndex = obj.Handles.SettingsPanel.Selection;
-        if stepIndex > 1
-            selectControlPanel(obj, stepIndex - 1);
+        index = obj.Handles.SettingsPanel.Selection;
+        if index > 1
+            % switch to next panel
+            index = index - 1;
+            obj.Handles.SettingsPanel.Selection = index;
+            panel = retrieveControlPanel(obj, index);
+            select(get(panel, 'UserData'));
         end
     end
 
     function onNextStepButton(obj, src, ~)
-        stepIndex = obj.Handles.SettingsPanel.Selection;
-        if stepIndex < length(obj.Handles.SettingsPanel.Children)
-            selectControlPanel(obj, stepIndex + 1);
+        index = obj.Handles.SettingsPanel.Selection;
+        if index < length(obj.Handles.SettingsPanel.Children)
+            % deselect controls of old panel
+            panel = retrieveControlPanel(obj, index);
+            validateProcess(get(panel, 'UserData'));
+
+            % switch to next panel
+            index = index + 1;
+            obj.Handles.SettingsPanel.Selection = index;
+            panel = retrieveControlPanel(obj, index);
+            select(get(panel, 'UserData'));
         end
     end
 
-    function selectControlPanel(obj, index)
-        % Select the panel given by its index, and call associated controler.
-
-        % retrieve panel index in "SettingsPanel" CardPanel
-        obj.Handles.SettingsPanel.Selection = index;
-
-        % identify the panel corresponding to current step
+    function panel = retrieveControlPanel(obj, index)
+        % Identify the panel corresponding to current step.
+        % The associated controller is stored in 'UserData' field.
         switch (index)
             case 1, panel = obj.ControlPanels("SelectInputImages");
             case 2, panel = obj.ControlPanels("SegmentImages");
@@ -414,9 +488,6 @@ methods
             case 4, panel = obj.ControlPanels("ComputeMidlines");
             case 5, panel = obj.ControlPanels("CurvatureKymograph");
         end
-
-        % retrieve controler instance and call the update method
-        select(get(panel, 'UserData'));
     end
 
     function onFrameSliderChanged(obj, hObject, eventdata) %#ok<*INUSD>

@@ -45,6 +45,9 @@ methods (Abstract)
     % To be called when the corresponding panel is selected.
     select(obj);
 
+    % Validate operations managed by this controller.
+    validateProcess(obj);
+
 end % end methods
 
 

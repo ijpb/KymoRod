@@ -173,8 +173,8 @@ methods
 
         % ensure validity of segmentation
         if isempty(obj.Frame.Analysis.ThresholdValues)
-            setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
             updateThresholdValues(obj.Frame.Analysis);
+            setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Segmentation);
         end
 
         % update time-lapse display
@@ -194,6 +194,17 @@ methods
             set([obj.Handles.ManualThresholdValueLabel ...
                 obj.Handles.ManualThresholdValueEdit ...
                 obj.Handles.ManualThresholdSlider], 'Enable', 'on')
+        end
+    end
+
+    % To be called when the corresponding panel is selected.
+    function validateProcess(obj)
+        % Ensure contours are computed.
+        if isempty(obj.Frame.Analysis.Contours)
+            set(obj.Frame.Handles.Figure, 'WindowStyle', 'Modal');
+            computeContours(obj.Frame.Analysis);
+            setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Contour);
+            set(obj.Frame.Handles.Figure, 'WindowStyle', 'Normal');
         end
     end
 
