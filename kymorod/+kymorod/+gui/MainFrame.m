@@ -32,8 +32,11 @@ properties
 
     DisplayMidline = true;
     
-
     ZoomMode = 'adjust';
+
+    % The Kymograph to display
+    % Can be one of {'Radius', 'Curvature', 'VerticalAngle', 'Elongation'};
+    KymographToDisplay = 'Curvature';
 
 end % end properties
 
@@ -236,23 +239,28 @@ methods
 
             timeLapseLayout.Heights = [20 -1 20 20];
 
-            % % once each panel has been resized, setup image magnification
-            % api = iptgetapi(obj.Handles.ScrollPanel);
-            % mag = api.findFitMag();
-            % api.setMagnification(mag);
-            
             obj.Handles.KymographPanel = uix.BoxPanel(...
                 'Parent', mainPanel, ...
                 'Title', 'Kymograph');
 
+            kymographLayout = uix.VBox('Parent', obj.Handles.KymographPanel);
+
+            uix.Empty('Parent', kymographLayout);
+
             % creates an axis that fills the available space
             obj.Handles.KymographAxis = axes(...
-                'Parent', obj.Handles.KymographPanel, ...
+                'Parent', kymographLayout, ...
                 'NextPlot', 'add');
             
             % initialize image display with default image. 
-            obj.Handles.KymographImage = imshow(ones(10, 10), ...
+            obj.Handles.KymographImage = imagesc(zeros(10, 10), ...
                 'parent', obj.Handles.KymographAxis);
+            set(obj.Handles.KymographAxis, ...
+                'XLim', [1 10], 'YLim', [1 10], 'YTick', []);
+
+            uix.Empty('Parent', kymographLayout);
+
+            kymographLayout.Heights = [-0.5 -2 -0.5]; 
 
             mainPanel.Widths = [200 -1 -1];
         end
@@ -338,13 +346,16 @@ methods
             if all(dims == [0 0])
                 dims = [10 10];
             end
-            img = ones(dims([2 1]));
+            img = 255 * ones(dims([2 1]));
+        end
+        if islogical(img)
+            img = 255 * uint8(img);
         end
 
         % changes current display data
         api = iptgetapi(obj.Handles.ScrollPanel);
 %         loc = api.getVisibleLocation();
-        api.replaceImage(img, 'PreserveView', true);
+        api.replaceImage(repmat(img, [1 1 3]), 'PreserveView', true);
 %         api.setVisibleLocation(loc);
                
         % remove all axis children that are not image
@@ -446,6 +457,37 @@ methods
             otherwise
                 error(['Unrecognized zoom mode option: ' mode]);
         end
+    end
+end
+
+
+%% Kymograph display methods
+methods
+    function updateKymographDisplay(obj)
+        % Refresh kymograph display.
+        disp('update kymograph display');
+
+        kymo = getKymograph(obj.Analysis, obj.KymographToDisplay);
+        img = kymo.Data;
+
+        timeStep = obj.Analysis.InputImages.Calibration.TimeInterval;
+        xdata = (0:(size(img, 2)-1)) * timeStep;
+        ydata = 1:size(img, 1);
+
+        set(obj.Handles.KymographImage, ...
+            'xdata', xdata, ...
+            'ydata', ydata, ...
+            'cdata', img);
+        set(obj.Handles.KymographAxis, 'XLim', ([0 size(img,2)] - .5) * timeStep);
+        set(obj.Handles.KymographAxis, ...
+            'YDir', 'normal', ...
+            'YLim', [1 size(img, 1)], ...
+            'YTick', []);
+
+        validateDisplayRange(kymo);
+        clim(obj.Handles.KymographAxis, kymo.DisplayRange);
+
+        colormap('parula');
     end
 end
 

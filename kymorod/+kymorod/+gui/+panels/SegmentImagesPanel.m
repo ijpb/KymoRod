@@ -201,10 +201,10 @@ methods
     function validateProcess(obj)
         % Ensure contours are computed.
         if isempty(obj.Frame.Analysis.Contours)
-            set(obj.Frame.Handles.Figure, 'WindowStyle', 'Modal');
+            set(obj.Frame.Handles.NextStepButton, 'Enable', 'off');
             computeContours(obj.Frame.Analysis);
             setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Contour);
-            set(obj.Frame.Handles.Figure, 'WindowStyle', 'Normal');
+            set(obj.Frame.Handles.NextStepButton, 'Enable', 'on');
         end
     end
 

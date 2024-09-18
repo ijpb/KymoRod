@@ -114,6 +114,8 @@ methods
     function onUpdateButton(obj, src, ~) %#ok<INUSD>
 
         set(obj.Handles.UpdateButton, 'Enable', 'off');
+        pause(0.01);
+        
         computeMidlines(obj.Frame.Analysis);
         setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Midline);
         set(obj.Frame.Handles.NextStepButton, 'Enable', 'on');

@@ -99,7 +99,17 @@ methods
         abscissaSliderLine.Widths = -1;
 
         uix.Empty('Parent', layout);
-        layout.Heights = [85 85 -1];
+
+        buttonRow = uix.HButtonBox('Parent', layout);
+        obj.Handles.UpdateButton = uicontrol(...
+            'Parent', buttonRow, ...
+            'Style','pushbutton', ...
+            'String', 'Update', ...
+            'Callback', @obj.onUpdateButton);
+        layout.Heights = [85 85 -1 40];
+        % uix.Empty('Parent', layout);
+
+        % layout.Heights = [85 85 -1];
 
         set(hPanel, 'UserData', obj);
     end
@@ -112,6 +122,8 @@ methods
         nPoints = obj.Frame.Analysis.Parameters.KymographAbscissaSize;
         set(obj.Handles.AbscissaSizeEdit, 'String', num2str(nPoints));
         set(obj.Handles.AbscissaSizeSlider, 'Value', nPoints);
+
+        set(obj.Handles.UpdateButton, 'Enable', 'on');
 
         % update time-lapse display
         obj.Frame.ImageToDisplay = 'Input';
@@ -126,6 +138,22 @@ methods
 
 end % end methods
 
+
+%% Computation methods
+methods
+    function updateGeometricKymographs(obj)
+
+        analysis = obj.Frame.Analysis;
+        if analysis.ProcessingStep < kymorod.app.ProcessingStep.Midline
+            error('Requires midlines to be computed');
+        end
+
+        % align abscissas and compute geometric kymographs
+        alignedMidlineAbscissas(analysis);
+        computeAnglesAndCurvatures(analysis);
+        computeGeometricKymographs(analysis);
+    end
+end
 
 %% Callback methods
 methods
@@ -143,9 +171,11 @@ methods
         
         obj.Frame.Analysis.Parameters.CurvatureWindowSize = value;
 
+        set(obj.Handles.UpdateButton, 'Enable', 'on');
+        set(obj.Frame.Handles.NextStepButton, 'Enable', 'off');
+
         set(obj.Handles.WindowSizeEdit, 'String', num2str(value));
         set(obj.Handles.WindowSizeSlider, 'Value', value);
-
     end
 
     function onAbscissaSizeChanged(obj, src, ~)
@@ -162,9 +192,23 @@ methods
         
         obj.Frame.Analysis.Parameters.KymographAbscissaSize = value;
 
+        set(obj.Handles.UpdateButton, 'Enable', 'on');
+        set(obj.Frame.Handles.NextStepButton, 'Enable', 'off');
+
         set(obj.Handles.AbscissaSizeEdit, 'String', num2str(value));
         set(obj.Handles.AbscissaSizeSlider, 'Value', value);
+    end
 
+    function onUpdateButton(obj, src, ~) %#ok<INUSD>
+
+        set(obj.Handles.UpdateButton, 'Enable', 'off');
+        updateGeometricKymographs(obj);
+        % computeMidlines(obj.Frame.Analysis);
+        setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Curvature);
+
+        set(obj.Frame.Handles.NextStepButton, 'Enable', 'on');
+
+        updateKymographDisplay(obj.Frame);
     end
 end
 

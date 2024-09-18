@@ -201,7 +201,7 @@ methods
         % Returns the Kymograph or required type, or an empty array if it
         % is not defined. 
         kymo = [];
-        if iskey(obj.Kymographs, type)
+        if isKey(obj.Kymographs, type)
             kymo = obj.Kymographs(type);
         end
     end
