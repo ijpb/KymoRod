@@ -78,7 +78,7 @@ methods
             clearIntensityData(analysis);
         elseif obj == kymorod.app.ProcessingStep.Curvature
         elseif obj == kymorod.app.ProcessingStep.Displacement
-            clearFilteredDisplacments(analysis);
+            clearFilteredDisplacements(analysis);
         elseif obj == kymorod.app.ProcessingStep.FilteredDisplacement
             clearElongationData(analysis);
         elseif obj == kymorod.app.ProcessingStep.Elongation

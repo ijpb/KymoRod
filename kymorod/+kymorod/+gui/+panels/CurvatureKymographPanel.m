@@ -124,6 +124,9 @@ methods
         set(obj.Handles.AbscissaSizeSlider, 'Value', nPoints);
 
         set(obj.Handles.UpdateButton, 'Enable', 'on');
+        if obj.Frame.Analysis.ProcessingStep < kymorod.app.ProcessingStep.Curvature
+            set(obj.Frame.Handles.NextStepButton, 'Enable', 'off');
+        end
 
         % update time-lapse display
         obj.Frame.ImageToDisplay = 'Input';
@@ -202,8 +205,8 @@ methods
     function onUpdateButton(obj, src, ~) %#ok<INUSD>
 
         set(obj.Handles.UpdateButton, 'Enable', 'off');
+        pause(0.01);
         updateGeometricKymographs(obj);
-        % computeMidlines(obj.Frame.Analysis);
         setProcessingStep(obj.Frame.Analysis, kymorod.app.ProcessingStep.Curvature);
 
         set(obj.Frame.Handles.NextStepButton, 'Enable', 'on');

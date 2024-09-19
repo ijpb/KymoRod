@@ -36,7 +36,7 @@ properties
 
     % The Kymograph to display
     % Can be one of {'Radius', 'Curvature', 'VerticalAngle', 'Elongation'};
-    KymographToDisplay = 'Curvature';
+    KymographToDisplay = 'Radius';
 
 end % end properties
 
@@ -126,6 +126,7 @@ methods
             addControlPanel(settingsPanel, 'SmoothContours', kymorod.gui.panels.SmoothContourPanel(obj));
             addControlPanel(settingsPanel, 'ComputeMidlines', kymorod.gui.panels.ComputeMidlinesPanel(obj));
             addControlPanel(settingsPanel, 'CurvatureKymograph', kymorod.gui.panels.CurvatureKymographPanel(obj));
+            addControlPanel(settingsPanel, 'Displacements', kymorod.gui.panels.DisplacementPanel(obj));
             settingsPanel.Selection = 1;
 
             obj.Handles.SettingsPanel = settingsPanel;
@@ -529,6 +530,7 @@ methods
             case 3, panel = obj.ControlPanels("SmoothContours");
             case 4, panel = obj.ControlPanels("ComputeMidlines");
             case 5, panel = obj.ControlPanels("CurvatureKymograph");
+            case 6, panel = obj.ControlPanels("Displacements");
         end
     end
 
