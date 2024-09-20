@@ -127,6 +127,7 @@ methods
             addControlPanel(settingsPanel, 'ComputeMidlines', kymorod.gui.panels.ComputeMidlinesPanel(obj));
             addControlPanel(settingsPanel, 'CurvatureKymograph', kymorod.gui.panels.CurvatureKymographPanel(obj));
             addControlPanel(settingsPanel, 'Displacements', kymorod.gui.panels.DisplacementPanel(obj));
+            addControlPanel(settingsPanel, 'Elongations', kymorod.gui.panels.ElongationsPanel(obj));
             settingsPanel.Selection = 1;
 
             obj.Handles.SettingsPanel = settingsPanel;
@@ -531,6 +532,7 @@ methods
             case 4, panel = obj.ControlPanels("ComputeMidlines");
             case 5, panel = obj.ControlPanels("CurvatureKymograph");
             case 6, panel = obj.ControlPanels("Displacements");
+            case 7, panel = obj.ControlPanels("Elongations");
         end
     end
 

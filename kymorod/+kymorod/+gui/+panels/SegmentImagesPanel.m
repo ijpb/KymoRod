@@ -257,7 +257,7 @@ methods
         updateWidgetSelection(obj);
 
         % update auto threshold values if necessary
-        if strcmpi(strategylist, 'Auto')
+        if strcmpi(strategyName, 'Auto')
             computeAutoThresholdValues(obj.Frame.Analysis);
         end
 
